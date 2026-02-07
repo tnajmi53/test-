@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production Tracker - Evergreen Metal Works</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #2d7a3e 0%, #1a5928 100%); min-height: 100vh; padding: 10px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .header { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header h1 { color: #2d7a3e; font-size: 24px; margin-bottom: 5px; }
+        .header p { color: #666; font-size: 14px; }
+        .tab-container { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; }
+        .tab { flex: 1; min-width: 80px; padding: 12px 8px; background: rgba(255,255,255,0.3); border: none; border-radius: 10px; color: white; font-weight: bold; font-size: 12px; cursor: pointer; transition: all 0.3s; white-space: nowrap; }
+        .tab.active { background: white; color: #2d7a3e; }
+        .sub-tab-container { display: flex; gap: 10px; margin-bottom: 20px; }
+        .sub-tab { flex: 1; padding: 12px; background: #f0f0f0; border: 2px solid #e0e0e0; border-radius: 8px; color: #666; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .sub-tab.active { background: #2d7a3e; color: white; border-color: #2d7a3e; }
+        .content { display: none; }
+        .content.active { display: block; }
+        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; color: #333; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
+        .form-group select, .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; transition: border-color 0.3s; font-family: inherit; }
+        .form-group textarea { resize: vertical; min-height: 100px; font-family: monospace; font-size: 13px; }
+        .form-group select:focus, .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #2d7a3e; }
+        .info-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; background: #e8f5e9; border-radius: 8px; margin-bottom: 20px; }
+        .info-item { text-align: center; }
+        .info-item label { display: block; font-size: 11px; color: #2d7a3e; margin-bottom: 5px; font-weight: 600; text-transform: uppercase; }
+        .info-item .value { font-size: 14px; color: #333; font-weight: bold; }
+        .width-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+        .width-btn { padding: 12px; border: 2px solid #e0e0e0; background: white; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .width-btn.selected { background: #2d7a3e; color: white; border-color: #2d7a3e; }
+        .submit-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #2d7a3e 0%, #1a5928 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: transform 0.2s; }
+        .submit-btn:active { transform: scale(0.98); }
+        .delete-btn { background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .production-list { max-height: 400px; overflow-y: auto; }
+        .production-item { padding: 15px; border-left: 4px solid #2d7a3e; background: #f8f9fa; margin-bottom: 10px; border-radius: 5px; }
+        .production-item h3 { color: #333; font-size: 16px; margin-bottom: 8px; }
+        .production-item p { color: #666; font-size: 13px; margin-bottom: 4px; }
+        .production-item .time { color: #2d7a3e; font-weight: 600; }
+        .production-item .remark { background: #fff3cd; padding: 8px; border-radius: 5px; margin-top: 8px; font-style: italic; color: #856404; }
+        .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .progress-header h3 { color: #333; font-size: 18px; }
+        .progress-percent { font-size: 24px; font-weight: bold; color: #2d7a3e; }
+        .progress-bar-container { width: 100%; height: 30px; background: #e0e0e0; border-radius: 15px; overflow: hidden; margin-bottom: 20px; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #2d7a3e 0%, #1a5928 100%); transition: width 0.5s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; }
+        .progress-bar span { color: white; font-weight: bold; font-size: 14px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
+        .stat-box { background: linear-gradient(135deg, #2d7a3e 0%, #1a5928 100%); padding: 20px; border-radius: 10px; text-align: center; color: white; }
+        .stat-box h4 { font-size: 14px; opacity: 0.9; margin-bottom: 8px; }
+        .stat-box p { font-size: 28px; font-weight: bold; }
+        .group-progress { margin-bottom: 20px; }
+        .group-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .group-header span { color: #666; font-size: 14px; }
+        .group-bar { height: 20px; background: #e0e0e0; border-radius: 10px; overflow: hidden; }
+        .group-fill { height: 100%; background: #2d7a3e; transition: width 0.5s ease; }
+        .production-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        .production-table th { background: #2d7a3e; color: white; padding: 10px 8px; text-align: left; font-weight: 600; }
+        .production-table td { padding: 10px 8px; border-bottom: 1px solid #e0e0e0; }
+        .production-table tr.completed { background: #d4edda; }
+        .production-table tr.pending { background: #f8d7da; }
+        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .status-completed { background: #28a745; color: white; }
+        .status-pending { background: #dc3545; color: white; }
+        .table-section { margin-bottom: 30px; }
+        .table-section h4 { color: #2d7a3e; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #2d7a3e; }
+        .timestamp { font-size: 12px; color: #999; text-align: center; margin-top: 10px; }
+        .success-msg { background: #28a745; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: center; display: none; }
+        .success-msg.show { display: block; animation: slideIn 0.3s ease; }
+        .error-msg { background: #dc3545; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: center; display: none; }
+        .error-msg.show { display: block; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .month-selector { display: flex; gap: 10px; margin-bottom: 20px; }
+        .month-selector select { flex: 1; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; }
+        .export-btn { padding: 10px 20px; background: #2d7a3e; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .report-summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
+        .summary-box { background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 4px solid #2d7a3e; }
+        .summary-box h4 { color: #2d7a3e; font-size: 12px; margin-bottom: 5px; }
+        .summary-box p { color: #333; font-size: 24px; font-weight: bold; }
+        .chart-container { position: relative; height: 300px; margin-bottom: 20px; }
+        .job-card-list { margin-top: 20px; }
+        .job-card-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #2d7a3e; }
+        .job-card-info h4 { color: #333; font-size: 15px; margin-bottom: 4px; }
+        .job-card-info p { color: #666; font-size: 12px; }
+        .archive-badge { background: #ffc107; color: #000; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Production Tracker</h1>
+            <p>Evergreen Metal Works - Digital Reporting System</p>
+        </div>
+
+        <div class="tab-container">
+            <button class="tab active" data-tab="reporter">Reporter</button>
+            <button class="tab" data-tab="dashboard">Dashboard</button>
+            <button class="tab" data-tab="upload">Add Job Card</button>
+            <button class="tab" data-tab="manage">Manage Jobs</button>
+            <button class="tab" data-tab="monthly">Monthly Report</button>
+        </div>
+
+        <div id="reporter" class="content active">
+            <div class="success-msg" id="successMsg">✓ Entry recorded successfully!</div>
+            <div class="sub-tab-container">
+                <button class="sub-tab active" data-subtab="started">Started</button>
+                <button class="sub-tab" data-subtab="completed">Completed</button>
+            </div>
+            <div class="card">
+                <h2 style="color: #2d7a3e; margin-bottom: 20px;">Record Production</h2>
+                <div class="form-group">
+                    <label>Job Card Number</label>
+                    <select id="jobCard"><option value="">Select Job Card</option></select>
+                </div>
+                <div id="jobDetailsRow" class="info-row" style="display: none;">
+                    <div class="info-item"><label>Job Card No.</label><div class="value" id="displayJobCard">-</div></div>
+                    <div class="info-item"><label>Work Order</label><div class="value" id="displayWorkOrder">-</div></div>
+                    <div class="info-item"><label>Rating</label><div class="value" id="displayRating">-</div></div>
+                </div>
+                <div id="additionalDetails" style="display: none; padding: 10px; background: #e8f5e9; border-radius: 8px; margin-bottom: 20px; font-size: 13px; color: #555;">
+                    <span id="detailsText"></span>
+                </div>
+                <div class="form-group">
+                    <label>Machine</label>
+                    <select id="machine">
+                        <option value="">Select Machine</option>
+                        <option value="CTL-400">CTL-400</option>
+                        <option value="CTL-300">CTL-300</option>
+                        <option value="CTL-600">CTL-600</option>
+                        <option value="CTL-150">CTL-150</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Operator Name</label>
+                    <input type="text" id="operatorName" placeholder="Enter operator name">
+                </div>
+                <div class="form-group">
+                    <label>Item Type</label>
+                    <select id="itemType">
+                        <option value="">Select Item Type</option>
+                        <option value="yoke-side">Yoke/Side</option>
+                        <option value="centre">Centre</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Width (mm)</label>
+                    <div class="width-grid" id="widthGrid"></div>
+                </div>
+                <div class="form-group">
+                    <label>Remarks (Optional)</label>
+                    <textarea id="remarks" placeholder="Add any notes or observations..."></textarea>
+                </div>
+                <button class="submit-btn" id="recordBtn">Record Entry</button>
+            </div>
+            <div class="card">
+                <h3 style="color: #2d7a3e; margin-bottom: 15px;" id="entriesHeader">Started Production</h3>
+                <div class="production-list" id="productionList">
+                    <p style="text-align: center; color: #999;">No started items yet</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="dashboard" class="content">
+            <div class="card">
+                <div class="form-group">
+                    <label>Select Job Card</label>
+                    <select id="dashboardJobCard"></select>
+                </div>
+                <div id="dashboardDetailsRow" class="info-row">
+                    <div class="info-item"><label>Job Card No.</label><div class="value" id="dashDisplayJobCard">-</div></div>
+                    <div class="info-item"><label>Work Order</label><div class="value" id="dashDisplayWorkOrder">-</div></div>
+                    <div class="info-item"><label>Rating</label><div class="value" id="dashDisplayRating">-</div></div>
+                </div>
+                <div id="dashAdditionalDetails" style="padding: 10px; background: #e8f5e9; border-radius: 8px; margin-bottom: 20px; font-size: 13px; color: #555;">
+                    <span id="dashDetailsText">-</span>
+                </div>
+                <div class="progress-header">
+                    <h3>Overall Progress</h3>
+                    <span class="progress-percent" id="overallPercent">0%</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="overallProgress" style="width: 0%"><span></span></div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-box"><h4>Completed Blades</h4><p id="completedBlades">0</p></div>
+                    <div class="stat-box"><h4>Total Blades</h4><p id="totalBlades">0</p></div>
+                    <div class="stat-box"><h4>Completed Weight</h4><p id="completedWeight">0 kg</p></div>
+                    <div class="stat-box"><h4>Total Weight</h4><p id="totalWeight">0 kg</p></div>
+                </div>
+            </div>
+            <div class="card">
+                <h3 style="color: #333; margin-bottom: 20px;">Section Progress</h3>
+                <div class="group-progress">
+                    <div class="group-header"><span id="section1Label">Side</span><span id="group1Percent">0%</span></div>
+                    <div class="group-bar"><div class="group-fill" id="group1Progress" style="width: 0%"></div></div>
+                </div>
+                <div class="group-progress">
+                    <div class="group-header"><span id="section2Label">Yoke</span><span id="group2Percent">0%</span></div>
+                    <div class="group-bar"><div class="group-fill" id="group2Progress" style="width: 0%"></div></div>
+                </div>
+                <div class="group-progress">
+                    <div class="group-header"><span id="section3Label">Centre</span><span id="group3Percent">0%</span></div>
+                    <div class="group-bar"><div class="group-fill" id="group3Progress" style="width: 0%"></div></div>
+                </div>
+            </div>
+            <div class="card">
+                <h3 style="color: #2d7a3e; margin-bottom: 15px;">Production Details</h3>
+                <div class="table-section">
+                    <h4>🔹 Yoke/Side Production</h4>
+                    <div style="overflow-x: auto;">
+                        <table class="production-table">
+                            <thead><tr><th>Width (mm)</th><th>Blades</th><th>Weight (kg)</th><th>Status</th></tr></thead>
+                            <tbody id="yokeSideTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="table-section">
+                    <h4>🔹 Centre Production</h4>
+                    <div style="overflow-x: auto;">
+                        <table class="production-table">
+                            <thead><tr><th>Width (mm)</th><th>Blades</th><th>Weight (kg)</th><th>Status</th></tr></thead>
+                            <tbody id="centreTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="timestamp" id="lastUpdate">Last updated: Never</div>
+        </div>
+
+        <div id="upload" class="content">
+            <div class="card">
+                <h2 style="color: #2d7a3e; margin-bottom: 20px;">Add New Job Card</h2>
+                <div class="success-msg" id="uploadSuccessMsg">✓ Job card added successfully!</div>
+                <div class="error-msg" id="uploadErrorMsg">✗ Error processing file.</div>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;"><strong>📋 Copy-Paste Method:</strong><br>
+                1. Fill basic details below<br>2. Copy data from Excel (including headers)<br>3. Paste into each section<br>4. Click "Parse & Save"</p>
+                <div class="form-group"><label>Job Card Number *</label><input type="text" id="pasteJobCard" placeholder="e.g., EG25-751"></div>
+                <div class="form-group"><label>Work Order Number *</label><input type="text" id="pasteWorkOrder" placeholder="e.g., S-453"></div>
+                <div class="form-group"><label>Rating</label><input type="text" id="pasteRating" placeholder="e.g., 1600 KVA (optional)"></div>
+                <div class="form-group"><label>Grade *</label>
+                    <select id="pasteGrade"><option value="M3">M3</option><option value="M4-120">M4-120</option><option value="M4-100">M4-100</option><option value="M5-120">M5-120</option><option value="ZDKH-80">ZDKH-80</option></select>
+                </div>
+                <div class="form-group"><label>Thickness *</label>
+                    <select id="pasteThickness"><option value="0.23">0.23mm</option><option value="0.27">0.27mm</option><option value="0.30">0.30mm</option><option value="0.35">0.35mm</option></select>
+                </div>
+                <div class="form-group"><label>Customer (Optional)</label><input type="text" id="pasteCustomer" placeholder="e.g., VIJI"></div>
+                <h4 style="color: #2d7a3e; margin: 30px 0 10px; padding-top: 20px; border-top: 2px solid #e8f5e9;">📋 Side Production Data (Group 1)</h4>
+                <div class="form-group"><label>Side Data</label><textarea id="sideData" placeholder="Paste entire table from Excel here..."></textarea></div>
+                <h4 style="color: #2d7a3e; margin: 30px 0 10px;">📋 Yoke Production Data (Group 2)</h4>
+                <div class="form-group"><label>Yoke Data</label><textarea id="yokeData" placeholder="Paste entire table from Excel here..."></textarea></div>
+                <h4 style="color: #2d7a3e; margin: 30px 0 10px;">📋 Centre Production Data (Group 3)</h4>
+                <div class="form-group"><label>Centre Data</label><textarea id="centreData" placeholder="Paste entire table from Excel here..."></textarea></div>
+                <button class="submit-btn" id="parseBtn">Parse & Save Job Card</button>
+            </div>
+        </div>
+
+        <div id="manage" class="content">
+            <div class="card">
+                <h2 style="color: #2d7a3e; margin-bottom: 20px;">Manage Job Cards</h2>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                    <strong>Archive:</strong> Removes from Reporter tab but keeps in reports<br>
+                    <strong>Delete:</strong> Permanently removes ALL data (cannot be undone!)
+                </p>
+                <div class="job-card-list" id="jobCardList"></div>
+            </div>
+        </div>
+
+        <div id="monthly" class="content">
+            <div class="card">
+                <h2 style="color: #2d7a3e; margin-bottom: 20px;">Monthly Production Report</h2>
+                <div class="month-selector">
+                    <select id="reportMonth">
+                        <option value="0">January</option><option value="1">February</option><option value="2">March</option><option value="3">April</option>
+                        <option value="4">May</option><option value="5">June</option><option value="6">July</option><option value="7">August</option>
+                        <option value="8">September</option><option value="9">October</option><option value="10">November</option><option value="11">December</option>
+                    </select>
+                    <select id="reportYear"><option value="2024">2024</option><option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option></select>
+                    <button class="export-btn" id="exportBtn">📥 Export to Excel</button>
+                </div>
+                <div class="report-summary">
+                    <div class="summary-box"><h4>Total Job Cards</h4><p id="monthlyJobCards">0</p></div>
+                    <div class="summary-box"><h4>Completed Jobs</h4><p id="monthlyCompleted">0</p></div>
+                    <div class="summary-box"><h4>Pending Jobs</h4><p id="monthlyPending">0</p></div>
+                    <div class="summary-box"><h4>Total Blades Produced</h4><p id="monthlyBlades">0</p></div>
+                </div>
+                <div class="card" style="background: #f8f9fa;">
+                    <h3 style="color: #2d7a3e; margin-bottom: 15px;">Production Trend</h3>
+                    <div class="chart-container"><canvas id="monthlyChart"></canvas></div>
+                </div>
+                <h3 style="color: #333; margin-top: 30px; margin-bottom: 15px;">Job Card Details</h3>
+                <div id="monthlyJobList"><p style="text-align: center; color: #999;">No production data for selected month</p></div>
+            </div>
+        </div>
+    </div>
+    <script>
+// Start with completely empty data - fresh installation
+let jobCardData = {};
+
+// Load from localStorage if exists
+const savedJobCards = localStorage.getItem('jobCardData');
+if (savedJobCards) {
+    jobCardData = JSON.parse(savedJobCards);
+}
+
+// Storage
+let productionEntries = JSON.parse(localStorage.getItem('productionEntries')) || [];
+let completedItems = JSON.parse(localStorage.getItem('completedItems')) || {};
+let currentSubTab = 'started';
+let monthlyChart = null;
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeTabs();
+    initializeSubTabs();
+    populateJobCardDropdowns();
+    updateDashboard();
+    displayProductionList();
+    setCurrentMonth();
+    displayJobCardList();
+    
+    // Event listeners
+    document.getElementById('jobCard').addEventListener('change', updateJobDetails);
+    document.getElementById('itemType').addEventListener('change', updateWidths);
+    document.getElementById('dashboardJobCard').addEventListener('change', updateDashboard);
+    document.getElementById('reportMonth').addEventListener('change', updateMonthlyReport);
+    document.getElementById('reportYear').addEventListener('change', updateMonthlyReport);
+    document.getElementById('recordBtn').addEventListener('click', recordProduction);
+    document.getElementById('parseBtn').addEventListener('click', parsePastedData);
+    document.getElementById('exportBtn').addEventListener('click', exportMonthlyReport);
+});
+
+function initializeTabs() {
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabName = this.getAttribute('data-tab');
+            switchTab(tabName, this);
+        });
+    });
+}
+
+function initializeSubTabs() {
+    document.querySelectorAll('.sub-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const subTabName = this.getAttribute('data-subtab');
+            switchSubTab(subTabName, this);
+        });
+    });
+}
+
+function switchTab(tab, element) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+    
+    if (element) {
+        element.classList.add('active');
+    }
+    document.getElementById(tab).classList.add('active');
+    
+    if (tab === 'dashboard') {
+        updateDashboard();
+    } else if (tab === 'monthly') {
+        updateMonthlyReport();
+    } else if (tab === 'manage') {
+        displayJobCardList();
+    }
+}
+
+function switchSubTab(subTab, element) {
+    currentSubTab = subTab;
+    document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+    if (element) {
+        element.classList.add('active');
+    }
+    displayProductionList();
+}
+
+function populateJobCardDropdowns() {
+    const reporterSelect = document.getElementById('jobCard');
+    const dashboardSelect = document.getElementById('dashboardJobCard');
+    
+    reporterSelect.innerHTML = '<option value="">Select Job Card</option>';
+    dashboardSelect.innerHTML = '';
+    
+    const jobCards = Object.keys(jobCardData);
+    
+    if (jobCards.length === 0) {
+        dashboardSelect.innerHTML = '<option value="">No job cards available</option>';
+        return;
+    }
+    
+    jobCards.forEach(jobCard => {
+        const data = jobCardData[jobCard];
+        // Only show non-archived jobs in reporter
+        if (!data.archived) {
+            const option1 = document.createElement('option');
+            option1.value = jobCard;
+            option1.textContent = jobCard;
+            reporterSelect.appendChild(option1);
+        }
+        
+        // Show all jobs in dashboard
+        const option2 = document.createElement('option');
+        option2.value = jobCard;
+        option2.textContent = jobCard + (data.archived ? ' (Archived)' : '');
+        dashboardSelect.appendChild(option2);
+    });
+}
+
+function updateJobDetails() {
+    const jobCard = document.getElementById('jobCard').value;
+    const detailsRow = document.getElementById('jobDetailsRow');
+    const additionalDetails = document.getElementById('additionalDetails');
+    
+    if (!jobCard) {
+        detailsRow.style.display = 'none';
+        additionalDetails.style.display = 'none';
+        document.getElementById('widthGrid').innerHTML = '';
+        return;
+    }
+
+    const data = jobCardData[jobCard];
+    
+    document.getElementById('displayJobCard').textContent = jobCard;
+    document.getElementById('displayWorkOrder').textContent = data.workOrder;
+    document.getElementById('displayRating').textContent = data.rating;
+    detailsRow.style.display = 'grid';
+
+    let details = `Grade: ${data.grade} | Thickness: ${data.thickness} | Process: ${data.process}`;
+    if (data.customer) {
+        details += ` | Customer: ${data.customer}`;
+    }
+    document.getElementById('detailsText').textContent = details;
+    additionalDetails.style.display = 'block';
+
+    document.getElementById('itemType').value = '';
+    updateWidths();
+}
+
+function updateWidths() {
+    const itemType = document.getElementById('itemType').value;
+    const jobCard = document.getElementById('jobCard').value;
+    const widthGrid = document.getElementById('widthGrid');
+    
+    if (!itemType) {
+        widthGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999;">Select an item type first</p>';
+        return;
+    }
+
+    if (!jobCard) {
+        widthGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999;">Select a job card first</p>';
+        return;
+    }
+
+    const widths = Object.keys(jobCardData[jobCard].groups[1].widths).map(Number).sort((a, b) => b - a);
+    
+    widthGrid.innerHTML = '';
+    widths.forEach(width => {
+        const btn = document.createElement('button');
+        btn.className = 'width-btn';
+        btn.textContent = width + ' mm';
+        btn.dataset.width = width;
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            selectWidth(this);
+        });
+        widthGrid.appendChild(btn);
+    });
+}
+
+function selectWidth(element) {
+    document.querySelectorAll('.width-btn').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    element.classList.add('selected');
+}
+
+function recordProduction() {
+    const jobCard = document.getElementById('jobCard').value;
+    const machine = document.getElementById('machine').value;
+    const operatorName = document.getElementById('operatorName').value.trim();
+    const itemType = document.getElementById('itemType').value;
+    const selectedWidth = document.querySelector('.width-btn.selected');
+    const remarks = document.getElementById('remarks').value.trim();
+
+    if (!jobCard || !machine || !operatorName || !itemType || !selectedWidth) {
+        alert('Please fill all required fields');
+        return;
+    }
+
+    const width = selectedWidth.dataset.width;
+    const workOrder = jobCardData[jobCard].workOrder;
+    const timestamp = new Date();
+    
+    const existingStarted = productionEntries.find(e => 
+        e.jobCard === jobCard &&
+        e.machine === machine &&
+        e.itemType === itemType &&
+        e.width === width &&
+        e.status === 'started' &&
+        !e.endTime
+    );
+
+    if (existingStarted) {
+        existingStarted.status = 'completed';
+        existingStarted.endTime = timestamp.toISOString();
+        existingStarted.endOperator = operatorName;
+        if (remarks) {
+            existingStarted.endRemarks = remarks;
+        }
+        
+        if (itemType === 'yoke-side') {
+            for (let group = 1; group <= 2; group++) {
+                const key = `${jobCard}-${group}-${width}`;
+                completedItems[key] = true;
+            }
+        } else if (itemType === 'centre') {
+            const key = `${jobCard}-3-${width}`;
+            completedItems[key] = true;
+        }
+        localStorage.setItem('completedItems', JSON.stringify(completedItems));
+    } else {
+        const entry = {
+            id: Date.now(),
+            jobCard,
+            workOrder,
+            machine,
+            operator: operatorName,
+            itemType,
+            width,
+            status: 'started',
+            startTime: timestamp.toISOString(),
+            endTime: null,
+            startRemarks: remarks || null,
+            endRemarks: null
+        };
+        productionEntries.push(entry);
+    }
+
+    localStorage.setItem('productionEntries', JSON.stringify(productionEntries));
+
+    const successMsg = document.getElementById('successMsg');
+    successMsg.classList.add('show');
+    setTimeout(() => {
+        successMsg.classList.remove('show');
+    }, 3000);
+
+    document.getElementById('operatorName').value = '';
+    document.getElementById('remarks').value = '';
+    document.getElementById('itemType').value = '';
+    document.getElementById('widthGrid').innerHTML = '';
+    
+    displayProductionList();
+    updateDashboard();
+}
+
+function displayProductionList() {
+    const listDiv = document.getElementById('productionList');
+    const headerDiv = document.getElementById('entriesHeader');
+    
+    headerDiv.textContent = currentSubTab === 'started' ? 'Started Production' : 'Completed Production';
+    
+    const today = new Date().toDateString();
+    const todayEntries = productionEntries.filter(entry => {
+        const entryDate = new Date(entry.startTime).toDateString();
+        return entryDate === today && entry.status === currentSubTab;
+    }).reverse();
+
+    if (todayEntries.length === 0) {
+        listDiv.innerHTML = `<p style="text-align: center; color: #999;">No ${currentSubTab} items yet</p>`;
+        return;
+    }
+
+    listDiv.innerHTML = todayEntries.map(entry => {
+        const startTime = new Date(entry.startTime).toLocaleTimeString('en-IN', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        
+        let timeInfo = '';
+        let remarkInfo = '';
+        
+        if (entry.status === 'started') {
+            timeInfo = `<p class="time">▶️ Started at ${startTime} | Operator: ${entry.operator}</p>`;
+            if (entry.startRemarks) {
+                remarkInfo = `<div class="remark">💬 ${entry.startRemarks}</div>`;
+            }
+        } else {
+            const endTime = new Date(entry.endTime).toLocaleTimeString('en-IN', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            const duration = calculateDuration(entry.startTime, entry.endTime);
+            timeInfo = `
+                <p class="time">▶️ Started: ${startTime} | Operator: ${entry.operator}</p>
+                <p class="time">⏹️ Ended: ${endTime} | Operator: ${entry.endOperator || entry.operator}</p>
+                <p class="time">⏱️ Duration: ${duration}</p>
+            `;
+            if (entry.startRemarks) {
+                remarkInfo += `<div class="remark">💬 Start: ${entry.startRemarks}</div>`;
+            }
+            if (entry.endRemarks) {
+                remarkInfo += `<div class="remark">💬 End: ${entry.endRemarks}</div>`;
+            }
+        }
+        
+        return `
+            <div class="production-item">
+                <h3>${entry.machine} - ${entry.jobCard}</h3>
+                <p><strong>${entry.itemType.toUpperCase()}</strong> | Width: ${entry.width}mm | WO: ${entry.workOrder}</p>
+                ${timeInfo}
+                ${remarkInfo}
+            </div>
+        `;
+    }).join('');
+}
+
+function calculateDuration(startTime, endTime) {
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    const diff = end - start;
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+}
+
+function parsePastedData() {
+    const jobCard = document.getElementById('pasteJobCard').value.trim();
+    const workOrder = document.getElementById('pasteWorkOrder').value.trim();
+    const rating = document.getElementById('pasteRating').value.trim();
+    const grade = document.getElementById('pasteGrade').value;
+    const thickness = document.getElementById('pasteThickness').value;
+    const customer = document.getElementById('pasteCustomer').value.trim();
+    
+    const sideData = document.getElementById('sideData').value.trim();
+    const yokeData = document.getElementById('yokeData').value.trim();
+    const centreData = document.getElementById('centreData').value.trim();
+    
+    if (!jobCard || !workOrder || !grade || !thickness) {
+        alert('Please fill all required fields (Job Card, Work Order, Grade, Thickness)');
+        return;
+    }
+    
+    if (!sideData || !yokeData || !centreData) {
+        alert('Please paste data for all three sections (Side, Yoke, Centre)');
+        return;
+    }
+    
+    try {
+        const group1 = parseExcelPaste(sideData, thickness);
+        const group2 = parseExcelPaste(yokeData, thickness);
+        const group3 = parseExcelPaste(centreData, thickness);
+        
+        const newJobCard = {
+            workOrder,
+            rating: rating || '-',
+            grade,
+            thickness: thickness + 'mm',
+            customer: customer || '',
+            process: 'Vertical Steplap',
+            sections: ['Side', 'Yoke', 'Centre'],
+            archived: false,
+            groups: {
+                1: group1,
+                2: group2,
+                3: group3
+            }
+        };
+        
+        jobCardData[jobCard] = newJobCard;
+        localStorage.setItem('jobCardData', JSON.stringify(jobCardData));
+        
+        document.getElementById('pasteJobCard').value = '';
+        document.getElementById('pasteWorkOrder').value = '';
+        document.getElementById('pasteRating').value = '';
+        document.getElementById('pasteCustomer').value = '';
+        document.getElementById('sideData').value = '';
+        document.getElementById('yokeData').value = '';
+        document.getElementById('centreData').value = '';
+        
+        populateJobCardDropdowns();
+        
+        const successMsg = document.getElementById('uploadSuccessMsg');
+        successMsg.classList.add('show');
+        setTimeout(() => successMsg.classList.remove('show'), 3000);
+        
+    } catch (error) {
+        const errorMsg = document.getElementById('uploadErrorMsg');
+        errorMsg.textContent = '✗ ' + error.message;
+        errorMsg.classList.add('show');
+        setTimeout(() => errorMsg.classList.remove('show'), 5000);
+    }
+}
+
+function parseExcelPaste(pastedText, thickness) {
+    const lines = pastedText.split('\n').filter(line => line.trim());
+    
+    if (lines.length < 2) {
+        throw new Error('Not enough data rows');
+    }
+    
+    const widths = {};
+    let totalBlades = 0;
+    let totalWeight = 0;
+    
+    for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        if (line.toLowerCase().startsWith('total')) {
+            continue;
+        }
+        
+        const parts = line.split(/\t|  +/).filter(p => p.trim());
+        
+        if (parts.length < 2) {
+            continue;
+        }
+        
+        let width, stack, weight;
+        
+        if (parts.length >= 8) {
+            width = parseFloat(parts[0]);
+            stack = parseFloat(parts[4]);
+            weight = parseFloat(parts[6]);
+        } else if (parts.length >= 6) {
+            width = parseFloat(parts[0]);
+            stack = parseFloat(parts[4]);
+            weight = parseFloat(parts[5]);
+        } else if (parts.length >= 4) {
+            width = parseFloat(parts[0]);
+            stack = parseFloat(parts[2]);
+            weight = parseFloat(parts[3]);
+        } else {
+            continue;
+        }
+        
+        if (!isNaN(width) && !isNaN(stack) && !isNaN(weight) && width > 0) {
+            const thicknessValue = parseFloat(thickness);
+            const blades = Math.round(stack / thicknessValue);
+            
+            widths[width] = {
+                blades: blades,
+                weight: Math.round(weight * 100) / 100
+            };
+            
+            totalBlades += blades;
+            totalWeight += weight;
+        }
+    }
+    
+    if (Object.keys(widths).length === 0) {
+        throw new Error('No valid data rows found');
+    }
+    
+    return {
+        widths,
+        totalBlades,
+        totalWeight: Math.round(totalWeight * 100) / 100
+    };
+}
+
+function updateDashboard() {
+    const jobCard = document.getElementById('dashboardJobCard').value;
+    if (!jobCard || !jobCardData[jobCard]) {
+        // Clear dashboard if no job card selected
+        document.getElementById('dashDisplayJobCard').textContent = '-';
+        document.getElementById('dashDisplayWorkOrder').textContent = '-';
+        document.getElementById('dashDisplayRating').textContent = '-';
+        document.getElementById('dashDetailsText').textContent = '-';
+        return;
+    }
+    
+    const data = jobCardData[jobCard];
+    
+    document.getElementById('dashDisplayJobCard').textContent = jobCard;
+    document.getElementById('dashDisplayWorkOrder').textContent = data.workOrder;
+    document.getElementById('dashDisplayRating').textContent = data.rating;
+
+    let details = `Grade: ${data.grade} | Thickness: ${data.thickness} | Process: ${data.process}`;
+    if (data.customer) {
+        details += ` | Customer: ${data.customer}`;
+    }
+    document.getElementById('dashDetailsText').textContent = details;
+
+    document.getElementById('section1Label').textContent = data.sections[0];
+    document.getElementById('section2Label').textContent = data.sections[1];
+    document.getElementById('section3Label').textContent = data.sections[2];
+    
+    let totalBlades = 0;
+    let totalWeight = 0;
+    let completedBlades = 0;
+    let completedWeightVal = 0;
+    
+    Object.keys(data.groups).forEach(groupNum => {
+        const group = data.groups[groupNum];
+        totalBlades += group.totalBlades;
+        totalWeight += group.totalWeight;
+        
+        Object.keys(group.widths).forEach(width => {
+            const key = `${jobCard}-${groupNum}-${width}`;
+            if (completedItems[key]) {
+                completedBlades += group.widths[width].blades;
+                completedWeightVal += group.widths[width].weight;
+            }
+        });
+    });
+
+    const overallPercent = Math.round((completedBlades / totalBlades) * 100);
+    document.getElementById('overallPercent').textContent = overallPercent + '%';
+    document.getElementById('overallProgress').style.width = overallPercent + '%';
+    document.getElementById('completedBlades').textContent = completedBlades;
+    document.getElementById('totalBlades').textContent = totalBlades;
+    document.getElementById('completedWeight').textContent = completedWeightVal.toFixed(1) + ' kg';
+    document.getElementById('totalWeight').textContent = totalWeight.toFixed(1) + ' kg';
+
+    [1, 2, 3].forEach(groupNum => {
+        const group = data.groups[groupNum];
+        let groupCompleted = 0;
+        
+        Object.keys(group.widths).forEach(width => {
+            const key = `${jobCard}-${groupNum}-${width}`;
+            if (completedItems[key]) {
+                groupCompleted += group.widths[width].blades;
+            }
+        });
+        
+        const groupPercent = Math.round((groupCompleted / group.totalBlades) * 100);
+        document.getElementById(`group${groupNum}Percent`).textContent = groupPercent + '%';
+        document.getElementById(`group${groupNum}Progress`).style.width = groupPercent + '%';
+    });
+
+    updateProductionTables(jobCard, data);
+    document.getElementById('lastUpdate').textContent = 
+        'Last updated: ' + new Date().toLocaleTimeString('en-IN');
+}
+
+function updateProductionTables(jobCard, data) {
+    const yokeSideBody = document.getElementById('yokeSideTableBody');
+    const yokeSideWidths = {};
+    
+    [1, 2].forEach(groupNum => {
+        Object.keys(data.groups[groupNum].widths).forEach(width => {
+            if (!yokeSideWidths[width]) {
+                yokeSideWidths[width] = { blades: 0, weight: 0, completed: false };
+            }
+            yokeSideWidths[width].blades += data.groups[groupNum].widths[width].blades;
+            yokeSideWidths[width].weight += data.groups[groupNum].widths[width].weight;
+        });
+    });
+
+    Object.keys(yokeSideWidths).forEach(width => {
+        let allGroupsComplete = true;
+        for (let group = 1; group <= 2; group++) {
+            const key = `${jobCard}-${group}-${width}`;
+            if (!completedItems[key]) {
+                allGroupsComplete = false;
+                break;
+            }
+        }
+        yokeSideWidths[width].completed = allGroupsComplete;
+    });
+
+    const sortedYokeSide = Object.keys(yokeSideWidths).sort((a, b) => b - a);
+    yokeSideBody.innerHTML = sortedYokeSide.map(width => {
+        const item = yokeSideWidths[width];
+        const rowClass = item.completed ? 'completed' : 'pending';
+        const statusClass = item.completed ? 'status-completed' : 'status-pending';
+        const statusText = item.completed ? '✓ Done' : '✗ Pending';
+        
+        return `
+            <tr class="${rowClass}">
+                <td><strong>${width}</strong></td>
+                <td>${item.blades}</td>
+                <td>${item.weight.toFixed(2)}</td>
+                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+            </tr>
+        `;
+    }).join('');
+
+    const centreBody = document.getElementById('centreTableBody');
+    const centreWidths = {};
+    
+    Object.keys(data.groups[3].widths).forEach(width => {
+        centreWidths[width] = {
+            blades: data.groups[3].widths[width].blades,
+            weight: data.groups[3].widths[width].weight,
+            completed: false
+        };
+        
+        const key = `${jobCard}-3-${width}`;
+        centreWidths[width].completed = !!completedItems[key];
+    });
+
+    const sortedCentre = Object.keys(centreWidths).sort((a, b) => b - a);
+    centreBody.innerHTML = sortedCentre.map(width => {
+        const item = centreWidths[width];
+        const rowClass = item.completed ? 'completed' : 'pending';
+        const statusClass = item.completed ? 'status-completed' : 'status-pending';
+        const statusText = item.completed ? '✓ Done' : '✗ Pending';
+        
+        return `
+            <tr class="${rowClass}">
+                <td><strong>${width}</strong></td>
+                <td>${item.blades}</td>
+                <td>${item.weight.toFixed(2)}</td>
+                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function displayJobCardList() {
+    const listDiv = document.getElementById('jobCardList');
+    
+    const jobs = Object.keys(jobCardData).map(jobCard => ({
+        jobCard,
+        data: jobCardData[jobCard]
+    }));
+    
+    if (jobs.length === 0) {
+        listDiv.innerHTML = '<p style="text-align: center; color: #999;">No job cards found. Add your first job card in the "Add Job Card" tab!</p>';
+        return;
+    }
+    
+    listDiv.innerHTML = jobs.map(job => {
+        const isArchived = job.data.archived;
+        return `
+            <div class="job-card-item">
+                <div class="job-card-info">
+                    <h4>${job.jobCard} - ${job.data.workOrder}${isArchived ? '<span class="archive-badge">ARCHIVED</span>' : ''}</h4>
+                    <p>Grade: ${job.data.grade} | Thickness: ${job.data.thickness}</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="delete-btn" style="background: #6c757d;" onclick="toggleArchive('${job.jobCard}')">
+                        ${isArchived ? '↩️ Restore' : '📦 Archive'}
+                    </button>
+                    <button class="delete-btn" onclick="deleteJobCard('${job.jobCard}')">
+                        🗑️ Delete
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function toggleArchive(jobCard) {
+    const data = jobCardData[jobCard];
+    data.archived = !data.archived;
+    localStorage.setItem('jobCardData', JSON.stringify(jobCardData));
+    populateJobCardDropdowns();
+    displayJobCardList();
+    alert(`Job card ${jobCard} ${data.archived ? 'archived' : 'restored'} successfully!`);
+}
+
+function deleteJobCard(jobCard) {
+    const confirmed = confirm(
+        `⚠️ WARNING: This will PERMANENTLY DELETE job card ${jobCard} and ALL related data!\n\n` +
+        `This includes:\n` +
+        `- Job card details\n` +
+        `- All production entries\n` +
+        `- All completion records\n\n` +
+        `This action CANNOT be undone!\n\n` +
+        `Are you sure you want to delete ${jobCard}?`
+    );
+    
+    if (!confirmed) return;
+    
+    // Double confirmation for safety
+    const doubleConfirm = confirm(`Really delete ${jobCard}? This is your last chance!`);
+    
+    if (!doubleConfirm) return;
+    
+    // Delete job card
+    delete jobCardData[jobCard];
+    localStorage.setItem('jobCardData', JSON.stringify(jobCardData));
+    
+    // Delete all production entries for this job card
+    productionEntries = productionEntries.filter(entry => entry.jobCard !== jobCard);
+    localStorage.setItem('productionEntries', JSON.stringify(productionEntries));
+    
+    // Delete all completed items for this job card
+    Object.keys(completedItems).forEach(key => {
+        if (key.startsWith(jobCard + '-')) {
+            delete completedItems[key];
+        }
+    });
+    localStorage.setItem('completedItems', JSON.stringify(completedItems));
+    
+    // Refresh all displays
+    populateJobCardDropdowns();
+    displayJobCardList();
+    updateDashboard();
+    displayProductionList();
+    
+    alert(`✓ Job card ${jobCard} and all related data have been permanently deleted.`);
+}
+
+function setCurrentMonth() {
+    const now = new Date();
+    document.getElementById('reportMonth').value = now.getMonth();
+    document.getElementById('reportYear').value = now.getFullYear();
+    updateMonthlyReport();
+}
+
+function updateMonthlyReport() {
+    const month = parseInt(document.getElementById('reportMonth').value);
+    const year = parseInt(document.getElementById('reportYear').value);
+    
+    const monthEntries = productionEntries.filter(entry => {
+        const entryDate = new Date(entry.startTime);
+        return entryDate.getMonth() === month && entryDate.getFullYear() === year;
+    });
+
+    const jobCards = new Set(monthEntries.map(e => e.jobCard));
+    const completedEntries = monthEntries.filter(e => e.status === 'completed');
+    
+    const jobCompletion = {};
+    Object.keys(jobCardData).forEach(jc => {
+        const data = jobCardData[jc];
+        let totalWidths = 0;
+        let completedWidths = 0;
+        
+        [1, 2, 3].forEach(group => {
+            Object.keys(data.groups[group].widths).forEach(width => {
+                totalWidths++;
+                const key = `${jc}-${group}-${width}`;
+                if (completedItems[key]) {
+                    completedWidths++;
+                }
+            });
+        });
+        
+        jobCompletion[jc] = {
+            total: totalWidths,
+            completed: completedWidths,
+            isComplete: completedWidths === totalWidths
+        };
+    });
+    
+    const completedJobs = Object.keys(jobCompletion).filter(jc => jobCompletion[jc].isComplete).length;
+    const pendingJobs = Object.keys(jobCardData).length - completedJobs;
+    
+    let totalBlades = 0;
+    completedEntries.forEach(entry => {
+        const jobCard = entry.jobCard;
+        const width = entry.width;
+        const data = jobCardData[jobCard];
+        
+        if (!data) return;
+        
+        if (entry.itemType === 'yoke-side') {
+            for (let group = 1; group <= 2; group++) {
+                if (data.groups[group].widths[width]) {
+                    totalBlades += data.groups[group].widths[width].blades;
+                }
+            }
+        } else if (entry.itemType === 'centre') {
+            if (data.groups[3].widths[width]) {
+                totalBlades += data.groups[3].widths[width].blades;
+            }
+        }
+    });
+
+    document.getElementById('monthlyJobCards').textContent = Object.keys(jobCardData).length;
+    document.getElementById('monthlyCompleted').textContent = completedJobs;
+    document.getElementById('monthlyPending').textContent = pendingJobs;
+    document.getElementById('monthlyBlades').textContent = totalBlades;
+
+    displayMonthlyJobList(Object.keys(jobCardData), jobCompletion);
+    updateMonthlyChart(month, year);
+}
+
+function updateMonthlyChart(month, year) {
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const dailyData = Array(daysInMonth).fill(0);
+    
+    productionEntries.forEach(entry => {
+        if (entry.status === 'completed') {
+            const entryDate = new Date(entry.startTime);
+            if (entryDate.getMonth() === month && entryDate.getFullYear() === year) {
+                const day = entryDate.getDate() - 1;
+                dailyData[day]++;
+            }
+        }
+    });
+
+    const labels = Array.from({length: daysInMonth}, (_, i) => i + 1);
+    
+    const ctx = document.getElementById('monthlyChart');
+    if (!ctx) return;
+    
+    const context = ctx.getContext('2d');
+    
+    if (monthlyChart) {
+        monthlyChart.destroy();
+    }
+    
+    monthlyChart = new Chart(context, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Completed Items',
+                data: dailyData,
+                borderColor: '#2d7a3e',
+                backgroundColor: 'rgba(45, 122, 62, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+}
+
+function displayMonthlyJobList(jobCards, jobCompletion) {
+    const container = document.getElementById('monthlyJobList');
+    
+    if (jobCards.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #999;">No job cards found. Add your first job card!</p>';
+        return;
+    }
+
+    container.innerHTML = jobCards.map(jobCard => {
+        const data = jobCardData[jobCard];
+        const completion = jobCompletion[jobCard];
+        const percent = Math.round((completion.completed / completion.total) * 100);
+        
+        return `
+            <div class="production-item">
+                <h3>${jobCard} - ${data.workOrder}</h3>
+                <p>Rating: ${data.rating} | Grade: ${data.grade}</p>
+                <p class="time">Progress: ${completion.completed}/${completion.total} widths (${percent}%)</p>
+                <p class="time">Status: ${completion.isComplete ? '✅ Completed' : '⏳ Pending'}</p>
+            </div>
+        `;
+    }).join('');
+}
+
+function exportMonthlyReport() {
+    if (Object.keys(jobCardData).length === 0) {
+        alert('No job cards available to export. Please add job cards first!');
+        return;
+    }
+    
+    const month = document.getElementById('reportMonth').selectedOptions[0].text;
+    const year = document.getElementById('reportYear').value;
+    
+    const wb = XLSX.utils.book_new();
+    
+    const summaryData = [
+        ['Monthly Production Report'],
+        ['Evergreen Metal Works'],
+        [''],
+        ['Month:', month],
+        ['Year:', year],
+        ['Report Generated:', new Date().toLocaleString()],
+        [''],
+        ['Summary'],
+        ['Total Job Cards:', document.getElementById('monthlyJobCards').textContent],
+        ['Completed Jobs:', document.getElementById('monthlyCompleted').textContent],
+        ['Pending Jobs:', document.getElementById('monthlyPending').textContent],
+        ['Total Blades Produced:', document.getElementById('monthlyBlades').textContent]
+    ];
+    
+    const ws1 = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(wb, ws1, 'Summary');
+    
+    const detailsData = [['Job Card', 'Work Order', 'Rating', 'Grade', 'Thickness', 'Progress', 'Status']];
+    
+    Object.keys(jobCardData).forEach(jobCard => {
+        const data = jobCardData[jobCard];
+        let totalWidths = 0;
+        let completedWidths = 0;
+        
+        [1, 2, 3].forEach(group => {
+            Object.keys(data.groups[group].widths).forEach(width => {
+                totalWidths++;
+                const key = `${jobCard}-${group}-${width}`;
+                if (completedItems[key]) {
+                    completedWidths++;
+                }
+            });
+        });
+        
+        const percent = Math.round((completedWidths / totalWidths) * 100);
+        const status = completedWidths === totalWidths ? 'Completed' : 'Pending';
+        
+        detailsData.push([
+            jobCard,
+            data.workOrder,
+            data.rating,
+            data.grade,
+            data.thickness,
+            `${completedWidths}/${totalWidths} (${percent}%)`,
+            status
+        ]);
+    });
+    
+    const ws2 = XLSX.utils.aoa_to_sheet(detailsData);
+    XLSX.utils.book_append_sheet(wb, ws2, 'Job Details');
+    
+    XLSX.writeFile(wb, `Production_Report_${month}_${year}.xlsx`);
+}
+
+setInterval(() => {
+    const dashboardTab = document.getElementById('dashboard');
+    if (dashboardTab && dashboardTab.classList.contains('active')) {
+        updateDashboard();
+    }
+}, 30000);
+    </script>
+</body>
+</html>
