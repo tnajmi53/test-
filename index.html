@@ -8,312 +8,628 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #2d7a3e 0%, #1a5928 100%); min-height: 100vh; padding: 10px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #2d7a3e 0%, #1a5928 100%); min-height: 100vh; }
+        
+        /* Login Page Styles */
+        #loginPage { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #2d7a3e 0%, #1a5928 100%); z-index: 9999; }
+        #loginPage.hidden { display: none; }
+        .login-card { background: white; padding: 40px 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); max-width: 420px; width: 100%; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .login-logo { text-align: center; margin-bottom: 30px; }
+        .login-logo img { max-width: 280px; width: 100%; height: auto; }
+        .login-title { color: #2d7a3e; font-size: 28px; text-align: center; margin-bottom: 8px; font-weight: bold; }
+        .login-subtitle { color: #666; font-size: 14px; text-align: center; margin-bottom: 30px; }
+        .login-form-group { margin-bottom: 20px; }
+        .login-form-group label { display: block; color: #333; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
+        .login-form-group input { width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; transition: all 0.3s; }
+        .login-form-group input:focus { outline: none; border-color: #2d7a3e; box-shadow: 0 0 0 3px rgba(45,122,62,0.1); }
+        .login-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #2d7a3e 0%, #1a5928 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.3s; }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(45,122,62,0.4); }
+        .login-btn:active { transform: translateY(0); }
+        .login-error { background: #dc3545; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; display: none; font-size: 14px; font-weight: 600; }
+        .login-error.show { display: block; animation: shake 0.5s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+        
+        /* Main App Styles */
+        .app-wrapper { display: none; padding: 10px; }
+        .app-wrapper.show { display: block; }
         .container { max-width: 600px; margin: 0 auto; }
-        .header { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .header h1 { color: #2d7a3e; font-size: 24px; margin-bottom: 5px; }
-        .header p { color: #666; font-size: 14px; }
-        .tab-container { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; }
-        .tab { flex: 1; min-width: 80px; padding: 12px 8px; background: rgba(255,255,255,0.3); border: none; border-radius: 10px; color: white; font-weight: bold; font-size: 12px; cursor: pointer; transition: all 0.3s; white-space: nowrap; }
-        .tab.active { background: white; color: #2d7a3e; }
+        .header { background: white; padding: 16px 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+        .header-left { display: flex; align-items: center; gap: 12px; flex: 1; }
+        .header-logo img { height: 45px; width: auto; }
+        .header-text h1 { color: #2d7a3e; font-size: 19px; margin-bottom: 2px; }
+        .header-text p { color: #666; font-size: 11px; }
+        .header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .user-badge { background: #e8f5e9; color: #2d7a3e; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+        .logout-btn { padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+        .logout-btn:hover { background: #c82333; transform: translateY(-1px); }
+        
+        .tab-container { display: flex; gap: 6px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+        .tab-container::-webkit-scrollbar { height: 4px; }
+        .tab-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.5); border-radius: 2px; }
+        .tab { flex: 1; min-width: 75px; padding: 12px 8px; background: rgba(255,255,255,0.3); border: none; border-radius: 10px; color: white; font-weight: bold; font-size: 11px; cursor: pointer; transition: all 0.3s; white-space: nowrap; text-align: center; }
+        .tab.active { background: white; color: #2d7a3e; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .tab:hover:not(.active) { background: rgba(255,255,255,0.4); }
+        
         .sub-tab-container { display: flex; gap: 10px; margin-bottom: 20px; }
-        .sub-tab { flex: 1; padding: 12px; background: #f0f0f0; border: 2px solid #e0e0e0; border-radius: 8px; color: #666; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .sub-tab { flex: 1; padding: 12px; background: #f0f0f0; border: 2px solid #e0e0e0; border-radius: 8px; color: #666; font-weight: 600; cursor: pointer; transition: all 0.3s; text-align: center; }
         .sub-tab.active { background: #2d7a3e; color: white; border-color: #2d7a3e; }
+        
         .content { display: none; }
-        .content.active { display: block; }
+        .content.active { display: block; animation: fadeIn 0.3s; }
         .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 20px; }
+        .form-group { margin-bottom: 18px; }
         .form-group label { display: block; color: #333; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
-        .form-group select, .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; transition: border-color 0.3s; font-family: inherit; }
+        .form-group select, .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; transition: border-color 0.3s; font-family: inherit; }
         .form-group textarea { resize: vertical; min-height: 100px; font-family: monospace; font-size: 13px; }
-        .form-group select:focus, .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #2d7a3e; }
+        .form-group select:focus, .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #2d7a3e; box-shadow: 0 0 0 3px rgba(45,122,62,0.1); }
+        
         .info-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; background: #e8f5e9; border-radius: 8px; margin-bottom: 20px; }
         .info-item { text-align: center; }
-        .info-item label { display: block; font-size: 11px; color: #2d7a3e; margin-bottom: 5px; font-weight: 600; text-transform: uppercase; }
+        .info-item label { display: block; font-size: 10px; color: #2d7a3e; margin-bottom: 5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
         .info-item .value { font-size: 14px; color: #333; font-weight: bold; }
+        
         .width-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
-        .width-btn { padding: 12px; border: 2px solid #e0e0e0; background: white; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
-        .width-btn.selected { background: #2d7a3e; color: white; border-color: #2d7a3e; }
-        .submit-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #2d7a3e 0%, #1a5928 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: transform 0.2s; }
-        .submit-btn:active { transform: scale(0.98); }
-        .delete-btn { background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .width-btn { padding: 12px 8px; border: 2px solid #e0e0e0; background: white; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .width-btn.selected { background: #2d7a3e; color: white; border-color: #2d7a3e; transform: scale(1.05); box-shadow: 0 2px 8px rgba(45,122,62,0.3); }
+        .width-btn:hover:not(.selected) { border-color: #2d7a3e; background: #f8fef9; }
+        
+        .submit-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #2d7a3e 0%, #1a5928 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .submit-btn:hover { box-shadow: 0 5px 15px rgba(45,122,62,0.3); transform: translateY(-1px); }
+        .submit-btn:active { transform: translateY(0); }
+        
+        .manage-btn { color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s; }
+        .delete-btn { background: #dc3545; }
+        .delete-btn:hover { background: #c82333; transform: translateY(-1px); }
+        .archive-btn { background: #6c757d; }
+        .archive-btn:hover { background: #5a6268; transform: translateY(-1px); }
+        .hold-btn { background: #ffc107; color: #000; }
+        .hold-btn:hover { background: #e0a800; transform: translateY(-1px); }
+        
         .production-list { max-height: 400px; overflow-y: auto; }
-        .production-item { padding: 15px; border-left: 4px solid #2d7a3e; background: #f8f9fa; margin-bottom: 10px; border-radius: 5px; }
-        .production-item h3 { color: #333; font-size: 16px; margin-bottom: 8px; }
-        .production-item p { color: #666; font-size: 13px; margin-bottom: 4px; }
+        .production-item { padding: 14px; border-left: 4px solid #2d7a3e; background: #f8f9fa; margin-bottom: 10px; border-radius: 6px; transition: all 0.2s; }
+        .production-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .production-item h3 { color: #333; font-size: 15px; margin-bottom: 6px; }
+        .production-item p { color: #666; font-size: 12px; margin-bottom: 4px; line-height: 1.5; }
         .production-item .time { color: #2d7a3e; font-weight: 600; }
-        .production-item .remark { background: #fff3cd; padding: 8px; border-radius: 5px; margin-top: 8px; font-style: italic; color: #856404; }
+        .production-item .remark { background: #fff3cd; padding: 8px; border-radius: 5px; margin-top: 8px; font-style: italic; color: #856404; font-size: 12px; }
+        
         .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .progress-header h3 { color: #333; font-size: 18px; }
-        .progress-percent { font-size: 24px; font-weight: bold; color: #2d7a3e; }
-        .progress-bar-container { width: 100%; height: 30px; background: #e0e0e0; border-radius: 15px; overflow: hidden; margin-bottom: 20px; }
-        .progress-bar { height: 100%; background: linear-gradient(90deg, #2d7a3e 0%, #1a5928 100%); transition: width 0.5s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; }
-        .progress-bar span { color: white; font-weight: bold; font-size: 14px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
-        .stat-box { background: linear-gradient(135deg, #2d7a3e 0%, #1a5928 100%); padding: 20px; border-radius: 10px; text-align: center; color: white; }
-        .stat-box h4 { font-size: 14px; opacity: 0.9; margin-bottom: 8px; }
-        .stat-box p { font-size: 28px; font-weight: bold; }
-        .group-progress { margin-bottom: 20px; }
-        .group-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
-        .group-header span { color: #666; font-size: 14px; }
-        .group-bar { height: 20px; background: #e0e0e0; border-radius: 10px; overflow: hidden; }
-        .group-fill { height: 100%; background: #2d7a3e; transition: width 0.5s ease; }
-        .production-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
-        .production-table th { background: #2d7a3e; color: white; padding: 10px 8px; text-align: left; font-weight: 600; }
+        .progress-percent { font-size: 26px; font-weight: bold; color: #2d7a3e; }
+        
+        .progress-bar-container { width: 100%; height: 32px; background: #e0e0e0; border-radius: 16px; overflow: hidden; margin-bottom: 20px; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #2d7a3e 0%, #1a5928 100%); transition: width 0.6s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; }
+        .progress-bar span { color: white; font-weight: bold; font-size: 13px; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+        .stat-box { background: linear-gradient(135deg, #2d7a3e 0%, #1a5928 100%); padding: 18px; border-radius: 12px; text-align: center; color: white; }
+        .stat-box h4 { font-size: 12px; opacity: 0.9; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-box p { font-size: 26px; font-weight: bold; }
+        
+        .group-progress { margin-bottom: 18px; }
+        .group-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
+        .group-header span { color: #666; font-size: 13px; font-weight: 600; }
+        .group-bar { height: 22px; background: #e0e0e0; border-radius: 11px; overflow: hidden; }
+        .group-fill { height: 100%; background: #2d7a3e; transition: width 0.6s ease; }
+        
+        .production-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 12px; }
+        .production-table th { background: #2d7a3e; color: white; padding: 10px 8px; text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; }
         .production-table td { padding: 10px 8px; border-bottom: 1px solid #e0e0e0; }
         .production-table tr.completed { background: #d4edda; }
         .production-table tr.pending { background: #f8d7da; }
-        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .production-table tr:hover { background: #f8f9fa; }
+        
+        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
         .status-completed { background: #28a745; color: white; }
         .status-pending { background: #dc3545; color: white; }
-        .table-section { margin-bottom: 30px; }
-        .table-section h4 { color: #2d7a3e; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #2d7a3e; }
-        .timestamp { font-size: 12px; color: #999; text-align: center; margin-top: 10px; }
-        .success-msg { background: #28a745; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: center; display: none; }
+        
+        .table-section { margin-bottom: 25px; }
+        .table-section h4 { color: #2d7a3e; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #2d7a3e; font-size: 14px; }
+        
+        .timestamp { font-size: 11px; color: #999; text-align: center; margin-top: 10px; }
+        
+        .success-msg { background: #28a745; color: white; padding: 14px; border-radius: 10px; margin-bottom: 15px; text-align: center; display: none; font-size: 14px; font-weight: 600; }
         .success-msg.show { display: block; animation: slideIn 0.3s ease; }
-        .error-msg { background: #dc3545; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: center; display: none; }
+        
+        .error-msg { background: #dc3545; color: white; padding: 14px; border-radius: 10px; margin-bottom: 15px; text-align: center; display: none; font-size: 14px; font-weight: 600; }
         .error-msg.show { display: block; animation: slideIn 0.3s ease; }
+        
         @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .month-selector { display: flex; gap: 10px; margin-bottom: 20px; }
-        .month-selector select { flex: 1; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; }
-        .export-btn { padding: 10px 20px; background: #2d7a3e; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
-        .report-summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
-        .summary-box { background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 4px solid #2d7a3e; }
-        .summary-box h4 { color: #2d7a3e; font-size: 12px; margin-bottom: 5px; }
-        .summary-box p { color: #333; font-size: 24px; font-weight: bold; }
-        .chart-container { position: relative; height: 300px; margin-bottom: 20px; }
-        .job-card-list { margin-top: 20px; }
-        .job-card-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #2d7a3e; }
-        .job-card-info h4 { color: #333; font-size: 15px; margin-bottom: 4px; }
-        .job-card-info p { color: #666; font-size: 12px; }
-        .archive-badge { background: #ffc107; color: #000; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-left: 10px; }
+        
+        .month-selector { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .month-selector select { flex: 1; min-width: 120px; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; }
+        .export-btn { padding: 10px 20px; background: #2d7a3e; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.2s; white-space: nowrap; }
+        .export-btn:hover { background: #1a5928; transform: translateY(-1px); }
+        
+        .report-summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+        .summary-box { background: #e8f5e9; padding: 14px; border-radius: 10px; border-left: 4px solid #2d7a3e; }
+        .summary-box h4 { color: #2d7a3e; font-size: 11px; margin-bottom: 5px; text-transform: uppercase; font-weight: 600; }
+        .summary-box p { color: #333; font-size: 22px; font-weight: bold; }
+        
+        .chart-container { position: relative; height: 280px; margin-bottom: 20px; }
+        
+        .job-card-list { margin-top: 15px; }
+        .job-card-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #2d7a3e; flex-wrap: wrap; gap: 10px; }
+        .job-card-info { flex: 1; min-width: 200px; }
+        .job-card-info h4 { color: #333; font-size: 14px; margin-bottom: 4px; }
+        .job-card-info p { color: #666; font-size: 11px; }
+        
+        .archive-badge { background: #ffc107; color: #000; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-left: 8px; }
+        .hold-badge { background: #ff9800; color: white; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-left: 8px; }
+        
+        /* Customer Section Styles */
+        .customer-card { background: white; padding: 16px; border-radius: 12px; margin-bottom: 14px; border-left: 4px solid #2d7a3e; cursor: pointer; transition: all 0.3s; }
+        .customer-card:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.12); transform: translateY(-2px); }
+        .customer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .customer-name { color: #2d7a3e; font-size: 18px; font-weight: bold; }
+        .customer-icon { font-size: 20px; color: #2d7a3e; transition: transform 0.3s; }
+        .customer-card.expanded .customer-icon { transform: rotate(180deg); }
+        .customer-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px; }
+        .customer-stat { text-align: center; padding: 8px; background: #f8f9fa; border-radius: 6px; }
+        .customer-stat-value { font-size: 18px; font-weight: bold; color: #2d7a3e; }
+        .customer-stat-label { font-size: 10px; color: #666; text-transform: uppercase; margin-top: 2px; }
+        
+        .customer-orders { margin-top: 15px; display: none; border-top: 2px dashed #e0e0e0; padding-top: 12px; }
+        .customer-orders.show { display: block; animation: fadeIn 0.3s; }
+        
+        .order-item { background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid #6c757d; transition: all 0.2s; }
+        .order-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+        .order-number { font-weight: bold; color: #333; font-size: 13px; }
+        .order-type { background: #17a2b8; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+        .order-progress { font-size: 12px; color: #666; margin: 6px 0; }
+        .order-progress-bar { height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; margin-top: 4px; }
+        .order-progress-fill { height: 100%; background: linear-gradient(90deg, #28a745 0%, #20c997 100%); transition: width 0.3s; }
+        .order-progress-fill.complete { background: #28a745; }
+        .order-details-btn { padding: 6px 12px; background: #2d7a3e; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: 600; transition: all 0.2s; }
+        .order-details-btn:hover { background: #1a5928; transform: translateY(-1px); }
+        
+        .order-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .order-modal.show { display: flex; animation: fadeIn 0.2s; }
+        .order-modal-content { background: white; padding: 25px; border-radius: 15px; max-width: 540px; width: 100%; max-height: 85vh; overflow-y: auto; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .modal-close { position: absolute; right: 20px; top: 15px; font-size: 28px; font-weight: bold; cursor: pointer; color: #999; transition: color 0.2s; }
+        .modal-close:hover { color: #333; }
+        .modal-title { color: #2d7a3e; font-size: 20px; font-weight: bold; margin-bottom: 20px; padding-right: 30px; }
+        .modal-info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+        .modal-info-item { }
+        .modal-info-label { font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 3px; font-weight: 600; }
+        .modal-info-value { font-size: 13px; color: #333; font-weight: 600; }
+        .modal-divider { height: 2px; background: linear-gradient(to right, #2d7a3e, transparent); margin: 20px 0; }
+        .modal-section { margin-bottom: 18px; }
+        .modal-section-title { color: #2d7a3e; font-size: 14px; font-weight: bold; margin-bottom: 10px; border-bottom: 2px solid #e8f5e9; padding-bottom: 5px; }
+        .modal-width-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f0f0f0; font-size: 12px; }
+        .modal-width-name { color: #666; }
+        .modal-width-status { font-weight: 600; }
+        .modal-width-status.complete { color: #28a745; }
+        .modal-width-status.pending { color: #dc3545; }
+        .modal-overall { background: #e8f5e9; padding: 15px; border-radius: 8px; margin-top: 20px; }
+        .modal-overall-title { color: #2d7a3e; font-size: 12px; text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
+        .modal-overall-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .modal-overall-stat { text-align: center; }
+        .modal-overall-value { font-size: 20px; font-weight: bold; color: #2d7a3e; }
+        .modal-overall-label { font-size: 10px; color: #666; margin-top: 2px; }
+        
+        @media (max-width: 600px) {
+            .header { flex-direction: column; text-align: center; padding: 12px; }
+            .header-left { flex-direction: column; gap: 8px; }
+            .header-right { width: 100%; justify-content: center; }
+            .tab { font-size: 10px; padding: 10px 6px; min-width: 65px; }
+            .customer-stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+            .modal-info-grid { grid-template-columns: 1fr; }
+            .modal-overall-stats { grid-template-columns: 1fr; }
+            .order-header { flex-direction: column; align-items: flex-start; }
+        }
+
+        .edit-btn { background: #17a2b8; }
+        .edit-btn:hover { background: #138496; transform: translateY(-1px); }
+        .data-btn { padding: 6px 12px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; margin-left: 8px; }
+        .data-btn:hover { background: #218838; }
+        .data-btn.import { background: #17a2b8; }
+        .data-btn.import:hover { background: #138496; }
+        .edit-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1001; align-items: center; justify-content: center; padding: 20px; }
+        .edit-modal.show { display: flex; }
+        .edit-modal-content { background: white; padding: 25px; border-radius: 15px; max-width: 500px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📋 Production Tracker</h1>
-            <p>Evergreen Metal Works - Digital Reporting System</p>
-        </div>
 
-        <div class="tab-container">
-            <button class="tab active" data-tab="reporter">Reporter</button>
-            <button class="tab" data-tab="dashboard">Dashboard</button>
-            <button class="tab" data-tab="upload">Add Job Card</button>
-            <button class="tab" data-tab="manage">Manage Jobs</button>
-            <button class="tab" data-tab="monthly">Monthly Report</button>
-        </div>
-
-        <div id="reporter" class="content active">
-            <div class="success-msg" id="successMsg">✓ Entry recorded successfully!</div>
-            <div class="sub-tab-container">
-                <button class="sub-tab active" data-subtab="started">Started</button>
-                <button class="sub-tab" data-subtab="completed">Completed</button>
+    <!-- Login Page -->
+    <div id="loginPage">
+        <div class="login-card">
+            <div class="login-logo">
+                <img src="data:image/png;base64,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" alt="Evergreen Metal Works">
             </div>
-            <div class="card">
-                <h2 style="color: #2d7a3e; margin-bottom: 20px;">Record Production</h2>
-                <div class="form-group">
-                    <label>Job Card Number</label>
-                    <select id="jobCard"><option value="">Select Job Card</option></select>
-                </div>
-                <div id="jobDetailsRow" class="info-row" style="display: none;">
-                    <div class="info-item"><label>Job Card No.</label><div class="value" id="displayJobCard">-</div></div>
-                    <div class="info-item"><label>Work Order</label><div class="value" id="displayWorkOrder">-</div></div>
-                    <div class="info-item"><label>Rating</label><div class="value" id="displayRating">-</div></div>
-                </div>
-                <div id="additionalDetails" style="display: none; padding: 10px; background: #e8f5e9; border-radius: 8px; margin-bottom: 20px; font-size: 13px; color: #555;">
-                    <span id="detailsText"></span>
-                </div>
-                <div class="form-group">
-                    <label>Machine</label>
-                    <select id="machine">
-                        <option value="">Select Machine</option>
-                        <option value="CTL-400">CTL-400</option>
-                        <option value="CTL-300">CTL-300</option>
-                        <option value="CTL-600">CTL-600</option>
-                        <option value="CTL-150">CTL-150</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Operator Name</label>
-                    <input type="text" id="operatorName" placeholder="Enter operator name">
-                </div>
-                <div class="form-group">
-                    <label>Item Type</label>
-                    <select id="itemType">
-                        <option value="">Select Item Type</option>
-                        <option value="yoke-side">Yoke/Side</option>
-                        <option value="centre">Centre</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Width (mm)</label>
-                    <div class="width-grid" id="widthGrid"></div>
-                </div>
-                <div class="form-group">
-                    <label>Remarks (Optional)</label>
-                    <textarea id="remarks" placeholder="Add any notes or observations..."></textarea>
-                </div>
-                <button class="submit-btn" id="recordBtn">Record Entry</button>
+            <h1 class="login-title">Production Tracker</h1>
+            <p class="login-subtitle">Evergreen Metal Works</p>
+            <div class="login-error" id="loginError">Invalid username or password!</div>
+            <div class="login-form-group">
+                <label>Username</label>
+                <input type="text" id="loginUsername" placeholder="Enter username" autocomplete="username">
             </div>
-            <div class="card">
-                <h3 style="color: #2d7a3e; margin-bottom: 15px;" id="entriesHeader">Started Production</h3>
-                <div class="production-list" id="productionList">
-                    <p style="text-align: center; color: #999;">No started items yet</p>
-                </div>
+            <div class="login-form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter password" autocomplete="current-password">
             </div>
-        </div>
-
-        <div id="dashboard" class="content">
-            <div class="card">
-                <div class="form-group">
-                    <label>Select Job Card</label>
-                    <select id="dashboardJobCard"></select>
-                </div>
-                <div id="dashboardDetailsRow" class="info-row">
-                    <div class="info-item"><label>Job Card No.</label><div class="value" id="dashDisplayJobCard">-</div></div>
-                    <div class="info-item"><label>Work Order</label><div class="value" id="dashDisplayWorkOrder">-</div></div>
-                    <div class="info-item"><label>Rating</label><div class="value" id="dashDisplayRating">-</div></div>
-                </div>
-                <div id="dashAdditionalDetails" style="padding: 10px; background: #e8f5e9; border-radius: 8px; margin-bottom: 20px; font-size: 13px; color: #555;">
-                    <span id="dashDetailsText">-</span>
-                </div>
-                <div class="progress-header">
-                    <h3>Overall Progress</h3>
-                    <span class="progress-percent" id="overallPercent">0%</span>
-                </div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar" id="overallProgress" style="width: 0%"><span></span></div>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-box"><h4>Completed Blades</h4><p id="completedBlades">0</p></div>
-                    <div class="stat-box"><h4>Total Blades</h4><p id="totalBlades">0</p></div>
-                    <div class="stat-box"><h4>Completed Weight</h4><p id="completedWeight">0 kg</p></div>
-                    <div class="stat-box"><h4>Total Weight</h4><p id="totalWeight">0 kg</p></div>
-                </div>
-            </div>
-            <div class="card">
-                <h3 style="color: #333; margin-bottom: 20px;">Section Progress</h3>
-                <div class="group-progress">
-                    <div class="group-header"><span id="section1Label">Side</span><span id="group1Percent">0%</span></div>
-                    <div class="group-bar"><div class="group-fill" id="group1Progress" style="width: 0%"></div></div>
-                </div>
-                <div class="group-progress">
-                    <div class="group-header"><span id="section2Label">Yoke</span><span id="group2Percent">0%</span></div>
-                    <div class="group-bar"><div class="group-fill" id="group2Progress" style="width: 0%"></div></div>
-                </div>
-                <div class="group-progress">
-                    <div class="group-header"><span id="section3Label">Centre</span><span id="group3Percent">0%</span></div>
-                    <div class="group-bar"><div class="group-fill" id="group3Progress" style="width: 0%"></div></div>
-                </div>
-            </div>
-            <div class="card">
-                <h3 style="color: #2d7a3e; margin-bottom: 15px;">Production Details</h3>
-                <div class="table-section">
-                    <h4>🔹 Yoke/Side Production</h4>
-                    <div style="overflow-x: auto;">
-                        <table class="production-table">
-                            <thead><tr><th>Width (mm)</th><th>Blades</th><th>Weight (kg)</th><th>Status</th></tr></thead>
-                            <tbody id="yokeSideTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="table-section">
-                    <h4>🔹 Centre Production</h4>
-                    <div style="overflow-x: auto;">
-                        <table class="production-table">
-                            <thead><tr><th>Width (mm)</th><th>Blades</th><th>Weight (kg)</th><th>Status</th></tr></thead>
-                            <tbody id="centreTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="timestamp" id="lastUpdate">Last updated: Never</div>
-        </div>
-
-        <div id="upload" class="content">
-            <div class="card">
-                <h2 style="color: #2d7a3e; margin-bottom: 20px;">Add New Job Card</h2>
-                <div class="success-msg" id="uploadSuccessMsg">✓ Job card added successfully!</div>
-                <div class="error-msg" id="uploadErrorMsg">✗ Error processing file.</div>
-                <p style="color: #666; margin-bottom: 20px; font-size: 14px;"><strong>📋 Copy-Paste Method:</strong><br>
-                1. Fill basic details below<br>2. Copy data from Excel (including headers)<br>3. Paste into each section<br>4. Click "Parse & Save"</p>
-                <div class="form-group"><label>Job Card Number *</label><input type="text" id="pasteJobCard" placeholder="e.g., EG25-751"></div>
-                <div class="form-group"><label>Work Order Number *</label><input type="text" id="pasteWorkOrder" placeholder="e.g., S-453"></div>
-                <div class="form-group"><label>Rating</label><input type="text" id="pasteRating" placeholder="e.g., 1600 KVA (optional)"></div>
-                <div class="form-group"><label>Grade *</label>
-                    <select id="pasteGrade"><option value="M3">M3</option><option value="M4-120">M4-120</option><option value="M4-100">M4-100</option><option value="M5-120">M5-120</option><option value="ZDKH-80">ZDKH-80</option></select>
-                </div>
-                <div class="form-group"><label>Thickness *</label>
-                    <select id="pasteThickness"><option value="0.23">0.23mm</option><option value="0.27">0.27mm</option><option value="0.30">0.30mm</option><option value="0.35">0.35mm</option></select>
-                </div>
-                <div class="form-group"><label>Customer (Optional)</label><input type="text" id="pasteCustomer" placeholder="e.g., VIJI"></div>
-                <h4 style="color: #2d7a3e; margin: 30px 0 10px; padding-top: 20px; border-top: 2px solid #e8f5e9;">📋 Side Production Data (Group 1)</h4>
-                <div class="form-group"><label>Side Data</label><textarea id="sideData" placeholder="Paste entire table from Excel here..."></textarea></div>
-                <h4 style="color: #2d7a3e; margin: 30px 0 10px;">📋 Yoke Production Data (Group 2)</h4>
-                <div class="form-group"><label>Yoke Data</label><textarea id="yokeData" placeholder="Paste entire table from Excel here..."></textarea></div>
-                <h4 style="color: #2d7a3e; margin: 30px 0 10px;">📋 Centre Production Data (Group 3)</h4>
-                <div class="form-group"><label>Centre Data</label><textarea id="centreData" placeholder="Paste entire table from Excel here..."></textarea></div>
-                <button class="submit-btn" id="parseBtn">Parse & Save Job Card</button>
-            </div>
-        </div>
-
-        <div id="manage" class="content">
-            <div class="card">
-                <h2 style="color: #2d7a3e; margin-bottom: 20px;">Manage Job Cards</h2>
-                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
-                    <strong>Archive:</strong> Removes from Reporter tab but keeps in reports<br>
-                    <strong>Delete:</strong> Permanently removes ALL data (cannot be undone!)
-                </p>
-                <div class="job-card-list" id="jobCardList"></div>
-            </div>
-        </div>
-
-        <div id="monthly" class="content">
-            <div class="card">
-                <h2 style="color: #2d7a3e; margin-bottom: 20px;">Monthly Production Report</h2>
-                <div class="month-selector">
-                    <select id="reportMonth">
-                        <option value="0">January</option><option value="1">February</option><option value="2">March</option><option value="3">April</option>
-                        <option value="4">May</option><option value="5">June</option><option value="6">July</option><option value="7">August</option>
-                        <option value="8">September</option><option value="9">October</option><option value="10">November</option><option value="11">December</option>
-                    </select>
-                    <select id="reportYear"><option value="2024">2024</option><option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option></select>
-                    <button class="export-btn" id="exportBtn">📥 Export to Excel</button>
-                </div>
-                <div class="report-summary">
-                    <div class="summary-box"><h4>Total Job Cards</h4><p id="monthlyJobCards">0</p></div>
-                    <div class="summary-box"><h4>Completed Jobs</h4><p id="monthlyCompleted">0</p></div>
-                    <div class="summary-box"><h4>Pending Jobs</h4><p id="monthlyPending">0</p></div>
-                    <div class="summary-box"><h4>Total Blades Produced</h4><p id="monthlyBlades">0</p></div>
-                </div>
-                <div class="card" style="background: #f8f9fa;">
-                    <h3 style="color: #2d7a3e; margin-bottom: 15px;">Production Trend</h3>
-                    <div class="chart-container"><canvas id="monthlyChart"></canvas></div>
-                </div>
-                <h3 style="color: #333; margin-top: 30px; margin-bottom: 15px;">Job Card Details</h3>
-                <div id="monthlyJobList"><p style="text-align: center; color: #999;">No production data for selected month</p></div>
-            </div>
+            <button class="login-btn" onclick="handleLogin()">Login</button>
         </div>
     </div>
-    <script>
-// Start with completely empty data - fresh installation
-let jobCardData = {};
 
-// Load from localStorage if exists
-const savedJobCards = localStorage.getItem('jobCardData');
-if (savedJobCards) {
-    jobCardData = JSON.parse(savedJobCards);
+    <!-- Main App -->
+    <div class="app-wrapper">
+        <div class="container">
+            <div class="header">
+                <div class="header-left">
+                    <div class="header-logo">
+                        <img src="data:image/png;base64,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" alt="Evergreen">
+                    </div>
+                    <div class="header-text">
+                        <h1>📋 Production Tracker</h1>
+                        <p>Digital Reporting System</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="data-btn" onclick="exportData()">📥 Export</button>
+                    <button class="data-btn import" onclick="document.getElementById('importFile').click()">📤 Import</button>
+                    <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(this)">
+                    <span class="user-badge" id="userBadge">User</span>
+                    <button class="logout-btn" onclick="handleLogout()">Logout</button>
+                </div>
+            </div>
+
+            <div class="tab-container" id="tabContainer">
+                <button class="tab active" data-tab="reporter">Reporter</button>
+                <button class="tab" data-tab="dashboard">Dashboard</button>
+                <button class="tab" data-tab="upload">Add Job Card</button>
+                <button class="tab" data-tab="manage">Manage Jobs</button>
+                <button class="tab" data-tab="monthly">Monthly Report</button>
+                <button class="tab" data-tab="customers">Customers</button>
+            </div>
+
+            <!-- Reporter Tab -->
+            <div id="reporter" class="content active">
+                <div class="success-msg" id="successMsg">✓ Entry recorded successfully!</div>
+                <div class="card">
+                    <h3 style="color: #2d7a3e; margin-bottom: 15px;">Select Production Type</h3>
+                    <div class="form-group">
+                        <label>Production Type</label>
+                        <select id="productionTypeFilter">
+                            <option value="">All Types</option>
+                            <option value="Normal">Normal</option>
+                            <option value="Step Lap">Step Lap</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="sub-tab-container">
+                    <button class="sub-tab active" data-subtab="started">Started</button>
+                    <button class="sub-tab" data-subtab="completed">Completed</button>
+                </div>
+                <div class="card">
+                    <h2 style="color: #2d7a3e; margin-bottom: 20px;">Record Production</h2>
+                    <div class="form-group">
+                        <label>Job Card Number</label>
+                        <select id="jobCard"><option value="">Select Job Card</option></select>
+                    </div>
+                    <div id="jobDetailsRow" class="info-row" style="display: none;">
+                        <div class="info-item"><label>Job Card No.</label><div class="value" id="displayJobCard">-</div></div>
+                        <div class="info-item"><label>Work Order</label><div class="value" id="displayWorkOrder">-</div></div>
+                        <div class="info-item"><label>Rating</label><div class="value" id="displayRating">-</div></div>
+                    </div>
+                    <div id="additionalDetails" style="display: none; padding: 10px; background: #e8f5e9; border-radius: 8px; margin-bottom: 20px; font-size: 13px; color: #555;">
+                        <span id="detailsText"></span>
+                    </div>
+                    <div id="centreMMSection" class="form-group" style="display: none;">
+                        <label>Centre MM (For Normal Production)</label>
+                        <input type="text" id="centreMM" placeholder="e.g., 0, 5, 10, 15">
+                    </div>
+                    <div class="form-group">
+                        <label>Machine</label>
+                        <select id="machine">
+                            <option value="">Select Machine</option>
+                            <option value="CTL-400">CTL-400</option>
+                            <option value="CTL-300">CTL-300</option>
+                            <option value="CTL-600">CTL-600</option>
+                            <option value="CTL-150">CTL-150</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Operator Name</label>
+                        <input type="text" id="operatorName" placeholder="Enter operator name">
+                    </div>
+                    <div class="form-group">
+                        <label>Item Type</label>
+                        <select id="itemType">
+                            <option value="">Select Item Type</option>
+                            <option value="yoke-side">Yoke/Side</option>
+                            <option value="centre">Centre</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Width (mm)</label>
+                        <div class="width-grid" id="widthGrid"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Remarks (Optional)</label>
+                        <textarea id="remarks" placeholder="Add any notes or observations..."></textarea>
+                    </div>
+                    <button class="submit-btn" id="recordBtn">Record Entry</button>
+                </div>
+                <div class="card">
+                    <h3 style="color: #2d7a3e; margin-bottom: 15px;" id="entriesHeader">Started Production</h3>
+                    <div class="production-list" id="productionList">
+                        <p style="text-align: center; color: #999;">No started items yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="content">
+                <div class="card">
+                    <div class="form-group">
+                        <label>Select Job Card</label>
+                        <select id="dashboardJobCard"></select>
+                    </div>
+                    <div id="dashboardDetailsRow" class="info-row">
+                        <div class="info-item"><label>Job Card No.</label><div class="value" id="dashDisplayJobCard">-</div></div>
+                        <div class="info-item"><label>Work Order</label><div class="value" id="dashDisplayWorkOrder">-</div></div>
+                        <div class="info-item"><label>Rating</label><div class="value" id="dashDisplayRating">-</div></div>
+                    </div>
+                    <div id="dashAdditionalDetails" style="padding: 10px; background: #e8f5e9; border-radius: 8px; margin-bottom: 20px; font-size: 13px; color: #555;">
+                        <span id="dashDetailsText">-</span>
+                    </div>
+                    <div class="progress-header">
+                        <h3>Overall Progress</h3>
+                        <span class="progress-percent" id="overallPercent">0%</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="overallProgress" style="width: 0%"><span></span></div>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-box"><h4>Completed Blades</h4><p id="completedBlades">0</p></div>
+                        <div class="stat-box"><h4>Total Blades</h4><p id="totalBlades">0</p></div>
+                        <div class="stat-box"><h4>Completed Weight</h4><p id="completedWeight">0 kg</p></div>
+                        <div class="stat-box"><h4>Total Weight</h4><p id="totalWeight">0 kg</p></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 style="color: #333; margin-bottom: 20px;">Section Progress</h3>
+                    <div class="group-progress">
+                        <div class="group-header"><span id="section1Label">Side</span><span id="group1Percent">0%</span></div>
+                        <div class="group-bar"><div class="group-fill" id="group1Progress" style="width: 0%"></div></div>
+                    </div>
+                    <div class="group-progress">
+                        <div class="group-header"><span id="section2Label">Yoke</span><span id="group2Percent">0%</span></div>
+                        <div class="group-bar"><div class="group-fill" id="group2Progress" style="width: 0%"></div></div>
+                    </div>
+                    <div class="group-progress">
+                        <div class="group-header"><span id="section3Label">Centre</span><span id="group3Percent">0%</span></div>
+                        <div class="group-bar"><div class="group-fill" id="group3Progress" style="width: 0%"></div></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 style="color: #2d7a3e; margin-bottom: 15px;">Production Details</h3>
+                    <div class="table-section">
+                        <h4>🔹 Yoke/Side Production</h4>
+                        <div style="overflow-x: auto;">
+                            <table class="production-table">
+                                <thead><tr><th>Width (mm)</th><th>Blades</th><th>Weight (kg)</th><th>Status</th></tr></thead>
+                                <tbody id="yokeSideTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-section">
+                        <h4>🔹 Centre Production</h4>
+                        <div style="overflow-x: auto;">
+                            <table class="production-table">
+                                <thead><tr><th>Width (mm)</th><th>Blades</th><th>Weight (kg)</th><th>Status</th></tr></thead>
+                                <tbody id="centreTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="timestamp" id="lastUpdate">Last updated: Never</div>
+            </div>
+
+            <!-- Add Job Card Tab -->
+            <div id="upload" class="content">
+                <div class="card">
+                    <h2 style="color: #2d7a3e; margin-bottom: 20px;">Add New Job Card</h2>
+                    <div class="success-msg" id="uploadSuccessMsg">✓ Job card added successfully!</div>
+                    <div class="error-msg" id="uploadErrorMsg">✗ Error processing file.</div>
+                    <p style="color: #666; margin-bottom: 20px; font-size: 14px;"><strong>📋 Copy-Paste Method:</strong><br>
+                    1. Fill basic details below<br>2. Copy data from Excel (including headers)<br>3. Paste into each section<br>4. Click "Parse & Save"</p>
+                    <div class="form-group"><label>Job Card Number *</label><input type="text" id="pasteJobCard" placeholder="e.g., EG25-751"></div>
+                    <div class="form-group"><label>Work Order Number *</label><input type="text" id="pasteWorkOrder" placeholder="e.g., S-453"></div>
+                    <div class="form-group"><label>Production Type *</label>
+                        <select id="pasteProductionType">
+                            <option value="">Select Production Type</option>
+                            <option value="Normal">Normal</option>
+                            <option value="Normal-0mm">Normal-0mm</option>
+                            <option value="Step Lap">Step Lap</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Rating</label><input type="text" id="pasteRating" placeholder="e.g., 1600 KVA (optional)"></div>
+                    <div class="form-group"><label>Grade *</label>
+                        <select id="pasteGrade"><option value="M4">M4</option><option value="MOH">MOH</option><option value="M3">M3</option><option value="ZDKH">ZDKH</option><option value="M5">M5</option></select>
+                    </div>
+                    <div class="form-group"><label>Thickness *</label>
+                        <select id="pasteThickness"><option value="0.23">0.23mm</option><option value="0.27">0.27mm</option><option value="0.30">0.30mm</option><option value="0.35">0.35mm</option></select>
+                    </div>
+                    <div class="form-group"><label>Customer Name (Optional)</label><input type="text" id="pasteCustomer" placeholder="e.g., VIJI"></div>
+                    <h4 style="color: #2d7a3e; margin: 30px 0 10px; padding-top: 20px; border-top: 2px solid #e8f5e9;">📋 Side Production Data (Group 1)</h4>
+                    <div class="form-group"><label>Side Data</label><textarea id="sideData" placeholder="Paste entire table from Excel here..."></textarea></div>
+                    <h4 style="color: #2d7a3e; margin: 30px 0 10px;">📋 Yoke Production Data (Group 2)</h4>
+                    <div class="form-group"><label>Yoke Data</label><textarea id="yokeData" placeholder="Paste entire table from Excel here..."></textarea></div>
+                    <h4 style="color: #2d7a3e; margin: 30px 0 10px;">📋 Centre Production Data (Group 3)</h4>
+                    <div class="form-group"><label>Centre Data</label><textarea id="centreData" placeholder="Paste entire table from Excel here..."></textarea></div>
+                    <button class="submit-btn" id="parseBtn">Parse & Save Job Card</button>
+                </div>
+            </div>
+
+            <!-- Manage Jobs Tab -->
+            <div id="manage" class="content">
+                <div class="card">
+                    <h2 style="color: #2d7a3e; margin-bottom: 20px;">Manage Job Cards</h2>
+                    <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                        <strong>Archive:</strong> Removes from Reporter but keeps in reports<br>
+                        <strong>Hold:</strong> Temporarily pauses job (removes from Reporter)<br>
+                        <strong>Delete:</strong> Permanently removes ALL data (cannot be undone!)
+                    </p>
+                    <div class="job-card-list" id="jobCardList"></div>
+                </div>
+            </div>
+
+            <!-- Monthly Report Tab -->
+            <div id="monthly" class="content">
+                <div class="card">
+                    <h2 style="color: #2d7a3e; margin-bottom: 20px;">Monthly Production Report</h2>
+                    <div class="month-selector">
+                        <select id="reportMonth">
+                            <option value="0">January</option><option value="1">February</option><option value="2">March</option><option value="3">April</option>
+                            <option value="4">May</option><option value="5">June</option><option value="6">July</option><option value="7">August</option>
+                            <option value="8">September</option><option value="9">October</option><option value="10">November</option><option value="11">December</option>
+                        </select>
+                        <select id="reportYear"><option value="2024">2024</option><option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option></select>
+                        <button class="export-btn" id="exportBtn">📥 Export to Excel</button>
+                    </div>
+                    <div class="report-summary">
+                        <div class="summary-box"><h4>Total Job Cards</h4><p id="monthlyJobCards">0</p></div>
+                        <div class="summary-box"><h4>Completed Jobs</h4><p id="monthlyCompleted">0</p></div>
+                        <div class="summary-box"><h4>Pending Jobs</h4><p id="monthlyPending">0</p></div>
+                        <div class="summary-box"><h4>Total Blades Produced</h4><p id="monthlyBlades">0</p></div>
+                    </div>
+                    <div class="card" style="background: #f8f9fa;">
+                        <h3 style="color: #2d7a3e; margin-bottom: 15px;">Production Trend</h3>
+                        <div class="chart-container"><canvas id="monthlyChart"></canvas></div>
+                    </div>
+                    <h3 style="color: #333; margin-top: 30px; margin-bottom: 15px;">Job Card Details</h3>
+                    <div id="monthlyJobList"><p style="text-align: center; color: #999;">No production data for selected month</p></div>
+                </div>
+            </div>
+
+            <!-- Customers Tab -->
+            <div id="customers" class="content">
+                <div class="card">
+                    <h2 style="color: #2d7a3e; margin-bottom: 20px;">👥 Customer Orders</h2>
+                    <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                        Click on a customer to view all their orders and completion status
+                    </p>
+                    <div id="customersList"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="orderModal" class="order-modal">
+        <div class="order-modal-content">
+            <span class="modal-close" onclick="closeOrderModal()">&times;</span>
+            <div id="orderModalContent"></div>
+        </div>
+    </div>
+
+    <script>
+// ========================================
+// LOGIN SYSTEM
+// ========================================
+
+const USERS = {
+    'Reporter@Evergreen': { 
+        password: '1234', 
+        role: 'Reporter', 
+        tabs: ['reporter', 'dashboard', 'monthly'] 
+    },
+    'Management@Evergreen': { 
+        password: '0000', 
+        role: 'Management', 
+        tabs: ['reporter', 'dashboard', 'upload', 'manage', 'monthly', 'customers'] 
+    },
+    'Headoffice@Evergreen': { 
+        password: '5253', 
+        role: 'Head Office', 
+        tabs: ['dashboard', 'manage', 'monthly', 'customers'] 
+    }
+};
+
+let currentUser = null;
+
+function handleLogin() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errorDiv = document.getElementById('loginError');
+    
+    if (USERS[username] && USERS[username].password === password) {
+        currentUser = { username, ...USERS[username] };
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        showApp();
+    } else {
+        errorDiv.classList.add('show');
+        setTimeout(() => errorDiv.classList.remove('show'), 3000);
+    }
 }
 
-// Storage
+function showApp() {
+    document.getElementById('loginPage').classList.add('hidden');
+    document.querySelector('.app-wrapper').classList.add('show');
+    setupUserInterface();
+    initializeApp();
+}
+
+function handleLogout() {
+    if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('currentUser');
+        location.reload();
+    }
+}
+
+function setupUserInterface() {
+    // Update user badge
+    document.getElementById('userBadge').textContent = currentUser.role;
+    
+    // Show/hide tabs based on user role
+    const allTabs = document.querySelectorAll('.tab');
+    allTabs.forEach(tab => {
+        const tabName = tab.getAttribute('data-tab');
+        if (currentUser.tabs.includes(tabName)) {
+            tab.style.display = 'inline-block';
+        } else {
+            tab.style.display = 'none';
+        }
+    });
+    
+    // Set first available tab as active
+    const firstTab = document.querySelector('.tab[style*="inline-block"]');
+    if (firstTab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+        firstTab.classList.add('active');
+        const tabName = firstTab.getAttribute('data-tab');
+        document.getElementById(tabName).classList.add('active');
+    }
+}
+
+// ========================================
+// DATA STORAGE
+// ========================================
+
+let jobCardData = {};
 let productionEntries = JSON.parse(localStorage.getItem('productionEntries')) || [];
 let completedItems = JSON.parse(localStorage.getItem('completedItems')) || {};
 let currentSubTab = 'started';
 let monthlyChart = null;
 
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
+// Load job card data
+const savedJobCards = localStorage.getItem('jobCardData');
+if (savedJobCards) {
+    jobCardData = JSON.parse(savedJobCards);
+}
+
+// ========================================
+// INITIALIZATION
+// ========================================
+
+function initializeApp() {
     initializeTabs();
     initializeSubTabs();
     populateJobCardDropdowns();
@@ -321,17 +637,19 @@ document.addEventListener('DOMContentLoaded', function() {
     displayProductionList();
     setCurrentMonth();
     displayJobCardList();
+    displayCustomers();
     
     // Event listeners
     document.getElementById('jobCard').addEventListener('change', updateJobDetails);
     document.getElementById('itemType').addEventListener('change', updateWidths);
+    document.getElementById('productionTypeFilter').addEventListener('change', filterJobCardsByType);
     document.getElementById('dashboardJobCard').addEventListener('change', updateDashboard);
     document.getElementById('reportMonth').addEventListener('change', updateMonthlyReport);
     document.getElementById('reportYear').addEventListener('change', updateMonthlyReport);
     document.getElementById('recordBtn').addEventListener('click', recordProduction);
     document.getElementById('parseBtn').addEventListener('click', parsePastedData);
     document.getElementById('exportBtn').addEventListener('click', exportMonthlyReport);
-});
+}
 
 function initializeTabs() {
     document.querySelectorAll('.tab').forEach(tab => {
@@ -366,6 +684,8 @@ function switchTab(tab, element) {
         updateMonthlyReport();
     } else if (tab === 'manage') {
         displayJobCardList();
+    } else if (tab === 'customers') {
+        displayCustomers();
     }
 }
 
@@ -378,11 +698,46 @@ function switchSubTab(subTab, element) {
     displayProductionList();
 }
 
-function populateJobCardDropdowns() {
+// ========================================
+// PRODUCTION TYPE FILTERING
+// ========================================
+
+function filterJobCardsByType() {
+    const selectedType = document.getElementById('productionTypeFilter').value;
     const reporterSelect = document.getElementById('jobCard');
-    const dashboardSelect = document.getElementById('dashboardJobCard');
     
     reporterSelect.innerHTML = '<option value="">Select Job Card</option>';
+    
+    Object.keys(jobCardData).forEach(jobCard => {
+        const data = jobCardData[jobCard];
+        if (!data.held) {
+            if (!selectedType || data.productionType === selectedType) {
+                const option = document.createElement('option');
+                option.value = jobCard;
+                option.textContent = jobCard;
+                reporterSelect.appendChild(option);
+            }
+        }
+    });
+    
+    document.getElementById('jobCard').value = '';
+    document.getElementById('jobDetailsRow').style.display = 'none';
+    document.getElementById('additionalDetails').style.display = 'none';
+    document.getElementById('itemType').value = '';
+    document.getElementById('widthGrid').innerHTML = '';
+    
+    const centreMMSection = document.getElementById('centreMMSection');
+    if (selectedType === 'Normal') {
+        centreMMSection.style.display = 'block';
+    } else {
+        centreMMSection.style.display = 'none';
+    }
+}
+
+function populateJobCardDropdowns() {
+    filterJobCardsByType();
+    
+    const dashboardSelect = document.getElementById('dashboardJobCard');
     dashboardSelect.innerHTML = '';
     
     const jobCards = Object.keys(jobCardData);
@@ -394,21 +749,19 @@ function populateJobCardDropdowns() {
     
     jobCards.forEach(jobCard => {
         const data = jobCardData[jobCard];
-        // Only show non-archived jobs in reporter
-        if (!data.archived) {
-            const option1 = document.createElement('option');
-            option1.value = jobCard;
-            option1.textContent = jobCard;
-            reporterSelect.appendChild(option1);
-        }
-        
-        // Show all jobs in dashboard
-        const option2 = document.createElement('option');
-        option2.value = jobCard;
-        option2.textContent = jobCard + (data.archived ? ' (Archived)' : '');
-        dashboardSelect.appendChild(option2);
+        const option = document.createElement('option');
+        option.value = jobCard;
+        let label = jobCard;
+        if (data.archived) label += ' (Archived)';
+        if (data.held) label += ' (On Hold)';
+        option.textContent = label;
+        dashboardSelect.appendChild(option);
     });
 }
+
+// ========================================
+// JOB DETAILS
+// ========================================
 
 function updateJobDetails() {
     const jobCard = document.getElementById('jobCard').value;
@@ -429,7 +782,7 @@ function updateJobDetails() {
     document.getElementById('displayRating').textContent = data.rating;
     detailsRow.style.display = 'grid';
 
-    let details = `Grade: ${data.grade} | Thickness: ${data.thickness} | Process: ${data.process}`;
+    let details = `Type: ${data.productionType} | Grade: ${data.grade} | Thickness: ${data.thickness} | Process: ${data.process}`;
     if (data.customer) {
         details += ` | Customer: ${data.customer}`;
     }
@@ -441,6 +794,7 @@ function updateJobDetails() {
 }
 
 function updateWidths() {
+    updateCentreMMVisibility();
     const itemType = document.getElementById('itemType').value;
     const jobCard = document.getElementById('jobCard').value;
     const widthGrid = document.getElementById('widthGrid');
@@ -478,6 +832,10 @@ function selectWidth(element) {
     element.classList.add('selected');
 }
 
+// ========================================
+// RECORD PRODUCTION
+// ========================================
+
 function recordProduction() {
     const jobCard = document.getElementById('jobCard').value;
     const machine = document.getElementById('machine').value;
@@ -485,6 +843,16 @@ function recordProduction() {
     const itemType = document.getElementById('itemType').value;
     const selectedWidth = document.querySelector('.width-btn.selected');
     const remarks = document.getElementById('remarks').value.trim();
+    
+    const productionType = document.getElementById('productionTypeFilter').value;
+    let diamondMM = null;
+    if (productionType === 'Normal') {
+        diamondMM = document.getElementById('diamondMM').value;
+        if (!diamondMM) {
+            alert('Please select Diamond MM for Normal production');
+            return;
+        }
+    }
 
     if (!jobCard || !machine || !operatorName || !itemType || !selectedWidth) {
         alert('Please fill all required fields');
@@ -500,6 +868,7 @@ function recordProduction() {
         e.machine === machine &&
         e.itemType === itemType &&
         e.width === width &&
+        (productionType === 'Normal' ? e.diamondMM === diamondMM : true) &&
         e.status === 'started' &&
         !e.endTime
     );
@@ -514,11 +883,11 @@ function recordProduction() {
         
         if (itemType === 'yoke-side') {
             for (let group = 1; group <= 2; group++) {
-                const key = `${jobCard}-${group}-${width}`;
+                const key = diamondMM ? `${jobCard}-${group}-${width}-${diamondMM}` : `${jobCard}-${group}-${width}`;
                 completedItems[key] = true;
             }
         } else if (itemType === 'centre') {
-            const key = `${jobCard}-3-${width}`;
+            const key = diamondMM ? `${jobCard}-3-${width}-${diamondMM}` : `${jobCard}-3-${width}`;
             completedItems[key] = true;
         }
         localStorage.setItem('completedItems', JSON.stringify(completedItems));
@@ -531,6 +900,8 @@ function recordProduction() {
             operator: operatorName,
             itemType,
             width,
+            productionType,
+            diamondMM: diamondMM || null,
             status: 'started',
             startTime: timestamp.toISOString(),
             endTime: null,
@@ -551,230 +922,71 @@ function recordProduction() {
     document.getElementById('operatorName').value = '';
     document.getElementById('remarks').value = '';
     document.getElementById('itemType').value = '';
+    if (diamondMM) {
+        document.getElementById('diamondMM').value = '';
+    }
     document.getElementById('widthGrid').innerHTML = '';
     
     displayProductionList();
     updateDashboard();
 }
 
+// Continue in next message due to size...
+
+// ========================================
+// DISPLAY PRODUCTION LIST
+// ========================================
+
 function displayProductionList() {
     const listDiv = document.getElementById('productionList');
-    const headerDiv = document.getElementById('entriesHeader');
+    const header = document.getElementById('entriesHeader');
     
-    headerDiv.textContent = currentSubTab === 'started' ? 'Started Production' : 'Completed Production';
+    const filtered = productionEntries.filter(e => e.status === currentSubTab);
     
-    const today = new Date().toDateString();
-    const todayEntries = productionEntries.filter(entry => {
-        const entryDate = new Date(entry.startTime).toDateString();
-        return entryDate === today && entry.status === currentSubTab;
-    }).reverse();
-
-    if (todayEntries.length === 0) {
+    if (currentSubTab === 'started') {
+        header.textContent = 'Started Production';
+        document.getElementById('recordBtn').textContent = 'Record Entry';
+    } else {
+        header.textContent = 'Completed Production';
+        document.getElementById('recordBtn').textContent = 'Record Entry';
+    }
+    
+    if (filtered.length === 0) {
         listDiv.innerHTML = `<p style="text-align: center; color: #999;">No ${currentSubTab} items yet</p>`;
         return;
     }
-
-    listDiv.innerHTML = todayEntries.map(entry => {
-        const startTime = new Date(entry.startTime).toLocaleTimeString('en-IN', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        });
+    
+    listDiv.innerHTML = filtered.reverse().map(entry => {
+        const startDate = new Date(entry.startTime);
+        const endDate = entry.endTime ? new Date(entry.endTime) : null;
         
-        let timeInfo = '';
-        let remarkInfo = '';
-        
-        if (entry.status === 'started') {
-            timeInfo = `<p class="time">▶️ Started at ${startTime} | Operator: ${entry.operator}</p>`;
-            if (entry.startRemarks) {
-                remarkInfo = `<div class="remark">💬 ${entry.startRemarks}</div>`;
-            }
-        } else {
-            const endTime = new Date(entry.endTime).toLocaleTimeString('en-IN', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-            const duration = calculateDuration(entry.startTime, entry.endTime);
-            timeInfo = `
-                <p class="time">▶️ Started: ${startTime} | Operator: ${entry.operator}</p>
-                <p class="time">⏹️ Ended: ${endTime} | Operator: ${entry.endOperator || entry.operator}</p>
-                <p class="time">⏱️ Duration: ${duration}</p>
-            `;
-            if (entry.startRemarks) {
-                remarkInfo += `<div class="remark">💬 Start: ${entry.startRemarks}</div>`;
-            }
-            if (entry.endRemarks) {
-                remarkInfo += `<div class="remark">💬 End: ${entry.endRemarks}</div>`;
-            }
+        let displayType = entry.productionType;
+        if (entry.diamondMM) {
+            displayType += ` (${entry.diamondMM})`;
         }
         
         return `
             <div class="production-item">
-                <h3>${entry.machine} - ${entry.jobCard}</h3>
-                <p><strong>${entry.itemType.toUpperCase()}</strong> | Width: ${entry.width}mm | WO: ${entry.workOrder}</p>
-                ${timeInfo}
-                ${remarkInfo}
+                <h3>${entry.jobCard} - ${entry.workOrder}</h3>
+                <p><strong>Type:</strong> ${displayType} | <strong>Machine:</strong> ${entry.machine} | <strong>Item:</strong> ${entry.itemType} | <strong>Width:</strong> ${entry.width}mm</p>
+                <p><strong>Operator:</strong> ${entry.operator}</p>
+                <p class="time">Started: ${startDate.toLocaleString()}</p>
+                ${endDate ? `<p class="time">Completed: ${endDate.toLocaleString()}</p>` : ''}
+                ${entry.startRemarks ? `<div class="remark">Start Notes: ${entry.startRemarks}</div>` : ''}
+                ${entry.endRemarks ? `<div class="remark">End Notes: ${entry.endRemarks}</div>` : ''}
             </div>
         `;
     }).join('');
 }
 
-function calculateDuration(startTime, endTime) {
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-    const diff = end - start;
-    
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
-    if (hours > 0) {
-        return `${hours}h ${minutes}m`;
-    }
-    return `${minutes}m`;
-}
-
-function parsePastedData() {
-    const jobCard = document.getElementById('pasteJobCard').value.trim();
-    const workOrder = document.getElementById('pasteWorkOrder').value.trim();
-    const rating = document.getElementById('pasteRating').value.trim();
-    const grade = document.getElementById('pasteGrade').value;
-    const thickness = document.getElementById('pasteThickness').value;
-    const customer = document.getElementById('pasteCustomer').value.trim();
-    
-    const sideData = document.getElementById('sideData').value.trim();
-    const yokeData = document.getElementById('yokeData').value.trim();
-    const centreData = document.getElementById('centreData').value.trim();
-    
-    if (!jobCard || !workOrder || !grade || !thickness) {
-        alert('Please fill all required fields (Job Card, Work Order, Grade, Thickness)');
-        return;
-    }
-    
-    if (!sideData || !yokeData || !centreData) {
-        alert('Please paste data for all three sections (Side, Yoke, Centre)');
-        return;
-    }
-    
-    try {
-        const group1 = parseExcelPaste(sideData, thickness);
-        const group2 = parseExcelPaste(yokeData, thickness);
-        const group3 = parseExcelPaste(centreData, thickness);
-        
-        const newJobCard = {
-            workOrder,
-            rating: rating || '-',
-            grade,
-            thickness: thickness + 'mm',
-            customer: customer || '',
-            process: 'Vertical Steplap',
-            sections: ['Side', 'Yoke', 'Centre'],
-            archived: false,
-            groups: {
-                1: group1,
-                2: group2,
-                3: group3
-            }
-        };
-        
-        jobCardData[jobCard] = newJobCard;
-        localStorage.setItem('jobCardData', JSON.stringify(jobCardData));
-        
-        document.getElementById('pasteJobCard').value = '';
-        document.getElementById('pasteWorkOrder').value = '';
-        document.getElementById('pasteRating').value = '';
-        document.getElementById('pasteCustomer').value = '';
-        document.getElementById('sideData').value = '';
-        document.getElementById('yokeData').value = '';
-        document.getElementById('centreData').value = '';
-        
-        populateJobCardDropdowns();
-        
-        const successMsg = document.getElementById('uploadSuccessMsg');
-        successMsg.classList.add('show');
-        setTimeout(() => successMsg.classList.remove('show'), 3000);
-        
-    } catch (error) {
-        const errorMsg = document.getElementById('uploadErrorMsg');
-        errorMsg.textContent = '✗ ' + error.message;
-        errorMsg.classList.add('show');
-        setTimeout(() => errorMsg.classList.remove('show'), 5000);
-    }
-}
-
-function parseExcelPaste(pastedText, thickness) {
-    const lines = pastedText.split('\n').filter(line => line.trim());
-    
-    if (lines.length < 2) {
-        throw new Error('Not enough data rows');
-    }
-    
-    const widths = {};
-    let totalBlades = 0;
-    let totalWeight = 0;
-    
-    for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim();
-        
-        if (line.toLowerCase().startsWith('total')) {
-            continue;
-        }
-        
-        const parts = line.split(/\t|  +/).filter(p => p.trim());
-        
-        if (parts.length < 2) {
-            continue;
-        }
-        
-        let width, stack, weight;
-        
-        if (parts.length >= 8) {
-            width = parseFloat(parts[0]);
-            stack = parseFloat(parts[4]);
-            weight = parseFloat(parts[6]);
-        } else if (parts.length >= 6) {
-            width = parseFloat(parts[0]);
-            stack = parseFloat(parts[4]);
-            weight = parseFloat(parts[5]);
-        } else if (parts.length >= 4) {
-            width = parseFloat(parts[0]);
-            stack = parseFloat(parts[2]);
-            weight = parseFloat(parts[3]);
-        } else {
-            continue;
-        }
-        
-        if (!isNaN(width) && !isNaN(stack) && !isNaN(weight) && width > 0) {
-            const thicknessValue = parseFloat(thickness);
-            const blades = Math.round(stack / thicknessValue);
-            
-            widths[width] = {
-                blades: blades,
-                weight: Math.round(weight * 100) / 100
-            };
-            
-            totalBlades += blades;
-            totalWeight += weight;
-        }
-    }
-    
-    if (Object.keys(widths).length === 0) {
-        throw new Error('No valid data rows found');
-    }
-    
-    return {
-        widths,
-        totalBlades,
-        totalWeight: Math.round(totalWeight * 100) / 100
-    };
-}
+// ========================================
+// DASHBOARD
+// ========================================
 
 function updateDashboard() {
     const jobCard = document.getElementById('dashboardJobCard').value;
+    
     if (!jobCard || !jobCardData[jobCard]) {
-        // Clear dashboard if no job card selected
-        document.getElementById('dashDisplayJobCard').textContent = '-';
-        document.getElementById('dashDisplayWorkOrder').textContent = '-';
-        document.getElementById('dashDisplayRating').textContent = '-';
-        document.getElementById('dashDetailsText').textContent = '-';
         return;
     }
     
@@ -783,225 +995,303 @@ function updateDashboard() {
     document.getElementById('dashDisplayJobCard').textContent = jobCard;
     document.getElementById('dashDisplayWorkOrder').textContent = data.workOrder;
     document.getElementById('dashDisplayRating').textContent = data.rating;
-
-    let details = `Grade: ${data.grade} | Thickness: ${data.thickness} | Process: ${data.process}`;
+    
+    let details = `Type: ${data.productionType} | Grade: ${data.grade} | Thickness: ${data.thickness} | Process: ${data.process}`;
     if (data.customer) {
         details += ` | Customer: ${data.customer}`;
     }
     document.getElementById('dashDetailsText').textContent = details;
-
-    document.getElementById('section1Label').textContent = data.sections[0];
-    document.getElementById('section2Label').textContent = data.sections[1];
-    document.getElementById('section3Label').textContent = data.sections[2];
     
     let totalBlades = 0;
-    let totalWeight = 0;
     let completedBlades = 0;
-    let completedWeightVal = 0;
+    let totalWeight = 0;
+    let completedWeight = 0;
     
-    Object.keys(data.groups).forEach(groupNum => {
-        const group = data.groups[groupNum];
-        totalBlades += group.totalBlades;
-        totalWeight += group.totalWeight;
-        
-        Object.keys(group.widths).forEach(width => {
-            const key = `${jobCard}-${groupNum}-${width}`;
-            if (completedItems[key]) {
-                completedBlades += group.widths[width].blades;
-                completedWeightVal += group.widths[width].weight;
-            }
-        });
-    });
-
-    const overallPercent = Math.round((completedBlades / totalBlades) * 100);
-    document.getElementById('overallPercent').textContent = overallPercent + '%';
-    document.getElementById('overallProgress').style.width = overallPercent + '%';
-    document.getElementById('completedBlades').textContent = completedBlades;
-    document.getElementById('totalBlades').textContent = totalBlades;
-    document.getElementById('completedWeight').textContent = completedWeightVal.toFixed(1) + ' kg';
-    document.getElementById('totalWeight').textContent = totalWeight.toFixed(1) + ' kg';
-
+    const groupProgress = [0, 0, 0];
+    const groupTotals = [0, 0, 0];
+    
     [1, 2, 3].forEach(groupNum => {
         const group = data.groups[groupNum];
-        let groupCompleted = 0;
-        
         Object.keys(group.widths).forEach(width => {
-            const key = `${jobCard}-${groupNum}-${width}`;
-            if (completedItems[key]) {
-                groupCompleted += group.widths[width].blades;
+            const widthData = group.widths[width];
+            totalBlades += widthData.blades;
+            totalWeight += widthData.weight;
+            groupTotals[groupNum - 1] += widthData.blades;
+            
+            if (data.productionType === 'Normal') {
+                ['05mm', '00mm', '10mm'].forEach(mm => {
+                    const key = `${jobCard}-${groupNum}-${width}-${mm}`;
+                    if (completedItems[key]) {
+                        const bladesPerMM = widthData.blades / 3;
+                        const weightPerMM = widthData.weight / 3;
+                        completedBlades += bladesPerMM;
+                        completedWeight += weightPerMM;
+                        groupProgress[groupNum - 1] += bladesPerMM;
+                    }
+                });
+            } else {
+                const key = `${jobCard}-${groupNum}-${width}`;
+                if (completedItems[key]) {
+                    completedBlades += widthData.blades;
+                    completedWeight += widthData.weight;
+                    groupProgress[groupNum - 1] += widthData.blades;
+                }
             }
         });
-        
-        const groupPercent = Math.round((groupCompleted / group.totalBlades) * 100);
-        document.getElementById(`group${groupNum}Percent`).textContent = groupPercent + '%';
-        document.getElementById(`group${groupNum}Progress`).style.width = groupPercent + '%';
     });
-
+    
+    const overallPercent = totalBlades > 0 ? Math.round((completedBlades / totalBlades) * 100) : 0;
+    
+    document.getElementById('completedBlades').textContent = Math.round(completedBlades);
+    document.getElementById('totalBlades').textContent = totalBlades;
+    document.getElementById('completedWeight').textContent = Math.round(completedWeight) + ' kg';
+    document.getElementById('totalWeight').textContent = totalWeight + ' kg';
+    document.getElementById('overallPercent').textContent = overallPercent + '%';
+    
+    const progressBar = document.getElementById('overallProgress');
+    progressBar.style.width = overallPercent + '%';
+    progressBar.querySelector('span').textContent = overallPercent + '%';
+    
+    [1, 2, 3].forEach(i => {
+        const percent = groupTotals[i - 1] > 0 ? Math.round((groupProgress[i - 1] / groupTotals[i - 1]) * 100) : 0;
+        document.getElementById(`group${i}Progress`).style.width = percent + '%';
+        document.getElementById(`group${i}Percent`).textContent = percent + '%';
+        document.getElementById(`section${i}Label`).textContent = data.groups[i].section;
+    });
+    
     updateProductionTables(jobCard, data);
-    document.getElementById('lastUpdate').textContent = 
-        'Last updated: ' + new Date().toLocaleTimeString('en-IN');
+    document.getElementById('lastUpdate').textContent = 'Last updated: ' + new Date().toLocaleString();
 }
 
 function updateProductionTables(jobCard, data) {
     const yokeSideBody = document.getElementById('yokeSideTableBody');
-    const yokeSideWidths = {};
+    const centreBody = document.getElementById('centreTableBody');
+    
+    yokeSideBody.innerHTML = '';
+    centreBody.innerHTML = '';
     
     [1, 2].forEach(groupNum => {
-        Object.keys(data.groups[groupNum].widths).forEach(width => {
-            if (!yokeSideWidths[width]) {
-                yokeSideWidths[width] = { blades: 0, weight: 0, completed: false };
+        const group = data.groups[groupNum];
+        Object.keys(group.widths).sort((a, b) => b - a).forEach(width => {
+            const widthData = group.widths[width];
+            let isComplete = false;
+            
+            if (data.productionType === 'Normal') {
+                const allMMComplete = ['05mm', '00mm', '10mm'].every(mm => {
+                    const key = `${jobCard}-${groupNum}-${width}-${mm}`;
+                    return completedItems[key];
+                });
+                isComplete = allMMComplete;
+            } else {
+                const key = `${jobCard}-${groupNum}-${width}`;
+                isComplete = completedItems[key];
             }
-            yokeSideWidths[width].blades += data.groups[groupNum].widths[width].blades;
-            yokeSideWidths[width].weight += data.groups[groupNum].widths[width].weight;
+            
+            const row = document.createElement('tr');
+            row.className = isComplete ? 'completed' : 'pending';
+            row.innerHTML = `
+                <td>${width}mm</td>
+                <td>${widthData.blades}</td>
+                <td>${widthData.weight} kg</td>
+                <td><span class="status-badge ${isComplete ? 'status-completed' : 'status-pending'}">${isComplete ? '✓ Done' : '⏳ Pending'}</span></td>
+            `;
+            yokeSideBody.appendChild(row);
         });
     });
-
-    Object.keys(yokeSideWidths).forEach(width => {
-        let allGroupsComplete = true;
-        for (let group = 1; group <= 2; group++) {
-            const key = `${jobCard}-${group}-${width}`;
-            if (!completedItems[key]) {
-                allGroupsComplete = false;
-                break;
-            }
-        }
-        yokeSideWidths[width].completed = allGroupsComplete;
-    });
-
-    const sortedYokeSide = Object.keys(yokeSideWidths).sort((a, b) => b - a);
-    yokeSideBody.innerHTML = sortedYokeSide.map(width => {
-        const item = yokeSideWidths[width];
-        const rowClass = item.completed ? 'completed' : 'pending';
-        const statusClass = item.completed ? 'status-completed' : 'status-pending';
-        const statusText = item.completed ? '✓ Done' : '✗ Pending';
-        
-        return `
-            <tr class="${rowClass}">
-                <td><strong>${width}</strong></td>
-                <td>${item.blades}</td>
-                <td>${item.weight.toFixed(2)}</td>
-                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-            </tr>
-        `;
-    }).join('');
-
-    const centreBody = document.getElementById('centreTableBody');
-    const centreWidths = {};
     
-    Object.keys(data.groups[3].widths).forEach(width => {
-        centreWidths[width] = {
-            blades: data.groups[3].widths[width].blades,
-            weight: data.groups[3].widths[width].weight,
-            completed: false
-        };
+    const group3 = data.groups[3];
+    Object.keys(group3.widths).sort((a, b) => b - a).forEach(width => {
+        const widthData = group3.widths[width];
+        let isComplete = false;
         
-        const key = `${jobCard}-3-${width}`;
-        centreWidths[width].completed = !!completedItems[key];
-    });
-
-    const sortedCentre = Object.keys(centreWidths).sort((a, b) => b - a);
-    centreBody.innerHTML = sortedCentre.map(width => {
-        const item = centreWidths[width];
-        const rowClass = item.completed ? 'completed' : 'pending';
-        const statusClass = item.completed ? 'status-completed' : 'status-pending';
-        const statusText = item.completed ? '✓ Done' : '✗ Pending';
+        if (data.productionType === 'Normal') {
+            const allMMComplete = ['05mm', '00mm', '10mm'].every(mm => {
+                const key = `${jobCard}-3-${width}-${mm}`;
+                return completedItems[key];
+            });
+            isComplete = allMMComplete;
+        } else {
+            const key = `${jobCard}-3-${width}`;
+            isComplete = completedItems[key];
+        }
         
-        return `
-            <tr class="${rowClass}">
-                <td><strong>${width}</strong></td>
-                <td>${item.blades}</td>
-                <td>${item.weight.toFixed(2)}</td>
-                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-            </tr>
+        const row = document.createElement('tr');
+        row.className = isComplete ? 'completed' : 'pending';
+        row.innerHTML = `
+            <td>${width}mm</td>
+            <td>${widthData.blades}</td>
+            <td>${widthData.weight} kg</td>
+            <td><span class="status-badge ${isComplete ? 'status-completed' : 'status-pending'}">${isComplete ? '✓ Done' : '⏳ Pending'}</span></td>
         `;
-    }).join('');
+        centreBody.appendChild(row);
+    });
 }
 
-function displayJobCardList() {
-    const listDiv = document.getElementById('jobCardList');
+// ========================================
+// PARSE PASTED DATA
+// ========================================
+
+function parsePastedData() {
+    const jobCard = document.getElementById('pasteJobCard').value.trim();
+    const workOrder = document.getElementById('pasteWorkOrder').value.trim();
+    const productionType = document.getElementById('pasteProductionType').value;
+    const rating = document.getElementById('pasteRating').value.trim();
+    const grade = document.getElementById('pasteGrade').value;
+    const thickness = document.getElementById('pasteThickness').value;
+    const customer = document.getElementById('pasteCustomer').value.trim();
     
-    const jobs = Object.keys(jobCardData).map(jobCard => ({
-        jobCard,
-        data: jobCardData[jobCard]
-    }));
+    const sideData = document.getElementById('sideData').value;
+    const yokeData = document.getElementById('yokeData').value;
+    const centreData = document.getElementById('centreData').value;
     
-    if (jobs.length === 0) {
-        listDiv.innerHTML = '<p style="text-align: center; color: #999;">No job cards found. Add your first job card in the "Add Job Card" tab!</p>';
+    if (!jobCard || !workOrder || !productionType || !grade || !thickness) {
+        alert('Please fill all required fields (marked with *)');
         return;
     }
     
-    listDiv.innerHTML = jobs.map(job => {
-        const isArchived = job.data.archived;
+    if (!sideData || !yokeData || !centreData) {
+        alert('Please paste data for all three groups');
+        return;
+    }
+    
+    try {
+        const groups = {
+            1: { section: 'Side', widths: parseWidthData(sideData) },
+            2: { section: 'Yoke', widths: parseWidthData(yokeData) },
+            3: { section: 'Centre', widths: parseWidthData(centreData) }
+        };
+        
+        jobCardData[jobCard] = {
+            workOrder,
+            productionType,
+            rating: rating || 'N/A',
+            grade,
+            thickness: thickness + 'mm',
+            process: 'Standard',
+            customer: customer || '',
+            groups,
+            archived: false,
+            held: false
+        };
+        
+        localStorage.setItem('jobCardData', JSON.stringify(jobCardData));
+        
+        document.getElementById('uploadSuccessMsg').classList.add('show');
+        setTimeout(() => {
+            document.getElementById('uploadSuccessMsg').classList.remove('show');
+        }, 3000);
+        
+        document.getElementById('pasteJobCard').value = '';
+        document.getElementById('pasteWorkOrder').value = '';
+        document.getElementById('pasteProductionType').value = '';
+        document.getElementById('pasteRating').value = '';
+        document.getElementById('pasteCustomer').value = '';
+        document.getElementById('sideData').value = '';
+        document.getElementById('yokeData').value = '';
+        document.getElementById('centreData').value = '';
+        
+        populateJobCardDropdowns();
+        displayJobCardList();
+        displayCustomers();
+    } catch (error) {
+        alert('Error parsing data: ' + error.message);
+    }
+}
+
+function parseWidthData(data) {
+    const lines = data.trim().split('\n');
+    const widths = {};
+    
+    lines.forEach((line, index) => {
+        if (index === 0) return;
+        
+        const parts = line.split('\t').map(p => p.trim()).filter(p => p);
+        
+        if (parts.length >= 3) {
+            const width = parts[0];
+            const blades = parseInt(parts[1]);
+            const weight = parseFloat(parts[2]);
+            
+            const numWidth = parseFloat(width);
+            if (!isNaN(numWidth) && !isNaN(blades) && !isNaN(weight) && width.toLowerCase() !== 'width') {
+                widths[numWidth.toString()] = { blades, weight };
+            }
+        }
+    });
+    
+    return widths;
+}
+
+// ========================================
+// MANAGE JOBS
+// ========================================
+
+function displayJobCardList() {
+    const listDiv = document.getElementById('jobCardList');
+    const jobCards = Object.keys(jobCardData);
+    
+    if (jobCards.length === 0) {
+        listDiv.innerHTML = '<p style="text-align: center; color: #999;">No job cards yet</p>';
+        return;
+    }
+    
+    listDiv.innerHTML = jobCards.map(jobCard => {
+        const data = jobCardData[jobCard];
+        let badges = '';
+        if (data.archived) badges += '<span class="archive-badge">ARCHIVED</span>';
+        if (data.held) badges += '<span class="hold-badge">ON HOLD</span>';
+        
         return `
             <div class="job-card-item">
                 <div class="job-card-info">
-                    <h4>${job.jobCard} - ${job.data.workOrder}${isArchived ? '<span class="archive-badge">ARCHIVED</span>' : ''}</h4>
-                    <p>Grade: ${job.data.grade} | Thickness: ${job.data.thickness}</p>
+                    <h4>${jobCard} - ${data.workOrder}${badges}</h4>
+                    <p>Type: ${data.productionType} | Grade: ${data.grade} | Customer: ${data.customer || 'N/A'}</p>
                 </div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="delete-btn" style="background: #6c757d;" onclick="toggleArchive('${job.jobCard}')">
-                        ${isArchived ? '↩️ Restore' : '📦 Archive'}
-                    </button>
-                    <button class="delete-btn" onclick="deleteJobCard('${job.jobCard}')">
-                        🗑️ Delete
-                    </button>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="manage-btn edit-btn" onclick="editJobCard(\'\${jobCard}\')">✏️ Edit</button>
+                    <button class="manage-btn hold-btn" onclick="toggleHold('${jobCard}')">${data.held ? '▶️ Resume' : '⏸️ Hold'}</button>
+                    <button class="manage-btn delete-btn" onclick="deleteJobCard('${jobCard}')">🗑️ Delete</button>
                 </div>
             </div>
         `;
     }).join('');
 }
 
-function toggleArchive(jobCard) {
-    const data = jobCardData[jobCard];
-    data.archived = !data.archived;
+
+
+function toggleHold(jobCard) {
+    jobCardData[jobCard].held = !jobCardData[jobCard].held;
     localStorage.setItem('jobCardData', JSON.stringify(jobCardData));
     populateJobCardDropdowns();
     displayJobCardList();
-    alert(`Job card ${jobCard} ${data.archived ? 'archived' : 'restored'} successfully!`);
 }
 
 function deleteJobCard(jobCard) {
-    const confirmed = confirm(
-        `⚠️ WARNING: This will PERMANENTLY DELETE job card ${jobCard} and ALL related data!\n\n` +
-        `This includes:\n` +
-        `- Job card details\n` +
-        `- All production entries\n` +
-        `- All completion records\n\n` +
-        `This action CANNOT be undone!\n\n` +
-        `Are you sure you want to delete ${jobCard}?`
-    );
-    
-    if (!confirmed) return;
-    
-    // Double confirmation for safety
-    const doubleConfirm = confirm(`Really delete ${jobCard}? This is your last chance!`);
-    
-    if (!doubleConfirm) return;
-    
-    // Delete job card
-    delete jobCardData[jobCard];
-    localStorage.setItem('jobCardData', JSON.stringify(jobCardData));
-    
-    // Delete all production entries for this job card
-    productionEntries = productionEntries.filter(entry => entry.jobCard !== jobCard);
-    localStorage.setItem('productionEntries', JSON.stringify(productionEntries));
-    
-    // Delete all completed items for this job card
-    Object.keys(completedItems).forEach(key => {
-        if (key.startsWith(jobCard + '-')) {
-            delete completedItems[key];
-        }
-    });
-    localStorage.setItem('completedItems', JSON.stringify(completedItems));
-    
-    // Refresh all displays
-    populateJobCardDropdowns();
-    displayJobCardList();
-    updateDashboard();
-    displayProductionList();
-    
-    alert(`✓ Job card ${jobCard} and all related data have been permanently deleted.`);
+    if (confirm(`Are you sure you want to PERMANENTLY DELETE job card ${jobCard}?\n\nThis will remove:\n- Job card data\n- All production entries\n- All completion records\n\nThis cannot be undone!`)) {
+        delete jobCardData[jobCard];
+        
+        productionEntries = productionEntries.filter(e => e.jobCard !== jobCard);
+        
+        Object.keys(completedItems).forEach(key => {
+            if (key.startsWith(jobCard + '-')) {
+                delete completedItems[key];
+            }
+        });
+        
+        localStorage.setItem('jobCardData', JSON.stringify(jobCardData));
+        localStorage.setItem('productionEntries', JSON.stringify(productionEntries));
+        localStorage.setItem('completedItems', JSON.stringify(completedItems));
+        
+        populateJobCardDropdowns();
+        displayJobCardList();
+        displayCustomers();
+        alert('Job card deleted successfully');
+    }
 }
+
+// ========================================
+// MONTHLY REPORT
+// ========================================
 
 function setCurrentMonth() {
     const now = new Date();
@@ -1014,225 +1304,667 @@ function updateMonthlyReport() {
     const month = parseInt(document.getElementById('reportMonth').value);
     const year = parseInt(document.getElementById('reportYear').value);
     
-    const monthEntries = productionEntries.filter(entry => {
-        const entryDate = new Date(entry.startTime);
-        return entryDate.getMonth() === month && entryDate.getFullYear() === year;
-    });
-
-    const jobCards = new Set(monthEntries.map(e => e.jobCard));
-    const completedEntries = monthEntries.filter(e => e.status === 'completed');
+    const startDate = new Date(year, month, 1);
+    const endDate = new Date(year, month + 1, 0, 23, 59, 59);
     
-    const jobCompletion = {};
-    Object.keys(jobCardData).forEach(jc => {
-        const data = jobCardData[jc];
-        let totalWidths = 0;
-        let completedWidths = 0;
-        
-        [1, 2, 3].forEach(group => {
-            Object.keys(data.groups[group].widths).forEach(width => {
-                totalWidths++;
-                const key = `${jc}-${group}-${width}`;
-                if (completedItems[key]) {
-                    completedWidths++;
-                }
-            });
-        });
-        
-        jobCompletion[jc] = {
-            total: totalWidths,
-            completed: completedWidths,
-            isComplete: completedWidths === totalWidths
-        };
+    const monthlyEntries = productionEntries.filter(e => {
+        const entryDate = new Date(e.startTime);
+        return entryDate >= startDate && entryDate <= endDate;
     });
     
-    const completedJobs = Object.keys(jobCompletion).filter(jc => jobCompletion[jc].isComplete).length;
-    const pendingJobs = Object.keys(jobCardData).length - completedJobs;
-    
+    const jobCardsInMonth = new Set();
+    const completedJobCards = new Set();
     let totalBlades = 0;
-    completedEntries.forEach(entry => {
-        const jobCard = entry.jobCard;
-        const width = entry.width;
-        const data = jobCardData[jobCard];
-        
-        if (!data) return;
-        
-        if (entry.itemType === 'yoke-side') {
-            for (let group = 1; group <= 2; group++) {
-                if (data.groups[group].widths[width]) {
-                    totalBlades += data.groups[group].widths[width].blades;
-                }
-            }
-        } else if (entry.itemType === 'centre') {
-            if (data.groups[3].widths[width]) {
-                totalBlades += data.groups[3].widths[width].blades;
+    
+    monthlyEntries.forEach(entry => {
+        jobCardsInMonth.add(entry.jobCard);
+        if (entry.status === 'completed') {
+            const data = jobCardData[entry.jobCard];
+            if (data) {
+                const groupNum = entry.itemType === 'centre' ? 3 : (entry.itemType === 'yoke-side' ? [1, 2] : []);
+                const groups = Array.isArray(groupNum) ? groupNum : [groupNum];
+                
+                groups.forEach(g => {
+                    const widthData = data.groups[g].widths[entry.width];
+                    if (widthData) {
+                        if (entry.productionType === 'Normal') {
+                            totalBlades += widthData.blades / 3;
+                        } else {
+                            totalBlades += widthData.blades;
+                        }
+                    }
+                });
             }
         }
     });
-
-    document.getElementById('monthlyJobCards').textContent = Object.keys(jobCardData).length;
-    document.getElementById('monthlyCompleted').textContent = completedJobs;
-    document.getElementById('monthlyPending').textContent = pendingJobs;
-    document.getElementById('monthlyBlades').textContent = totalBlades;
-
-    displayMonthlyJobList(Object.keys(jobCardData), jobCompletion);
-    updateMonthlyChart(month, year);
+    
+    jobCardsInMonth.forEach(jobCard => {
+        const data = jobCardData[jobCard];
+        if (data) {
+            let totalItems = 0;
+            let completedCount = 0;
+            
+            [1, 2, 3].forEach(groupNum => {
+                Object.keys(data.groups[groupNum].widths).forEach(width => {
+                    if (data.productionType === 'Normal') {
+                        totalItems += 3;
+                        ['05mm', '00mm', '10mm'].forEach(mm => {
+                            const key = `${jobCard}-${groupNum}-${width}-${mm}`;
+                            if (completedItems[key]) completedCount++;
+                        });
+                    } else {
+                        totalItems += 1;
+                        const key = `${jobCard}-${groupNum}-${width}`;
+                        if (completedItems[key]) completedCount++;
+                    }
+                });
+            });
+            
+            if (completedCount === totalItems) {
+                completedJobCards.add(jobCard);
+            }
+        }
+    });
+    
+    document.getElementById('monthlyJobCards').textContent = jobCardsInMonth.size;
+    document.getElementById('monthlyCompleted').textContent = completedJobCards.size;
+    document.getElementById('monthlyPending').textContent = jobCardsInMonth.size - completedJobCards.size;
+    document.getElementById('monthlyBlades').textContent = Math.round(totalBlades);
+    
+    updateMonthlyChart(monthlyEntries);
+    displayMonthlyJobList(Array.from(jobCardsInMonth));
 }
 
-function updateMonthlyChart(month, year) {
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const dailyData = Array(daysInMonth).fill(0);
-    
-    productionEntries.forEach(entry => {
-        if (entry.status === 'completed') {
-            const entryDate = new Date(entry.startTime);
-            if (entryDate.getMonth() === month && entryDate.getFullYear() === year) {
-                const day = entryDate.getDate() - 1;
-                dailyData[day]++;
-            }
-        }
-    });
-
-    const labels = Array.from({length: daysInMonth}, (_, i) => i + 1);
-    
+function updateMonthlyChart(entries) {
     const ctx = document.getElementById('monthlyChart');
-    if (!ctx) return;
     
-    const context = ctx.getContext('2d');
+    const dailyData = {};
+    entries.forEach(entry => {
+        const date = new Date(entry.startTime).toLocaleDateString();
+        dailyData[date] = (dailyData[date] || 0) + 1;
+    });
+    
+    const labels = Object.keys(dailyData).sort();
+    const data = labels.map(label => dailyData[label]);
     
     if (monthlyChart) {
         monthlyChart.destroy();
     }
     
-    monthlyChart = new Chart(context, {
+    monthlyChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Completed Items',
-                data: dailyData,
+                label: 'Production Entries',
+                data: data,
                 borderColor: '#2d7a3e',
                 backgroundColor: 'rgba(45, 122, 62, 0.1)',
-                tension: 0.4,
-                fill: true
+                tension: 0.4
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
+                legend: { display: false }
             }
         }
     });
 }
 
-function displayMonthlyJobList(jobCards, jobCompletion) {
-    const container = document.getElementById('monthlyJobList');
+function displayMonthlyJobList(jobCards) {
+    const listDiv = document.getElementById('monthlyJobList');
     
     if (jobCards.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #999;">No job cards found. Add your first job card!</p>';
+        listDiv.innerHTML = '<p style="text-align: center; color: #999;">No production data for selected month</p>';
         return;
     }
-
-    container.innerHTML = jobCards.map(jobCard => {
+    
+    listDiv.innerHTML = jobCards.map(jobCard => {
         const data = jobCardData[jobCard];
-        const completion = jobCompletion[jobCard];
-        const percent = Math.round((completion.completed / completion.total) * 100);
+        if (!data) return '';
+        
+        let totalItems = 0;
+        let completedCount = 0;
+        
+        [1, 2, 3].forEach(groupNum => {
+            Object.keys(data.groups[groupNum].widths).forEach(width => {
+                if (data.productionType === 'Normal') {
+                    totalItems += 3;
+                    ['05mm', '00mm', '10mm'].forEach(mm => {
+                        const key = `${jobCard}-${groupNum}-${width}-${mm}`;
+                        if (completedItems[key]) completedCount++;
+                    });
+                } else {
+                    totalItems += 1;
+                    const key = `${jobCard}-${groupNum}-${width}`;
+                    if (completedItems[key]) completedCount++;
+                }
+            });
+        });
+        
+        const percent = totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
         
         return `
-            <div class="production-item">
-                <h3>${jobCard} - ${data.workOrder}</h3>
-                <p>Rating: ${data.rating} | Grade: ${data.grade}</p>
-                <p class="time">Progress: ${completion.completed}/${completion.total} widths (${percent}%)</p>
-                <p class="time">Status: ${completion.isComplete ? '✅ Completed' : '⏳ Pending'}</p>
+            <div class="job-card-item">
+                <div class="job-card-info">
+                    <h4>${jobCard} - ${data.workOrder}</h4>
+                    <p>Type: ${data.productionType} | Grade: ${data.grade} | Progress: ${percent}%</p>
+                </div>
+                <div class="progress-bar-container" style="margin: 0;">
+                    <div class="progress-bar" style="width: ${percent}%"><span>${percent}%</span></div>
+                </div>
             </div>
         `;
     }).join('');
 }
 
 function exportMonthlyReport() {
-    if (Object.keys(jobCardData).length === 0) {
-        alert('No job cards available to export. Please add job cards first!');
-        return;
-    }
+    const month = parseInt(document.getElementById('reportMonth').value);
+    const year = parseInt(document.getElementById('reportYear').value);
     
-    const month = document.getElementById('reportMonth').selectedOptions[0].text;
-    const year = document.getElementById('reportYear').value;
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const reportName = `${monthNames[month]}_${year}_Report`;
     
     const wb = XLSX.utils.book_new();
     
     const summaryData = [
         ['Monthly Production Report'],
-        ['Evergreen Metal Works'],
+        ['Month', monthNames[month] + ' ' + year],
         [''],
-        ['Month:', month],
-        ['Year:', year],
-        ['Report Generated:', new Date().toLocaleString()],
-        [''],
-        ['Summary'],
-        ['Total Job Cards:', document.getElementById('monthlyJobCards').textContent],
-        ['Completed Jobs:', document.getElementById('monthlyCompleted').textContent],
-        ['Pending Jobs:', document.getElementById('monthlyPending').textContent],
-        ['Total Blades Produced:', document.getElementById('monthlyBlades').textContent]
+        ['Total Job Cards', document.getElementById('monthlyJobCards').textContent],
+        ['Completed Jobs', document.getElementById('monthlyCompleted').textContent],
+        ['Pending Jobs', document.getElementById('monthlyPending').textContent],
+        ['Total Blades Produced', document.getElementById('monthlyBlades').textContent]
     ];
     
-    const ws1 = XLSX.utils.aoa_to_sheet(summaryData);
-    XLSX.utils.book_append_sheet(wb, ws1, 'Summary');
+    const ws = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(wb, ws, 'Summary');
     
-    const detailsData = [['Job Card', 'Work Order', 'Rating', 'Grade', 'Thickness', 'Progress', 'Status']];
+    XLSX.writeFile(wb, reportName + '.xlsx');
+}
+
+// ========================================
+// CUSTOMER MANAGEMENT
+// ========================================
+
+function displayCustomers() {
+    const customersDiv = document.getElementById('customersList');
+    
+    const customerGroups = {};
     
     Object.keys(jobCardData).forEach(jobCard => {
         const data = jobCardData[jobCard];
-        let totalWidths = 0;
-        let completedWidths = 0;
+        const customer = data.customer || 'No Customer';
         
-        [1, 2, 3].forEach(group => {
-            Object.keys(data.groups[group].widths).forEach(width => {
-                totalWidths++;
-                const key = `${jobCard}-${group}-${width}`;
-                if (completedItems[key]) {
-                    completedWidths++;
-                }
-            });
-        });
-        
-        const percent = Math.round((completedWidths / totalWidths) * 100);
-        const status = completedWidths === totalWidths ? 'Completed' : 'Pending';
-        
-        detailsData.push([
-            jobCard,
-            data.workOrder,
-            data.rating,
-            data.grade,
-            data.thickness,
-            `${completedWidths}/${totalWidths} (${percent}%)`,
-            status
-        ]);
+        if (!customerGroups[customer]) {
+            customerGroups[customer] = [];
+        }
+        customerGroups[customer].push({ jobCard, data });
     });
     
-    const ws2 = XLSX.utils.aoa_to_sheet(detailsData);
-    XLSX.utils.book_append_sheet(wb, ws2, 'Job Details');
+    if (Object.keys(customerGroups).length === 0) {
+        customersDiv.innerHTML = '<p style="text-align: center; color: #999;">No customers yet</p>';
+        return;
+    }
     
-    XLSX.writeFile(wb, `Production_Report_${month}_${year}.xlsx`);
+    customersDiv.innerHTML = Object.keys(customerGroups).sort().map(customer => {
+        const orders = customerGroups[customer];
+        let totalOrders = orders.length;
+        let completedOrders = 0;
+        let totalBlades = 0;
+        
+        orders.forEach(order => {
+            let totalItems = 0;
+            let completedCount = 0;
+            let orderBlades = 0;
+            
+            [1, 2, 3].forEach(groupNum => {
+                Object.keys(order.data.groups[groupNum].widths).forEach(width => {
+                    const widthData = order.data.groups[groupNum].widths[width];
+                    orderBlades += widthData.blades;
+                    
+                    if (order.data.productionType === 'Normal') {
+                        totalItems += 3;
+                        ['05mm', '00mm', '10mm'].forEach(mm => {
+                            const key = `${order.jobCard}-${groupNum}-${width}-${mm}`;
+                            if (completedItems[key]) completedCount++;
+                        });
+                    } else {
+                        totalItems += 1;
+                        const key = `${order.jobCard}-${groupNum}-${width}`;
+                        if (completedItems[key]) completedCount++;
+                    }
+                });
+            });
+            
+            totalBlades += orderBlades;
+            if (completedCount === totalItems && totalItems > 0) {
+                completedOrders++;
+            }
+        });
+        
+        const customerId = customer.replace(/\s+/g, '-');
+        
+        return `
+            <div class="customer-card" id="customer-${customerId}" onclick="toggleCustomerOrders('${customerId}')">
+                <div class="customer-header">
+                    <div class="customer-name">${customer}</div>
+                    <div class="customer-icon">▼</div>
+                </div>
+                <div class="customer-stats">
+                    <div class="customer-stat">
+                        <div class="customer-stat-value">${totalOrders}</div>
+                        <div class="customer-stat-label">Total Orders</div>
+                    </div>
+                    <div class="customer-stat">
+                        <div class="customer-stat-value">${completedOrders}</div>
+                        <div class="customer-stat-label">Completed</div>
+                    </div>
+                    <div class="customer-stat">
+                        <div class="customer-stat-value">${totalOrders - completedOrders}</div>
+                        <div class="customer-stat-label">Pending</div>
+                    </div>
+                </div>
+                <div class="customer-orders" id="orders-${customerId}">
+                    ${orders.map(order => {
+                        let totalItems = 0;
+                        let completedCount = 0;
+                        
+                        [1, 2, 3].forEach(groupNum => {
+                            Object.keys(order.data.groups[groupNum].widths).forEach(width => {
+                                if (order.data.productionType === 'Normal') {
+                                    totalItems += 3;
+                                    ['05mm', '00mm', '10mm'].forEach(mm => {
+                                        const key = `${order.jobCard}-${groupNum}-${width}-${mm}`;
+                                        if (completedItems[key]) completedCount++;
+                                    });
+                                } else {
+                                    totalItems += 1;
+                                    const key = `${order.jobCard}-${groupNum}-${width}`;
+                                    if (completedItems[key]) completedCount++;
+                                }
+                            });
+                        });
+                        
+                        const percent = totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
+                        const isComplete = percent === 100;
+                        
+                        return `
+                            <div class="order-item">
+                                <div class="order-header">
+                                    <span class="order-number">📦 ${order.jobCard} - ${order.data.workOrder}</span>
+                                    <span class="order-type">${order.data.productionType}</span>
+                                </div>
+                                <div class="order-progress">
+                                    Grade: ${order.data.grade} | Thickness: ${order.data.thickness}
+                                </div>
+                                <div class="order-progress">
+                                    Progress: ${completedCount}/${totalItems} items (${percent}%)
+                                </div>
+                                <div class="order-progress-bar">
+                                    <div class="order-progress-fill ${isComplete ? 'complete' : ''}" style="width: ${percent}%"></div>
+                                </div>
+                                <button class="order-details-btn" onclick="showOrderDetails('${order.jobCard}'); event.stopPropagation();">View Details</button>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
-setInterval(() => {
-    const dashboardTab = document.getElementById('dashboard');
-    if (dashboardTab && dashboardTab.classList.contains('active')) {
-        updateDashboard();
+function toggleCustomerOrders(customerId) {
+    const ordersDiv = document.getElementById(`orders-${customerId}`);
+    const card = document.getElementById(`customer-${customerId}`);
+    
+    if (ordersDiv.classList.contains('show')) {
+        ordersDiv.classList.remove('show');
+        card.classList.remove('expanded');
+    } else {
+        ordersDiv.classList.add('show');
+        card.classList.add('expanded');
     }
-}, 30000);
-    </script>
+}
+
+function showOrderDetails(jobCard) {
+    const data = jobCardData[jobCard];
+    if (!data) return;
+    
+    let totalItems = 0;
+    let completedCount = 0;
+    let totalBlades = 0;
+    let completedBlades = 0;
+    let totalWeight = 0;
+    let completedWeight = 0;
+    
+    const groupDetails = [1, 2, 3].map(groupNum => {
+        const group = data.groups[groupNum];
+        const widths = Object.keys(group.widths).sort((a, b) => b - a);
+        
+        let groupTotal = 0;
+        let groupCompleted = 0;
+        
+        const widthRows = widths.map(width => {
+            const widthData = group.widths[width];
+            totalBlades += widthData.blades;
+            totalWeight += widthData.weight;
+            groupTotal++;
+            
+            let isComplete = false;
+            
+            if (data.productionType === 'Normal') {
+                totalItems += 3;
+                const allMM = ['05mm', '00mm', '10mm'].every(mm => {
+                    const key = `${jobCard}-${groupNum}-${width}-${mm}`;
+                    return completedItems[key];
+                });
+                if (allMM) {
+                    isComplete = true;
+                    completedCount += 3;
+                    completedBlades += widthData.blades;
+                    completedWeight += widthData.weight;
+                    groupCompleted++;
+                }
+            } else {
+                totalItems++;
+                const key = `${jobCard}-${groupNum}-${width}`;
+                if (completedItems[key]) {
+                    isComplete = true;
+                    completedCount++;
+                    completedBlades += widthData.blades;
+                    completedWeight += widthData.weight;
+                    groupCompleted++;
+                }
+            }
+            
+            return `
+                <div class="modal-width-item">
+                    <span class="modal-width-name">Width ${width}mm</span>
+                    <span class="modal-width-status ${isComplete ? 'complete' : 'pending'}">
+                        ${isComplete ? '✓ Complete' : '⏳ Pending'}
+                    </span>
+                </div>
+            `;
+        }).join('');
+        
+        const groupPercent = groupTotal > 0 ? Math.round((groupCompleted / groupTotal) * 100) : 0;
+        
+        return `
+            <div class="modal-section">
+                <div class="modal-section-title">🔹 ${group.section} (${groupPercent}%)</div>
+                ${widthRows}
+            </div>
+        `;
+    }).join('');
+    
+    const overallPercent = totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
+    
+    const modalContent = `
+        <h2 class="modal-title">Order Details</h2>
+        
+        <div class="modal-info-grid">
+            <div class="modal-info-item">
+                <div class="modal-info-label">Job Card</div>
+                <div class="modal-info-value">${jobCard}</div>
+            </div>
+            <div class="modal-info-item">
+                <div class="modal-info-label">Work Order</div>
+                <div class="modal-info-value">${data.workOrder}</div>
+            </div>
+            <div class="modal-info-item">
+                <div class="modal-info-label">Customer</div>
+                <div class="modal-info-value">${data.customer || 'N/A'}</div>
+            </div>
+            <div class="modal-info-item">
+                <div class="modal-info-label">Production Type</div>
+                <div class="modal-info-value">${data.productionType}</div>
+            </div>
+            <div class="modal-info-item">
+                <div class="modal-info-label">Grade</div>
+                <div class="modal-info-value">${data.grade}</div>
+            </div>
+            <div class="modal-info-item">
+                <div class="modal-info-label">Thickness</div>
+                <div class="modal-info-value">${data.thickness}</div>
+            </div>
+            <div class="modal-info-item">
+                <div class="modal-info-label">Rating</div>
+                <div class="modal-info-value">${data.rating}</div>
+            </div>
+            <div class="modal-info-item">
+                <div class="modal-info-label">Status</div>
+                <div class="modal-info-value">${data.archived ? 'Archived' : data.held ? 'On Hold' : 'Active'}</div>
+            </div>
+        </div>
+        
+        <div class="modal-divider"></div>
+        
+        <h3 style="color: #2d7a3e; margin-bottom: 15px;">Production Breakdown</h3>
+        
+        ${groupDetails}
+        
+        <div class="modal-overall">
+            <div class="modal-overall-title">Overall Progress</div>
+            <div class="progress-bar-container" style="margin: 10px 0;">
+                <div class="progress-bar" style="width: ${overallPercent}%">
+                    <span>${overallPercent}%</span>
+                </div>
+            </div>
+            <div class="modal-overall-stats">
+                <div class="modal-overall-stat">
+                    <div class="modal-overall-value">${completedCount}/${totalItems}</div>
+                    <div class="modal-overall-label">Items Completed</div>
+                </div>
+                <div class="modal-overall-stat">
+                    <div class="modal-overall-value">${Math.round(completedBlades)}/${totalBlades}</div>
+                    <div class="modal-overall-label">Blades</div>
+                </div>
+                <div class="modal-overall-stat">
+                    <div class="modal-overall-value">${Math.round(completedWeight)}/${totalWeight}</div>
+                    <div class="modal-overall-label">Weight (kg)</div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('orderModalContent').innerHTML = modalContent;
+    document.getElementById('orderModal').classList.add('show');
+}
+
+function closeOrderModal() {
+    document.getElementById('orderModal').classList.remove('show');
+}
+
+// ========================================
+// INITIALIZE ON PAGE LOAD
+// ========================================
+
+window.addEventListener('DOMContentLoaded', function() {
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        showApp();
+    }
+});
+
+    
+
+// ========================================
+// CENTRE MM CONDITIONAL DISPLAY  
+// ========================================
+// Show Centre MM only for Normal production types (not Step Lap)
+
+function updateCentreMMVisibility() {
+    var productionTypeFilter = document.getElementById('productionTypeFilter');
+    var centreMMSection = document.getElementById('centreMMSection');
+    
+    if (productionTypeFilter && centreMMSection) {
+        var prodType = productionTypeFilter.value;
+        // Show only if Normal or Normal-0mm
+        if (prodType === 'Normal' || prodType === 'Normal-0mm') {
+            centreMMSection.style.display = 'block';
+        } else {
+            centreMMSection.style.display = 'none';
+        }
+    }
+}
+
+// ========================================
+// EDIT JOB CARD
+// ========================================
+
+function editJobCard(jobCard) {
+    if (!jobCardData || !jobCardData[jobCard]) {
+        alert('Job card not found: ' + jobCard);
+        return;
+    }
+    
+    var data = jobCardData[jobCard];
+    
+    var modal = document.createElement('div');
+    modal.className = 'edit-modal show';
+    modal.id = 'editModal';
+    
+    var content = '<div class="edit-modal-content">';
+    content += '<span onclick="closeEditModal()" style="position:absolute;right:20px;top:15px;font-size:28px;cursor:pointer;color:#999;">&times;</span>';
+    content += '<h2 style="color:#2d7a3e;margin-bottom:20px;">Edit Job Card</h2>';
+    
+    content += '<div class="form-group"><label>Job Card Number</label>';
+    content += '<input type="text" value="' + jobCard + '" disabled style="background:#f0f0f0;"></div>';
+    
+    content += '<div class="form-group"><label>Work Order *</label>';
+    content += '<input type="text" id="editWorkOrder" value="' + data.workOrder + '"></div>';
+    
+    content += '<div class="form-group"><label>Production Type *</label>';
+    content += '<select id="editProductionType">';
+    content += '<option value="Normal"' + (data.productionType === 'Normal' ? ' selected' : '') + '>Normal</option>';
+    content += '<option value="Normal-0mm"' + (data.productionType === 'Normal-0mm' ? ' selected' : '') + '>Normal-0mm</option>';
+    content += '<option value="Step Lap"' + (data.productionType === 'Step Lap' ? ' selected' : '') + '>Step Lap</option>';
+    content += '</select></div>';
+    
+    content += '<div class="form-group"><label>Grade *</label>';
+    content += '<select id="editGrade">';
+    content += '<option value="M4"' + (data.grade === 'M4' ? ' selected' : '') + '>M4</option>';
+    content += '<option value="MOH"' + (data.grade === 'MOH' ? ' selected' : '') + '>MOH</option>';
+    content += '<option value="M3"' + (data.grade === 'M3' ? ' selected' : '') + '>M3</option>';
+    content += '<option value="ZDKH"' + (data.grade === 'ZDKH' ? ' selected' : '') + '>ZDKH</option>';
+    content += '<option value="M5"' + (data.grade === 'M5' ? ' selected' : '') + '>M5</option>';
+    content += '</select></div>';
+    
+    content += '<div class="form-group"><label>Thickness *</label>';
+    content += '<input type="text" id="editThickness" value="' + data.thickness + '"></div>';
+    
+    content += '<div class="form-group"><label>Rating</label>';
+    content += '<input type="text" id="editRating" value="' + (data.rating || '') + '"></div>';
+    
+    content += '<div class="form-group"><label>Customer Name</label>';
+    content += '<input type="text" id="editCustomer" value="' + (data.customer || '') + '"></div>';
+    
+    content += '<button class="submit-btn" onclick="saveEditedJobCard(\'' + jobCard + '\')">Save Changes</button>';
+    content += '<button class="submit-btn" style="background:#6c757d;margin-top:10px;" onclick="closeEditModal()">Cancel</button>';
+    content += '</div>';
+    
+    modal.innerHTML = content;
+    document.body.appendChild(modal);
+}
+
+function closeEditModal() {
+    var modal = document.getElementById('editModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function saveEditedJobCard(jobCard) {
+    var workOrder = document.getElementById('editWorkOrder').value.trim();
+    var productionType = document.getElementById('editProductionType').value;
+    var grade = document.getElementById('editGrade').value;
+    var thickness = document.getElementById('editThickness').value.trim();
+    var rating = document.getElementById('editRating').value.trim();
+    var customer = document.getElementById('editCustomer').value.trim();
+    
+    if (!workOrder || !productionType || !grade || !thickness) {
+        alert('Please fill all required fields');
+        return;
+    }
+    
+    jobCardData[jobCard].workOrder = workOrder;
+    jobCardData[jobCard].productionType = productionType;
+    jobCardData[jobCard].grade = grade;
+    jobCardData[jobCard].thickness = thickness;
+    jobCardData[jobCard].rating = rating;
+    jobCardData[jobCard].customer = customer;
+    
+    localStorage.setItem('jobCardData', JSON.stringify(jobCardData));
+    
+    closeEditModal();
+    
+    populateJobCardDropdowns();
+    displayJobCardList();
+    if (typeof displayCustomers === 'function') {
+        displayCustomers();
+    }
+    
+    alert('Job card updated!');
+}
+
+// ========================================
+// EXPORT DATA
+// ========================================
+
+function exportData() {
+    var data = {
+        jobCards: localStorage.getItem('jobCardData'),
+        entries: localStorage.getItem('productionEntries'),
+        completed: localStorage.getItem('completedItems'),
+        exportDate: new Date().toISOString()
+    };
+    
+    var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'evergreen-backup-' + new Date().toISOString().split('T')[0] + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    alert('Data exported!');
+}
+
+// ========================================
+// IMPORT DATA
+// ========================================
+
+function importData(input) {
+    var file = input.files[0];
+    if (!file) return;
+    
+    if (!confirm('This will replace all data. Continue?')) {
+        input.value = '';
+        return;
+    }
+    
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            var data = JSON.parse(e.target.result);
+            if (data.jobCards) localStorage.setItem('jobCardData', data.jobCards);
+            if (data.entries) localStorage.setItem('productionEntries', data.entries);
+            if (data.completed) localStorage.setItem('completedItems', data.completed);
+            alert('Data imported! Reloading...');
+            location.reload();
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    };
+    reader.readAsText(file);
+    input.value = '';
+}
+
+
+</script>
 </body>
 </html>
