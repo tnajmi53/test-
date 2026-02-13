@@ -340,6 +340,12 @@ setTimeout(updateFirebaseStatus, 1000);
         .status-dot.active { background: #28a745; animation: pulse 2s infinite; }
         .status-dot.inactive { background: #ffc107; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+        /* Performance optimizations */
+        * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        select, input, button { transition: all 0.15s ease; }
+        .loading { opacity: 0.6; pointer-events: none; }
+        .job-card, .width-btn { will-change: transform; }
     </style>
 </head>
 <body>
@@ -686,7 +692,36 @@ function initFirebase() {
 }
 
 // Save to Firebase OR localStorage (automatic fallback)
+
+// Debounced save operations to prevent excessive writes
+const saveDataDebounced = {};
+
+function saveDataOptimized(key, data) {
+    // Immediate localStorage save for instant feedback
+    const jsonData = JSON.stringify(data);
+    localStorage.setItem(key, jsonData);
+    
+    // Debounce Firebase saves to reduce network calls
+    if (firebaseActive && db) {
+        if (!saveDataDebounced[key]) {
+            saveDataDebounced[key] = debounce(function(k, d) {
+                db.collection('productionData').doc(k).set({
+                    data: d,
+                    updated: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(err => console.error('Firebase save error:', err));
+            }, 1000);
+        }
+        saveDataDebounced[key](key, data);
+    }
+}
+
+// Old saveData replaced with optimized version
 function saveData(key, data) {
+    saveDataOptimized(key, data);
+    return;
+}
+
+function saveDataOld(key, data) {
     const jsonData = JSON.stringify(data);
     localStorage.setItem(key, jsonData);
     
@@ -738,6 +773,97 @@ function setupFirebaseListeners() {
     
     console.log("✅ Real-time listeners active");
 }
+
+
+
+// ========================================
+// PERFORMANCE OPTIMIZATIONS
+// ========================================
+
+// Debounce function - prevents functions from running too frequently
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Throttle function - limits function execution rate
+function throttle(func, limit) {
+    let inThrottle;
+    return function(...args) {
+        if (!inThrottle) {
+            func.apply(this, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    };
+}
+
+// Cache for DOM elements to avoid repeated queries
+const domCache = {};
+function getCachedElement(id) {
+    if (!domCache[id]) {
+        domCache[id] = document.getElementById(id);
+    }
+    return domCache[id];
+}
+
+// Batch DOM updates using DocumentFragment
+function batchDOMUpdates(container, elements) {
+    const fragment = document.createDocumentFragment();
+    elements.forEach(el => {
+        if (typeof el === 'string') {
+            const div = document.createElement('div');
+            div.innerHTML = el;
+            fragment.appendChild(div.firstChild);
+        } else {
+            fragment.appendChild(el);
+        }
+    });
+    container.innerHTML = '';
+    container.appendChild(fragment);
+}
+
+// Show loading state
+function showLoading(elementId) {
+    const el = getCachedElement(elementId);
+    if (el) {
+        el.style.opacity = '0.5';
+        el.style.pointerEvents = 'none';
+    }
+}
+
+// Hide loading state
+function hideLoading(elementId) {
+    const el = getCachedElement(elementId);
+    if (el) {
+        el.style.opacity = '1';
+        el.style.pointerEvents = 'auto';
+    }
+}
+
+// Optimize data processing with chunking for large datasets
+function processInChunks(array, chunkSize, processor) {
+    let index = 0;
+    function processChunk() {
+        const chunk = array.slice(index, index + chunkSize);
+        if (chunk.length > 0) {
+            processor(chunk);
+            index += chunkSize;
+            if (index < array.length) {
+                requestAnimationFrame(processChunk);
+            }
+        }
+    }
+    processChunk();
+}
+
 
 // Initialize Firebase when page loads
 document.addEventListener('DOMContentLoaded', function() {
@@ -949,7 +1075,34 @@ function filterJobCardsByType() {
     }
 }
 
+
+// Optimized populateJobCardDropdowns with caching
+const populateJobCardDropdownsOptimized = debounce(function() {
+    const jobCards = Object.keys(jobCardData);
+    const dropdowns = ['jobCard', 'manageJobCard', 'dashboardJobCard'];
+    
+    dropdowns.forEach(dropdownId => {
+        const dropdown = getCachedElement(dropdownId);
+        if (!dropdown) return;
+        
+        const currentValue = dropdown.value;
+        const options = ['<option value="">Select Job Card</option>'];
+        
+        jobCards.forEach(jobCard => {
+            const selected = jobCard === currentValue ? ' selected' : '';
+            options.push(`<option value="${jobCard}"${selected}>${jobCard}</option>`);
+        });
+        
+        dropdown.innerHTML = options.join('');
+    });
+}, 100);
+
 function populateJobCardDropdowns() {
+    populateJobCardDropdownsOptimized();
+    return;
+}
+
+function populateJobCardDropdownsOld() {
     filterJobCardsByType();
     
     const dashboardSelect = document.getElementById('dashboardJobCard');
@@ -1008,7 +1161,16 @@ function updateJobDetails() {
     updateWidths();
 }
 
+// Debounced version of updateWidths for better performance
+const updateWidthsDebounced = debounce(function() {
+    updateWidthsImmediate();
+}, 150);
+
 function updateWidths() {
+    updateWidthsDebounced();
+}
+
+function updateWidthsImmediate() {
     updateCentreMMVisibility();
     const itemType = document.getElementById('itemType').value;
     const jobCard = document.getElementById('jobCard').value;
@@ -1198,7 +1360,16 @@ function displayProductionList() {
 // DASHBOARD
 // ========================================
 
+// Throttled version of updateDashboard
+const updateDashboardThrottled = throttle(function() {
+    updateDashboardImmediate();
+}, 300);
+
 function updateDashboard() {
+    updateDashboardThrottled();
+}
+
+function updateDashboardImmediate() {
     const jobCard = document.getElementById('dashboardJobCard').value;
     
     if (!jobCard || !jobCardData[jobCard]) {
@@ -2203,6 +2374,65 @@ function updateFirebaseStatus() {
 
 // Call this after Firebase init
 setTimeout(updateFirebaseStatus, 1000);
+
+
+
+// ========================================
+// OPTIMIZED EVENT HANDLING
+// ========================================
+
+// Use event delegation for better performance on repeated elements
+function setupOptimizedEventListeners() {
+    // Delegate button clicks
+    document.body.addEventListener('click', function(e) {
+        const target = e.target;
+        
+        // Handle button clicks without separate listeners for each button
+        if (target.classList.contains('width-btn')) {
+            e.preventDefault();
+            const width = target.dataset.width;
+            if (width) {
+                // Use requestAnimationFrame for smooth UI update
+                requestAnimationFrame(() => {
+                    getCachedElement('selectedWidth').value = width;
+                });
+            }
+        }
+    }, { passive: true });
+}
+
+// Call setup on DOMContentLoaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupOptimizedEventListeners);
+} else {
+    setupOptimizedEventListeners();
+}
+
+// Optimize dropdown change handlers
+function optimizeDropdownHandlers() {
+    const dropdowns = ['jobCard', 'dashboardJobCard', 'productionTypeFilter'];
+    dropdowns.forEach(id => {
+        const el = getCachedElement(id);
+        if (el && !el.dataset.optimized) {
+            el.addEventListener('change', debounce(function() {
+                // Trigger update with requestAnimationFrame for smooth rendering
+                requestAnimationFrame(() => {
+                    if (id === 'jobCard') updateWidths();
+                    if (id === 'dashboardJobCard') updateDashboard();
+                    if (id === 'productionTypeFilter') {
+                        updateWidths();
+                        updateCentreMMVisibility();
+                    }
+                });
+            }, 100));
+            el.dataset.optimized = 'true';
+        }
+    });
+}
+
+// Setup optimized handlers
+setTimeout(optimizeDropdownHandlers, 500);
+
 
 </script>
 
