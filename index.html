@@ -4,108 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Production Tracker - Evergreen Metal Works</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-// Update Firebase status indicator
-function updateFirebaseStatus() {
-    const statusEl = document.getElementById('firebaseStatus');
-    const dotEl = statusEl ? statusEl.querySelector('.status-dot') : null;
-    const textEl = document.getElementById('statusText');
-    
-    if (!statusEl || !dotEl || !textEl) return;
-    
-    if (firebaseActive) {
-        statusEl.className = 'firebase-status active';
-        dotEl.className = 'status-dot active';
-        textEl.textContent = 'Cloud Sync';
-    } else {
-        statusEl.className = 'firebase-status inactive';
-        dotEl.className = 'status-dot inactive';
-        textEl.textContent = 'Local';
-    }
-}
-
-// Call this after Firebase init
-setTimeout(updateFirebaseStatus, 1000);
-
-</script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
-
-// Update Firebase status indicator
-function updateFirebaseStatus() {
-    const statusEl = document.getElementById('firebaseStatus');
-    const dotEl = statusEl ? statusEl.querySelector('.status-dot') : null;
-    const textEl = document.getElementById('statusText');
-    
-    if (!statusEl || !dotEl || !textEl) return;
-    
-    if (firebaseActive) {
-        statusEl.className = 'firebase-status active';
-        dotEl.className = 'status-dot active';
-        textEl.textContent = 'Cloud Sync';
-    } else {
-        statusEl.className = 'firebase-status inactive';
-        dotEl.className = 'status-dot inactive';
-        textEl.textContent = 'Local';
-    }
-}
-
-// Call this after Firebase init
-setTimeout(updateFirebaseStatus, 1000);
-
-</script>
-
-    <!-- Firebase SDK - OPTIONAL (works without config) -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
-
-// Update Firebase status indicator
-function updateFirebaseStatus() {
-    const statusEl = document.getElementById('firebaseStatus');
-    const dotEl = statusEl ? statusEl.querySelector('.status-dot') : null;
-    const textEl = document.getElementById('statusText');
-    
-    if (!statusEl || !dotEl || !textEl) return;
-    
-    if (firebaseActive) {
-        statusEl.className = 'firebase-status active';
-        dotEl.className = 'status-dot active';
-        textEl.textContent = 'Cloud Sync';
-    } else {
-        statusEl.className = 'firebase-status inactive';
-        dotEl.className = 'status-dot inactive';
-        textEl.textContent = 'Local';
-    }
-}
-
-// Call this after Firebase init
-setTimeout(updateFirebaseStatus, 1000);
-
-</script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js">
-
-// Update Firebase status indicator
-function updateFirebaseStatus() {
-    const statusEl = document.getElementById('firebaseStatus');
-    const dotEl = statusEl ? statusEl.querySelector('.status-dot') : null;
-    const textEl = document.getElementById('statusText');
-    
-    if (!statusEl || !dotEl || !textEl) return;
-    
-    if (firebaseActive) {
-        statusEl.className = 'firebase-status active';
-        dotEl.className = 'status-dot active';
-        textEl.textContent = 'Cloud Sync';
-    } else {
-        statusEl.className = 'firebase-status inactive';
-        dotEl.className = 'status-dot inactive';
-        textEl.textContent = 'Local';
-    }
-}
-
-// Call this after Firebase init
-setTimeout(updateFirebaseStatus, 1000);
-
-</script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -332,20 +236,9 @@ setTimeout(updateFirebaseStatus, 1000);
         .edit-modal.show { display: flex; }
         .edit-modal-content { background: white; padding: 25px; border-radius: 15px; max-width: 500px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
 
-        /* Firebase Status Indicator */
-        .firebase-status { position: fixed; bottom: 20px; right: 20px; background: white; padding: 6px 12px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); font-size: 10px; font-weight: 600; z-index: 999; display: flex; align-items: center; gap: 6px; }
-        .firebase-status.active { border: 2px solid #28a745; color: #28a745; }
-        .firebase-status.inactive { border: 2px solid #ffc107; color: #ffc107; }
-        .status-dot { width: 6px; height: 6px; border-radius: 50%; }
-        .status-dot.active { background: #28a745; animation: pulse 2s infinite; }
-        .status-dot.inactive { background: #ffc107; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-
-        /* Performance optimizations */
-        * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-        select, input, button { transition: all 0.15s ease; }
-        .loading { opacity: 0.6; pointer-events: none; }
-        .job-card, .width-btn { will-change: transform; }
+        /* Firebase Status */
+        .firebase-status { position: fixed; bottom: 20px; right: 20px; background: white; padding: 6px 12px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); font-size: 10px; font-weight: 600; z-index: 999; border: 2px solid #ffc107; color: #ffc107; }
+        .firebase-status.active { border-color: #28a745; color: #28a745; }
     </style>
 </head>
 <body>
@@ -648,15 +541,10 @@ setTimeout(updateFirebaseStatus, 1000);
     <script>
 
 // ========================================
-// FIREBASE CONFIGURATION (PASTE YOUR CONFIG HERE)
+// FIREBASE CONFIGURATION (SIMPLE - NO AUTO-REFRESH)
 // ========================================
 
-// 📝 INSTRUCTIONS: After you create your Firebase project:
-// 1. Go to Firebase Console → Project Settings → Your apps → Web app
-// 2. Copy your config values
-// 3. Replace the values below with YOUR values
-// 4. Save and upload
-
+// Paste your Firebase config here
 const firebaseConfig = {
   apiKey: "AIzaSyCWSaMePMKIKZqJNCgJf2xabITJzS_o7no",
   authDomain: "production-tracker-test.firebaseapp.com",
@@ -666,14 +554,13 @@ const firebaseConfig = {
   appId: "1:494949012026:web:362368c328be14f4e49b03"
 };
 
-// Firebase initialization (safe - won't break if config is empty)
 let db = null;
 let firebaseActive = false;
 
+// Initialize Firebase (NO real-time listeners)
 function initFirebase() {
-    // Check if config is provided
     if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-        console.log("ℹ️ Firebase not configured - using localStorage mode");
+        console.log("ℹ️ Firebase not configured - using localStorage");
         firebaseActive = false;
         return;
     }
@@ -682,193 +569,73 @@ function initFirebase() {
         firebase.initializeApp(firebaseConfig);
         db = firebase.firestore();
         firebaseActive = true;
-        console.log("✅ Firebase initialized - real-time sync active");
-        setupFirebaseListeners();
+        console.log("✅ Firebase initialized");
+        
+        // Load initial data once, then NO auto-updates
+        loadDataFromFirebase();
     } catch (error) {
         console.error("⚠️ Firebase init error:", error);
-        console.log("ℹ️ Falling back to localStorage");
         firebaseActive = false;
     }
 }
 
-// Save to Firebase OR localStorage (automatic fallback)
-
-// Debounced save operations to prevent excessive writes
-const saveDataDebounced = {};
-
-function saveDataOptimized(key, data) {
-    // Immediate localStorage save for instant feedback
-    const jsonData = JSON.stringify(data);
-    localStorage.setItem(key, jsonData);
+// Save to Firebase (debounced to prevent loops)
+let savePending = {};
+function saveToFirebase(key, data) {
+    localStorage.setItem(key, JSON.stringify(data));
     
-    // Debounce Firebase saves to reduce network calls
-    if (firebaseActive && db) {
-        if (!saveDataDebounced[key]) {
-            saveDataDebounced[key] = debounce(function(k, d) {
-                db.collection('productionData').doc(k).set({
-                    data: d,
-                    updated: firebase.firestore.FieldValue.serverTimestamp()
-                }).catch(err => console.error('Firebase save error:', err));
-            }, 1000);
-        }
-        saveDataDebounced[key](key, data);
+    if (!firebaseActive || !db) return;
+    
+    // Clear any pending save
+    if (savePending[key]) {
+        clearTimeout(savePending[key]);
     }
-}
-
-// Old saveData replaced with optimized version
-function saveData(key, data) {
-    saveDataOptimized(key, data);
-    return;
-}
-
-function saveDataOld(key, data) {
-    const jsonData = JSON.stringify(data);
-    localStorage.setItem(key, jsonData);
     
-    if (firebaseActive && db) {
+    // Debounce Firebase save (2 seconds)
+    savePending[key] = setTimeout(() => {
         db.collection('productionData').doc(key).set({
             data: data,
             updated: firebase.firestore.FieldValue.serverTimestamp()
         }).catch(err => console.error('Firebase save error:', err));
-    }
+    }, 2000);
 }
 
-// Load from Firebase OR localStorage
-function loadData(key) {
-    const localData = localStorage.getItem(key);
-    return localData ? JSON.parse(localData) : null;
-}
-
-// Setup real-time listeners (only if Firebase active)
-function setupFirebaseListeners() {
+// Load from Firebase (ONE TIME only, no listeners)
+function loadDataFromFirebase() {
     if (!firebaseActive || !db) return;
     
-    // Listen for job card changes
-    db.collection('productionData').doc('jobCardData').onSnapshot(doc => {
-        if (doc.exists && doc.data().data) {
-            jobCardData = doc.data().data;
-            saveData('jobCardData', jobCardData);
-            if (typeof populateJobCardDropdowns === 'function') populateJobCardDropdowns();
-            if (typeof displayJobCardList === 'function') displayJobCardList();
-            if (typeof updateDashboard === 'function') updateDashboard();
+    Promise.all([
+        db.collection('productionData').doc('jobCardData').get(),
+        db.collection('productionData').doc('productionEntries').get(),
+        db.collection('productionData').doc('completedItems').get()
+    ]).then(([jobDoc, entriesDoc, completedDoc]) => {
+        if (jobDoc.exists && jobDoc.data().data) {
+            jobCardData = jobDoc.data().data;
+            saveToFirebase('jobCardData', jobCardData);
         }
+        if (entriesDoc.exists && entriesDoc.data().data) {
+            productionEntries = entriesDoc.data().data;
+            saveToFirebase('productionEntries', productionEntries);
+        }
+        if (completedDoc.exists && completedDoc.data().data) {
+            completedItems = completedDoc.data().data;
+            saveToFirebase('completedItems', completedItems);
+        }
+        console.log("✅ Data loaded from Firebase");
+        
+        // Refresh UI once
+        if (typeof populateJobCardDropdowns === 'function') populateJobCardDropdowns();
+        if (typeof displayJobCardList === 'function') displayJobCardList();
+    }).catch(error => {
+        console.error("Error loading from Firebase:", error);
     });
-    
-    // Listen for production entries
-    db.collection('productionData').doc('productionEntries').onSnapshot(doc => {
-        if (doc.exists && doc.data().data) {
-            productionEntries = doc.data().data;
-            saveData('productionEntries', productionEntries);
-        }
-    });
-    
-    // Listen for completed items
-    db.collection('productionData').doc('completedItems').onSnapshot(doc => {
-        if (doc.exists && doc.data().data) {
-            completedItems = doc.data().data;
-            saveData('completedItems', completedItems);
-            if (typeof updateDashboard === 'function') updateDashboard();
-        }
-    });
-    
-    console.log("✅ Real-time listeners active");
 }
 
-
-
-// ========================================
-// PERFORMANCE OPTIMIZATIONS
-// ========================================
-
-// Debounce function - prevents functions from running too frequently
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Throttle function - limits function execution rate
-function throttle(func, limit) {
-    let inThrottle;
-    return function(...args) {
-        if (!inThrottle) {
-            func.apply(this, args);
-            inThrottle = true;
-            setTimeout(() => inThrottle = false, limit);
-        }
-    };
-}
-
-// Cache for DOM elements to avoid repeated queries
-const domCache = {};
-function getCachedElement(id) {
-    if (!domCache[id]) {
-        domCache[id] = document.getElementById(id);
-    }
-    return domCache[id];
-}
-
-// Batch DOM updates using DocumentFragment
-function batchDOMUpdates(container, elements) {
-    const fragment = document.createDocumentFragment();
-    elements.forEach(el => {
-        if (typeof el === 'string') {
-            const div = document.createElement('div');
-            div.innerHTML = el;
-            fragment.appendChild(div.firstChild);
-        } else {
-            fragment.appendChild(el);
-        }
-    });
-    container.innerHTML = '';
-    container.appendChild(fragment);
-}
-
-// Show loading state
-function showLoading(elementId) {
-    const el = getCachedElement(elementId);
-    if (el) {
-        el.style.opacity = '0.5';
-        el.style.pointerEvents = 'none';
-    }
-}
-
-// Hide loading state
-function hideLoading(elementId) {
-    const el = getCachedElement(elementId);
-    if (el) {
-        el.style.opacity = '1';
-        el.style.pointerEvents = 'auto';
-    }
-}
-
-// Optimize data processing with chunking for large datasets
-function processInChunks(array, chunkSize, processor) {
-    let index = 0;
-    function processChunk() {
-        const chunk = array.slice(index, index + chunkSize);
-        if (chunk.length > 0) {
-            processor(chunk);
-            index += chunkSize;
-            if (index < array.length) {
-                requestAnimationFrame(processChunk);
-            }
-        }
-    }
-    processChunk();
-}
-
-
-// Initialize Firebase when page loads
+// Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
     initFirebase();
 });
+
 
 
 // ========================================
@@ -961,6 +728,7 @@ let currentSubTab = 'started';
 let monthlyChart = null;
 
 // Load job card data
+// Load from localStorage (Firebase loads separately)
 const savedJobCards = localStorage.getItem('jobCardData');
 if (savedJobCards) {
     jobCardData = JSON.parse(savedJobCards);
@@ -1075,34 +843,7 @@ function filterJobCardsByType() {
     }
 }
 
-
-// Optimized populateJobCardDropdowns with caching
-const populateJobCardDropdownsOptimized = debounce(function() {
-    const jobCards = Object.keys(jobCardData);
-    const dropdowns = ['jobCard', 'manageJobCard', 'dashboardJobCard'];
-    
-    dropdowns.forEach(dropdownId => {
-        const dropdown = getCachedElement(dropdownId);
-        if (!dropdown) return;
-        
-        const currentValue = dropdown.value;
-        const options = ['<option value="">Select Job Card</option>'];
-        
-        jobCards.forEach(jobCard => {
-            const selected = jobCard === currentValue ? ' selected' : '';
-            options.push(`<option value="${jobCard}"${selected}>${jobCard}</option>`);
-        });
-        
-        dropdown.innerHTML = options.join('');
-    });
-}, 100);
-
 function populateJobCardDropdowns() {
-    populateJobCardDropdownsOptimized();
-    return;
-}
-
-function populateJobCardDropdownsOld() {
     filterJobCardsByType();
     
     const dashboardSelect = document.getElementById('dashboardJobCard');
@@ -1161,16 +902,7 @@ function updateJobDetails() {
     updateWidths();
 }
 
-// Debounced version of updateWidths for better performance
-const updateWidthsDebounced = debounce(function() {
-    updateWidthsImmediate();
-}, 150);
-
 function updateWidths() {
-    updateWidthsDebounced();
-}
-
-function updateWidthsImmediate() {
     updateCentreMMVisibility();
     const itemType = document.getElementById('itemType').value;
     const jobCard = document.getElementById('jobCard').value;
@@ -1267,7 +999,7 @@ function recordProduction() {
             const key = diamondMM ? `${jobCard}-3-${width}-${diamondMM}` : `${jobCard}-3-${width}`;
             completedItems[key] = true;
         }
-        saveData('completedItems', completedItems);
+        saveToFirebase('completedItems', completedItems);
     } else {
         const entry = {
             id: Date.now(),
@@ -1288,7 +1020,7 @@ function recordProduction() {
         productionEntries.push(entry);
     }
 
-    saveData('productionEntries', productionEntries);
+    saveToFirebase('productionEntries', productionEntries);
 
     const successMsg = document.getElementById('successMsg');
     successMsg.classList.add('show');
@@ -1360,16 +1092,7 @@ function displayProductionList() {
 // DASHBOARD
 // ========================================
 
-// Throttled version of updateDashboard
-const updateDashboardThrottled = throttle(function() {
-    updateDashboardImmediate();
-}, 300);
-
 function updateDashboard() {
-    updateDashboardThrottled();
-}
-
-function updateDashboardImmediate() {
     const jobCard = document.getElementById('dashboardJobCard').value;
     
     if (!jobCard || !jobCardData[jobCard]) {
@@ -1560,7 +1283,7 @@ function parsePastedData() {
             held: false
         };
         
-        saveData('jobCardData', jobCardData);
+        saveToFirebase('jobCardData', jobCardData);
         
         document.getElementById('uploadSuccessMsg').classList.add('show');
         setTimeout(() => {
@@ -1647,7 +1370,7 @@ function displayJobCardList() {
 
 function toggleHold(jobCard) {
     jobCardData[jobCard].held = !jobCardData[jobCard].held;
-    saveData('jobCardData', jobCardData);
+    saveToFirebase('jobCardData', jobCardData);
     populateJobCardDropdowns();
     displayJobCardList();
 }
@@ -1664,9 +1387,9 @@ function deleteJobCard(jobCard) {
             }
         });
         
-        saveData('jobCardData', jobCardData);
-        saveData('productionEntries', productionEntries);
-        saveData('completedItems', completedItems);
+        saveToFirebase('jobCardData', jobCardData);
+        saveToFirebase('productionEntries', productionEntries);
+        saveToFirebase('completedItems', completedItems);
         
         populateJobCardDropdowns();
         displayJobCardList();
@@ -2284,7 +2007,7 @@ function saveEditedJobCard(jobCard) {
     jobCardData[jobCard].rating = rating;
     jobCardData[jobCard].customer = customer;
     
-    saveData('jobCardData', jobCardData);
+    saveToFirebase('jobCardData', jobCardData);
     
     closeEditModal();
     
@@ -2353,92 +2076,27 @@ function importData(input) {
 
 
 
-// Update Firebase status indicator
+// Update Firebase status
 function updateFirebaseStatus() {
     const statusEl = document.getElementById('firebaseStatus');
-    const dotEl = statusEl ? statusEl.querySelector('.status-dot') : null;
     const textEl = document.getElementById('statusText');
-    
-    if (!statusEl || !dotEl || !textEl) return;
-    
-    if (firebaseActive) {
-        statusEl.className = 'firebase-status active';
-        dotEl.className = 'status-dot active';
-        textEl.textContent = 'Cloud Sync';
-    } else {
-        statusEl.className = 'firebase-status inactive';
-        dotEl.className = 'status-dot inactive';
-        textEl.textContent = 'Local';
+    if (statusEl && textEl) {
+        if (firebaseActive) {
+            statusEl.className = 'firebase-status active';
+            textEl.textContent = 'Cloud';
+        } else {
+            statusEl.className = 'firebase-status';
+            textEl.textContent = 'Local';
+        }
     }
 }
 
-// Call this after Firebase init
 setTimeout(updateFirebaseStatus, 1000);
-
-
-
-// ========================================
-// OPTIMIZED EVENT HANDLING
-// ========================================
-
-// Use event delegation for better performance on repeated elements
-function setupOptimizedEventListeners() {
-    // Delegate button clicks
-    document.body.addEventListener('click', function(e) {
-        const target = e.target;
-        
-        // Handle button clicks without separate listeners for each button
-        if (target.classList.contains('width-btn')) {
-            e.preventDefault();
-            const width = target.dataset.width;
-            if (width) {
-                // Use requestAnimationFrame for smooth UI update
-                requestAnimationFrame(() => {
-                    getCachedElement('selectedWidth').value = width;
-                });
-            }
-        }
-    }, { passive: true });
-}
-
-// Call setup on DOMContentLoaded
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupOptimizedEventListeners);
-} else {
-    setupOptimizedEventListeners();
-}
-
-// Optimize dropdown change handlers
-function optimizeDropdownHandlers() {
-    const dropdowns = ['jobCard', 'dashboardJobCard', 'productionTypeFilter'];
-    dropdowns.forEach(id => {
-        const el = getCachedElement(id);
-        if (el && !el.dataset.optimized) {
-            el.addEventListener('change', debounce(function() {
-                // Trigger update with requestAnimationFrame for smooth rendering
-                requestAnimationFrame(() => {
-                    if (id === 'jobCard') updateWidths();
-                    if (id === 'dashboardJobCard') updateDashboard();
-                    if (id === 'productionTypeFilter') {
-                        updateWidths();
-                        updateCentreMMVisibility();
-                    }
-                });
-            }, 100));
-            el.dataset.optimized = 'true';
-        }
-    });
-}
-
-// Setup optimized handlers
-setTimeout(optimizeDropdownHandlers, 500);
-
 
 </script>
 
-    <!-- Firebase Status Indicator -->
-    <div id="firebaseStatus" class="firebase-status inactive">
-        <span class="status-dot inactive"></span>
+    <!-- Firebase Status -->
+    <div id="firebaseStatus" class="firebase-status">
         <span id="statusText">Local</span>
     </div>
 
