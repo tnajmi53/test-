@@ -4,13 +4,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Production Tracker - Evergreen Metal Works</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js">
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+// Update Firebase status indicator
+function updateFirebaseStatus() {
+    const statusEl = document.getElementById('firebaseStatus');
+    const dotEl = statusEl ? statusEl.querySelector('.status-dot') : null;
+    const textEl = document.getElementById('statusText');
+    
+    if (!statusEl || !dotEl || !textEl) return;
+    
+    if (firebaseActive) {
+        statusEl.className = 'firebase-status active';
+        dotEl.className = 'status-dot active';
+        textEl.textContent = 'Cloud Sync';
+    } else {
+        statusEl.className = 'firebase-status inactive';
+        dotEl.className = 'status-dot inactive';
+        textEl.textContent = 'Local';
+    }
+}
+
+// Call this after Firebase init
+setTimeout(updateFirebaseStatus, 1000);
+
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
+
+// Update Firebase status indicator
+function updateFirebaseStatus() {
+    const statusEl = document.getElementById('firebaseStatus');
+    const dotEl = statusEl ? statusEl.querySelector('.status-dot') : null;
+    const textEl = document.getElementById('statusText');
+    
+    if (!statusEl || !dotEl || !textEl) return;
+    
+    if (firebaseActive) {
+        statusEl.className = 'firebase-status active';
+        dotEl.className = 'status-dot active';
+        textEl.textContent = 'Cloud Sync';
+    } else {
+        statusEl.className = 'firebase-status inactive';
+        dotEl.className = 'status-dot inactive';
+        textEl.textContent = 'Local';
+    }
+}
+
+// Call this after Firebase init
+setTimeout(updateFirebaseStatus, 1000);
+
+</script>
+
+    <!-- Firebase SDK - OPTIONAL (works without config) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
+
+// Update Firebase status indicator
+function updateFirebaseStatus() {
+    const statusEl = document.getElementById('firebaseStatus');
+    const dotEl = statusEl ? statusEl.querySelector('.status-dot') : null;
+    const textEl = document.getElementById('statusText');
+    
+    if (!statusEl || !dotEl || !textEl) return;
+    
+    if (firebaseActive) {
+        statusEl.className = 'firebase-status active';
+        dotEl.className = 'status-dot active';
+        textEl.textContent = 'Cloud Sync';
+    } else {
+        statusEl.className = 'firebase-status inactive';
+        dotEl.className = 'status-dot inactive';
+        textEl.textContent = 'Local';
+    }
+}
+
+// Call this after Firebase init
+setTimeout(updateFirebaseStatus, 1000);
+
+</script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js">
+
+// Update Firebase status indicator
+function updateFirebaseStatus() {
+    const statusEl = document.getElementById('firebaseStatus');
+    const dotEl = statusEl ? statusEl.querySelector('.status-dot') : null;
+    const textEl = document.getElementById('statusText');
+    
+    if (!statusEl || !dotEl || !textEl) return;
+    
+    if (firebaseActive) {
+        statusEl.className = 'firebase-status active';
+        dotEl.className = 'status-dot active';
+        textEl.textContent = 'Cloud Sync';
+    } else {
+        statusEl.className = 'firebase-status inactive';
+        dotEl.className = 'status-dot inactive';
+        textEl.textContent = 'Local';
+    }
+}
+
+// Call this after Firebase init
+setTimeout(updateFirebaseStatus, 1000);
+
+</script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -237,14 +332,14 @@
         .edit-modal.show { display: flex; }
         .edit-modal-content { background: white; padding: 25px; border-radius: 15px; max-width: 500px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
 
-        /* Firebase Connection Status */
-        .firebase-status { position: fixed; bottom: 20px; right: 20px; background: #fff; padding: 8px 12px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-size: 11px; z-index: 1000; display: flex; align-items: center; gap: 6px; }
-        .firebase-status.connected { border: 2px solid #28a745; }
-        .firebase-status.disconnected { border: 2px solid #dc3545; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
-        .status-dot.connected { background: #28a745; animation: pulse 2s infinite; }
-        .status-dot.disconnected { background: #dc3545; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        /* Firebase Status Indicator */
+        .firebase-status { position: fixed; bottom: 20px; right: 20px; background: white; padding: 6px 12px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); font-size: 10px; font-weight: 600; z-index: 999; display: flex; align-items: center; gap: 6px; }
+        .firebase-status.active { border: 2px solid #28a745; color: #28a745; }
+        .firebase-status.inactive { border: 2px solid #ffc107; color: #ffc107; }
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+        .status-dot.active { background: #28a745; animation: pulse 2s infinite; }
+        .status-dot.inactive { background: #ffc107; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
     </style>
 </head>
 <body>
@@ -545,6 +640,111 @@
     </div>
 
     <script>
+
+// ========================================
+// FIREBASE CONFIGURATION (PASTE YOUR CONFIG HERE)
+// ========================================
+
+// 📝 INSTRUCTIONS: After you create your Firebase project:
+// 1. Go to Firebase Console → Project Settings → Your apps → Web app
+// 2. Copy your config values
+// 3. Replace the values below with YOUR values
+// 4. Save and upload
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCWSaMePMKIKZqJNCgJf2xabITJzS_o7no",
+  authDomain: "production-tracker-test.firebaseapp.com",
+  projectId: "production-tracker-test",
+  storageBucket: "production-tracker-test.firebasestorage.app",
+  messagingSenderId: "494949012026",
+  appId: "1:494949012026:web:362368c328be14f4e49b03"
+};
+
+// Firebase initialization (safe - won't break if config is empty)
+let db = null;
+let firebaseActive = false;
+
+function initFirebase() {
+    // Check if config is provided
+    if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+        console.log("ℹ️ Firebase not configured - using localStorage mode");
+        firebaseActive = false;
+        return;
+    }
+    
+    try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        firebaseActive = true;
+        console.log("✅ Firebase initialized - real-time sync active");
+        setupFirebaseListeners();
+    } catch (error) {
+        console.error("⚠️ Firebase init error:", error);
+        console.log("ℹ️ Falling back to localStorage");
+        firebaseActive = false;
+    }
+}
+
+// Save to Firebase OR localStorage (automatic fallback)
+function saveData(key, data) {
+    const jsonData = JSON.stringify(data);
+    localStorage.setItem(key, jsonData);
+    
+    if (firebaseActive && db) {
+        db.collection('productionData').doc(key).set({
+            data: data,
+            updated: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(err => console.error('Firebase save error:', err));
+    }
+}
+
+// Load from Firebase OR localStorage
+function loadData(key) {
+    const localData = localStorage.getItem(key);
+    return localData ? JSON.parse(localData) : null;
+}
+
+// Setup real-time listeners (only if Firebase active)
+function setupFirebaseListeners() {
+    if (!firebaseActive || !db) return;
+    
+    // Listen for job card changes
+    db.collection('productionData').doc('jobCardData').onSnapshot(doc => {
+        if (doc.exists && doc.data().data) {
+            jobCardData = doc.data().data;
+            saveData('jobCardData', jobCardData);
+            if (typeof populateJobCardDropdowns === 'function') populateJobCardDropdowns();
+            if (typeof displayJobCardList === 'function') displayJobCardList();
+            if (typeof updateDashboard === 'function') updateDashboard();
+        }
+    });
+    
+    // Listen for production entries
+    db.collection('productionData').doc('productionEntries').onSnapshot(doc => {
+        if (doc.exists && doc.data().data) {
+            productionEntries = doc.data().data;
+            saveData('productionEntries', productionEntries);
+        }
+    });
+    
+    // Listen for completed items
+    db.collection('productionData').doc('completedItems').onSnapshot(doc => {
+        if (doc.exists && doc.data().data) {
+            completedItems = doc.data().data;
+            saveData('completedItems', completedItems);
+            if (typeof updateDashboard === 'function') updateDashboard();
+        }
+    });
+    
+    console.log("✅ Real-time listeners active");
+}
+
+// Initialize Firebase when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initFirebase();
+});
+
+
 // ========================================
 // LOGIN SYSTEM
 // ========================================
@@ -628,203 +828,6 @@ function setupUserInterface() {
 // DATA STORAGE
 // ========================================
 
-
-// ========================================
-// FIREBASE CONFIGURATION
-// ========================================
-
-// Firebase configuration - USER WILL NEED TO REPLACE THIS
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyCWSaMePMKIKZqJNCgJf2xabITJzS_o7no",
-  authDomain: "production-tracker-test.firebaseapp.com",
-  projectId: "production-tracker-test",
-  storageBucket: "production-tracker-test.firebasestorage.app",
-  messagingSenderId: "494949012026",
-  appId: "1:494949012026:web:362368c328be14f4e49b03"
-};
-
-// Initialize Firebase
-let app, db, auth;
-let isFirebaseReady = false;
-
-try {
-    app = firebase.initializeApp(firebaseConfig);
-    db = firebase.firestore();
-    auth = firebase.auth();
-    isFirebaseReady = true;
-    console.log("✅ Firebase initialized successfully");
-} catch (error) {
-    console.error("❌ Firebase initialization error:", error);
-    console.log("⚠️ Falling back to localStorage mode");
-    isFirebaseReady = false;
-}
-
-// ========================================
-// FIREBASE DATABASE FUNCTIONS
-// ========================================
-
-// Save job card data to Firebase
-function saveJobCardDataToFirebase() {
-    if (!isFirebaseReady) {
-        saveJobCardDataToFirebase();
-        return Promise.resolve();
-    }
-    
-    return db.collection('productionData').doc('jobCards').set({
-        data: jobCardData,
-        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-    }).catch(error => {
-        console.error("Error saving to Firebase:", error);
-        saveJobCardDataToFirebase();
-    });
-}
-
-// Save production entries to Firebase
-function saveProductionEntriesToFirebase() {
-    if (!isFirebaseReady) {
-        saveProductionEntriesToFirebase();
-        return Promise.resolve();
-    }
-    
-    return db.collection('productionData').doc('entries').set({
-        data: productionEntries,
-        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-    }).catch(error => {
-        console.error("Error saving to Firebase:", error);
-        saveProductionEntriesToFirebase();
-    });
-}
-
-// Save completed items to Firebase
-function saveCompletedItemsToFirebase() {
-    if (!isFirebaseReady) {
-        saveCompletedItemsToFirebase();
-        return Promise.resolve();
-    }
-    
-    return db.collection('productionData').doc('completedItems').set({
-        data: completedItems,
-        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-    }).catch(error => {
-        console.error("Error saving to Firebase:", error);
-        saveCompletedItemsToFirebase();
-    });
-}
-
-// Load data from Firebase
-function loadDataFromFirebase() {
-    if (!isFirebaseReady) {
-        // Load from localStorage as fallback
-        const savedJobCards = localStorage.getItem('jobCardData');
-        if (savedJobCards) {
-            jobCardData = JSON.parse(savedJobCards);
-        }
-        const savedEntries = localStorage.getItem('productionEntries');
-        if (savedEntries) {
-            productionEntries = JSON.parse(savedEntries);
-        }
-        const savedCompleted = localStorage.getItem('completedItems');
-        if (savedCompleted) {
-            completedItems = JSON.parse(savedCompleted);
-        }
-        return Promise.resolve();
-    }
-    
-    return Promise.all([
-        db.collection('productionData').doc('jobCards').get(),
-        db.collection('productionData').doc('entries').get(),
-        db.collection('productionData').doc('completedItems').get()
-    ]).then(([jobCardsDoc, entriesDoc, completedDoc]) => {
-        if (jobCardsDoc.exists && jobCardsDoc.data().data) {
-            jobCardData = jobCardsDoc.data().data;
-        }
-        if (entriesDoc.exists && entriesDoc.data().data) {
-            productionEntries = entriesDoc.data().data;
-        }
-        if (completedDoc.exists && completedDoc.data().data) {
-            completedItems = completedDoc.data().data;
-        }
-        console.log("✅ Data loaded from Firebase");
-    }).catch(error => {
-        console.error("Error loading from Firebase:", error);
-        // Fallback to localStorage
-        const savedJobCards = localStorage.getItem('jobCardData');
-        if (savedJobCards) jobCardData = JSON.parse(savedJobCards);
-        const savedEntries = localStorage.getItem('productionEntries');
-        if (savedEntries) productionEntries = JSON.parse(savedEntries);
-        const savedCompleted = localStorage.getItem('completedItems');
-        if (savedCompleted) completedItems = JSON.parse(savedCompleted);
-    });
-}
-
-// Set up real-time listeners for automatic updates
-function setupRealtimeListeners() {
-    if (!isFirebaseReady) {
-        console.log("⚠️ Firebase not ready, real-time sync disabled");
-        return;
-    }
-    
-    // Listen for job card changes
-    db.collection('productionData').doc('jobCards').onSnapshot(doc => {
-        if (doc.exists && doc.data().data) {
-            jobCardData = doc.data().data;
-            console.log("🔄 Job cards updated from Firebase");
-            // Refresh UI
-            if (typeof populateJobCardDropdowns === 'function') {
-                populateJobCardDropdowns();
-            }
-            if (typeof displayJobCardList === 'function') {
-                displayJobCardList();
-            }
-            if (typeof updateDashboard === 'function') {
-                updateDashboard();
-            }
-            if (typeof displayCustomers === 'function') {
-                displayCustomers();
-            }
-        }
-    }, error => {
-        console.error("Error listening to job cards:", error);
-    });
-    
-    // Listen for production entries changes
-    db.collection('productionData').doc('entries').onSnapshot(doc => {
-        if (doc.exists && doc.data().data) {
-            productionEntries = doc.data().data;
-            console.log("🔄 Production entries updated from Firebase");
-            // Refresh UI if on production list view
-            if (typeof displayProductionList === 'function') {
-                displayProductionList();
-            }
-        }
-    }, error => {
-        console.error("Error listening to entries:", error);
-    });
-    
-    // Listen for completed items changes
-    db.collection('productionData').doc('completedItems').onSnapshot(doc => {
-        if (doc.exists && doc.data().data) {
-            completedItems = doc.data().data;
-            console.log("🔄 Completed items updated from Firebase");
-            // Refresh dashboard
-            if (typeof updateDashboard === 'function') {
-                updateDashboard();
-            }
-        }
-    }, error => {
-        console.error("Error listening to completed items:", error);
-    });
-    
-    console.log("✅ Real-time listeners activated");
-}
-
-
 let jobCardData = {};
 let productionEntries = JSON.parse(localStorage.getItem('productionEntries')) || [];
 let completedItems = JSON.parse(localStorage.getItem('completedItems')) || {};
@@ -832,23 +835,16 @@ let currentSubTab = 'started';
 let monthlyChart = null;
 
 // Load job card data
-// Data will be loaded from Firebase
-loadDataFromFirebase().then(() => {
-    console.log('Data loaded, setting up listeners');
-    setupRealtimeListeners();
-});
+const savedJobCards = localStorage.getItem('jobCardData');
+if (savedJobCards) {
+    jobCardData = JSON.parse(savedJobCards);
+}
 
 // ========================================
 // INITIALIZATION
 // ========================================
 
 function initializeApp() {
-    // Load data from Firebase first
-    loadDataFromFirebase().then(() => {
-        setupRealtimeListeners();
-        console.log("✅ Firebase real-time sync active");
-    });
-    
     initializeTabs();
     initializeSubTabs();
     populateJobCardDropdowns();
@@ -1109,7 +1105,7 @@ function recordProduction() {
             const key = diamondMM ? `${jobCard}-3-${width}-${diamondMM}` : `${jobCard}-3-${width}`;
             completedItems[key] = true;
         }
-        saveCompletedItemsToFirebase();
+        saveData('completedItems', completedItems);
     } else {
         const entry = {
             id: Date.now(),
@@ -1130,7 +1126,7 @@ function recordProduction() {
         productionEntries.push(entry);
     }
 
-    saveProductionEntriesToFirebase();
+    saveData('productionEntries', productionEntries);
 
     const successMsg = document.getElementById('successMsg');
     successMsg.classList.add('show');
@@ -1393,7 +1389,7 @@ function parsePastedData() {
             held: false
         };
         
-        saveJobCardDataToFirebase();
+        saveData('jobCardData', jobCardData);
         
         document.getElementById('uploadSuccessMsg').classList.add('show');
         setTimeout(() => {
@@ -1480,7 +1476,7 @@ function displayJobCardList() {
 
 function toggleHold(jobCard) {
     jobCardData[jobCard].held = !jobCardData[jobCard].held;
-    saveJobCardDataToFirebase();
+    saveData('jobCardData', jobCardData);
     populateJobCardDropdowns();
     displayJobCardList();
 }
@@ -1497,9 +1493,9 @@ function deleteJobCard(jobCard) {
             }
         });
         
-        saveJobCardDataToFirebase();
-        saveProductionEntriesToFirebase();
-        saveCompletedItemsToFirebase();
+        saveData('jobCardData', jobCardData);
+        saveData('productionEntries', productionEntries);
+        saveData('completedItems', completedItems);
         
         populateJobCardDropdowns();
         displayJobCardList();
@@ -2117,7 +2113,7 @@ function saveEditedJobCard(jobCard) {
     jobCardData[jobCard].rating = rating;
     jobCardData[jobCard].customer = customer;
     
-    saveJobCardDataToFirebase();
+    saveData('jobCardData', jobCardData);
     
     closeEditModal();
     
@@ -2184,12 +2180,36 @@ function importData(input) {
 }
 
 
+
+
+// Update Firebase status indicator
+function updateFirebaseStatus() {
+    const statusEl = document.getElementById('firebaseStatus');
+    const dotEl = statusEl ? statusEl.querySelector('.status-dot') : null;
+    const textEl = document.getElementById('statusText');
+    
+    if (!statusEl || !dotEl || !textEl) return;
+    
+    if (firebaseActive) {
+        statusEl.className = 'firebase-status active';
+        dotEl.className = 'status-dot active';
+        textEl.textContent = 'Cloud Sync';
+    } else {
+        statusEl.className = 'firebase-status inactive';
+        dotEl.className = 'status-dot inactive';
+        textEl.textContent = 'Local';
+    }
+}
+
+// Call this after Firebase init
+setTimeout(updateFirebaseStatus, 1000);
+
 </script>
 
-    <!-- Firebase Connection Status -->
-    <div id="firebaseStatus" class="firebase-status disconnected">
-        <span class="status-dot disconnected"></span>
-        <span id="statusText">Connecting...</span>
+    <!-- Firebase Status Indicator -->
+    <div id="firebaseStatus" class="firebase-status inactive">
+        <span class="status-dot inactive"></span>
+        <span id="statusText">Local</span>
     </div>
 
 </body>
