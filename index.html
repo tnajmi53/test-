@@ -723,68 +723,82 @@ function initFirebase() {
     }
 }
 
-// Save to Firebase OR localStorage (automatic fallback)
+// Flag to prevent infinite loop when Firebase listener triggers a save
+let receivingFromFirebase = false;
+
+// ── WRITE to Firebase ─────────────────────────────────────────────────────
+function saveToFirebase(key, data) {
+    if (!firebaseActive || !db) return;
+    db.collection('productionData').doc(key).set({ data: data })
+        .then(() => console.log('☁️ Firebase saved:', key))
+        .catch(err => console.warn('⚠️ Firebase write failed:', key, err.message));
+}
+
+// ── READ / REAL-TIME LISTENERS ────────────────────────────────────────────
+function setupFirebaseListeners() {
+    if (!firebaseActive || !db) return;
+
+    const keys = ['jobCardData', 'productionEntries', 'completedItems'];
+
+    keys.forEach(key => {
+        db.collection('productionData').doc(key).onSnapshot(doc => {
+            if (!doc.exists || !doc.data() || !doc.data().data) return;
+
+            const incoming = doc.data().data;
+
+            // Prevent the listener triggering another Firebase write
+            receivingFromFirebase = true;
+
+            // Update in-memory data
+            if (key === 'jobCardData') {
+                jobCardData = incoming;
+                invalidateCache();
+                localStorage.setItem('jobCardData', JSON.stringify(incoming));
+                if (typeof populateJobCardDropdowns === 'function') populateJobCardDropdowns();
+                if (typeof displayJobCards === 'function') displayJobCards();
+            } else if (key === 'productionEntries') {
+                productionEntries = incoming;
+                localStorage.setItem('productionEntries', JSON.stringify(incoming));
+                if (typeof displayProductionList === 'function') displayProductionList();
+            } else if (key === 'completedItems') {
+                completedItems = incoming;
+                localStorage.setItem('completedItems', JSON.stringify(incoming));
+                if (typeof updateDashboard === 'function') updateDashboard();
+            }
+
+            receivingFromFirebase = false;
+            console.log('🔄 Received from Firebase:', key);
+        }, err => {
+            console.warn('⚠️ Firebase listener error:', key, err.message);
+        });
+    });
+
+    console.log('✅ Firebase real-time listeners active');
+}
+
+// ── LOCAL + CLOUD SAVE ────────────────────────────────────────────────────
 function saveData(key, data) {
-    // STEP 1: Save to localStorage immediately (INSTANT, non-blocking)
+    // Always save to localStorage immediately (instant, offline-safe)
     try {
         localStorage.setItem(key, JSON.stringify(data));
-        console.log('✓ Saved to localStorage:', key);
     } catch (e) {
         console.error('LocalStorage error:', e);
     }
-    
-    // STEP 2: Queue Firebase save for background (async, debounced)
-    if (typeof queueFirebaseSync === 'function') {
-        queueFirebaseSync(key, data);
-    }
 
-    
     // Invalidate cache if job card data changed
-    if (key === 'jobCardData') {
-        invalidateCache();
-    }
+    if (key === 'jobCardData') invalidateCache();
 
+    // Skip Firebase write if we're receiving data FROM Firebase (prevent loop)
+    if (receivingFromFirebase) return;
+
+    // Queue debounced Firebase write
+    queueFirebaseSync(key, data);
 }
 
-// Load from Firebase OR localStorage
+// Load from localStorage (Firebase listeners keep it up-to-date automatically)
 function loadData(key) {
     const localData = localStorage.getItem(key);
     return localData ? JSON.parse(localData) : null;
-}
-
-// Setup real-time listeners (only if Firebase active)
-function setupFirebaseListeners() {
-    if (!firebaseActive || !db) return;
-    
-    // Listen for job card changes
-    db.collection('productionData').doc('jobCardData').onSnapshot(doc => {
-        if (doc.exists && doc.data().data) {
-            jobCardData = doc.data().data;
-            saveData('jobCardData', jobCardData);
-            if (typeof populateJobCardDropdowns === 'function') populateJobCardDropdowns();
-            if (typeof displayJobCardList === 'function') displayJobCardList();
-            if (typeof updateDashboard === 'function') updateDashboard();
-        }
-    });
-    
-    // Listen for production entries
-    db.collection('productionData').doc('productionEntries').onSnapshot(doc => {
-        if (doc.exists && doc.data().data) {
-            productionEntries = doc.data().data;
-            saveData('productionEntries', productionEntries);
-        }
-    });
-    
-    // Listen for completed items
-    db.collection('productionData').doc('completedItems').onSnapshot(doc => {
-        if (doc.exists && doc.data().data) {
-            completedItems = doc.data().data;
-            saveData('completedItems', completedItems);
-            if (typeof updateDashboard === 'function') updateDashboard();
-        }
-    });
-    
-    
 }
 
 // Initialize Firebase when page loads
@@ -2460,103 +2474,46 @@ setTimeout(updateFirebaseStatus, 1000);
 // Complete a started production item
 function completeStartedItem(entryId) {
     const entry = productionEntries.find(e => e.id === entryId);
-    if (!entry) {
-        alert('Item not found!');
-        return;
-    }
-    
+    if (!entry) { alert('Item not found!'); return; }
+
     const operatorName = prompt('Enter operator name for completion:', entry.operator);
     if (!operatorName) return;
-    
+
     const remarks = prompt('Enter completion remarks (optional):');
-    
+
+    // Update entry
     entry.status = 'completed';
     entry.endTime = new Date().toISOString();
     entry.endOperator = operatorName;
-    if (remarks) {
-        entry.endRemarks = remarks;
-    }
-    
-    const jobCard = entry.jobCard;
-    const width = entry.width;
-    const itemType = entry.itemType;
-    const diamondMM = entry.diamondMM;
-    
+    if (remarks) entry.endRemarks = remarks;
+
+    // Mark width as completed
+    const { jobCard, width, itemType, diamondMM } = entry;
     if (itemType === 'yoke-side') {
-        for (let group = 1; group <= 2; group++) {
-            const key = diamondMM ? `${jobCard}-${group}-${width}-${diamondMM}` : `${jobCard}-${group}-${width}`;
-            completedItems[key] = true;
+        for (let g = 1; g <= 2; g++) {
+            const k = diamondMM ? `${jobCard}-${g}-${width}-${diamondMM}` : `${jobCard}-${g}-${width}`;
+            completedItems[k] = true;
         }
     } else if (itemType === 'centre') {
-        const key = diamondMM ? `${jobCard}-3-${width}-${diamondMM}` : `${jobCard}-3-${width}`;
-        completedItems[key] = true;
+        const k = diamondMM ? `${jobCard}-3-${width}-${diamondMM}` : `${jobCard}-3-${width}`;
+        completedItems[k] = true;
     }
-    
+
+    // Save both to localStorage AND Firebase
     saveData('completedItems', completedItems);
     saveData('productionEntries', productionEntries);
-    
+
     alert(`✓ ${width}mm ${itemType} completed successfully!`);
-    
-    displayProductionList();
-    updateDashboard();
-}
-
-
-
-
-// Complete a started production item
-function completeStartedItem(entryId) {
-    const entry = productionEntries.find(e => e.id === entryId);
-    if (!entry) {
-        alert('Item not found!');
-        return;
-    }
-    
-    const operatorName = prompt('Enter operator name for completion:', entry.operator);
-    if (!operatorName) return;
-    
-    const remarks = prompt('Enter completion remarks (optional):');
-    
-    entry.status = 'completed';
-    entry.endTime = new Date().toISOString();
-    entry.endOperator = operatorName;
-    if (remarks) {
-        entry.endRemarks = remarks;
-    }
-    
-    const jobCard = entry.jobCard;
-    const width = entry.width;
-    const itemType = entry.itemType;
-    const diamondMM = entry.diamondMM;
-    
-    if (itemType === 'yoke-side') {
-        for (let group = 1; group <= 2; group++) {
-            const key = diamondMM ? `${jobCard}-${group}-${width}-${diamondMM}` : `${jobCard}-${group}-${width}`;
-            completedItems[key] = true;
-        }
-    } else if (itemType === 'centre') {
-        const key = diamondMM ? `${jobCard}-3-${width}-${diamondMM}` : `${jobCard}-3-${width}`;
-        completedItems[key] = true;
-    }
-    
-    localStorage.setItem('completedItems', JSON.stringify(completedItems));
-    localStorage.setItem('productionEntries', JSON.stringify(productionEntries));
-    
-    alert(`✓ ${width}mm ${itemType} completed successfully!`);
-    
     displayProductionList();
     if (typeof updateDashboard === 'function') updateDashboard();
 }
 
 // Hold/Unhold functions
 function holdJobCard(jobCard) {
-    if (!confirm('Are you sure you want to hold ' + jobCard + '?')) {
-        return;
-    }
-    
+    if (!confirm('Are you sure you want to hold ' + jobCard + '?')) return;
     if (jobCardData[jobCard]) {
         jobCardData[jobCard].held = true;
-        localStorage.setItem('jobCardData', JSON.stringify(jobCardData));
+        saveData('jobCardData', jobCardData); // Syncs to Firebase
         alert('Job card ' + jobCard + ' has been put on hold');
         if (typeof displayJobCards === 'function') displayJobCards();
         populateJobCardDropdowns();
@@ -2566,7 +2523,7 @@ function holdJobCard(jobCard) {
 function unholdJobCard(jobCard) {
     if (jobCardData[jobCard]) {
         jobCardData[jobCard].held = false;
-        localStorage.setItem('jobCardData', JSON.stringify(jobCardData));
+        saveData('jobCardData', jobCardData); // Syncs to Firebase
         alert('Job card ' + jobCard + ' has been resumed');
         if (typeof displayJobCards === 'function') displayJobCards();
         populateJobCardDropdowns();
@@ -2594,43 +2551,27 @@ function queueFirebaseSync(key, data) {
         clearTimeout(firebaseSyncTimeout);
     }
     
-    // PERFORMANCE: Increased delay to 5 seconds for large datasets
+    // Sync after 1.5 seconds of inactivity (fast enough for real-time feel)
     firebaseSyncTimeout = setTimeout(function() {
         procesFirebaseSyncQueue();
-    }, 5000); // Wait 5 seconds (was 3)
+    }, 1500);
     
     console.log('📤 Queued for Firebase sync:', key);
 }
 
 // Process the Firebase sync queue
 function procesFirebaseSyncQueue() {
-    if (Object.keys(firebaseSyncQueue).length === 0) {
-        return; // Nothing to sync
-    }
+    if (Object.keys(firebaseSyncQueue).length === 0) return;
     
     console.log('🔄 Syncing to Firebase (background)...');
     
-    // Get all queued items
     const itemsToSync = {...firebaseSyncQueue};
-    
-    // Clear the queue
     firebaseSyncQueue = {};
     
-    // Sync each item (async, non-blocking)
     Object.keys(itemsToSync).forEach(function(key) {
         const data = itemsToSync[key];
-        
-        // Use setTimeout to make it truly async (won't block UI)
-        setTimeout(function() {
-            try {
-                if (typeof saveToFirebase === 'function') {
-                    saveToFirebase(key, data);
-                }
-            } catch (e) {
-                console.warn('⚠ Firebase sync failed for', key, '(non-critical):', e);
-                // Don't throw - keep UI working even if Firebase fails
-            }
-        }, 0);
+        // Direct call - saveToFirebase now properly defined
+        saveToFirebase(key, data);
     });
 }
 
@@ -2683,14 +2624,9 @@ function completeEntireJob(jobCard) {
         }
     });
     
-    // Save to localStorage
-    localStorage.setItem('completedItems', JSON.stringify(completedItems));
-    
-    // Queue Firebase sync
-    if (typeof queueFirebaseSync === 'function') {
-        queueFirebaseSync('completedItems', completedItems);
-    }
-    
+    // Save to BOTH localStorage AND Firebase (proper sync)
+    saveData('completedItems', completedItems);
+
     alert(`✓ Job ${jobCard} marked as complete!\n${itemsCompleted} items completed.`);
     
     // Refresh displays
