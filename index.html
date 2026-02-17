@@ -734,6 +734,17 @@ function saveToFirebase(key, data) {
         .catch(err => console.warn('⚠️ Firebase write failed:', key, err.message));
 }
 
+// Safe UI update - only runs when user is logged in and app is shown
+function safeUIUpdate(fn) {
+    // If app wrapper is visible (user logged in), run immediately
+    const appWrapper = document.querySelector('.app-wrapper');
+    if (appWrapper && appWrapper.classList.contains('show')) {
+        try { fn(); } catch(e) { console.warn('UI update error:', e); }
+    }
+    // If not logged in yet, data is already saved to localStorage/memory
+    // - it will be displayed correctly when user logs in and calls initializeApp()
+}
+
 // ── READ / REAL-TIME LISTENERS ────────────────────────────────────────────
 function setupFirebaseListeners() {
     if (!firebaseActive || !db) return;
@@ -754,16 +765,25 @@ function setupFirebaseListeners() {
                 jobCardData = incoming;
                 invalidateCache();
                 localStorage.setItem('jobCardData', JSON.stringify(incoming));
-                if (typeof populateJobCardDropdowns === 'function') populateJobCardDropdowns();
-                if (typeof displayJobCards === 'function') displayJobCards();
+                safeUIUpdate(() => {
+                    if (typeof populateJobCardDropdowns === 'function') populateJobCardDropdowns();
+                    if (typeof displayJobCardList === 'function') displayJobCardList(); // Manage tab
+                    if (typeof updateDashboard === 'function') updateDashboard();
+                });
             } else if (key === 'productionEntries') {
                 productionEntries = incoming;
                 localStorage.setItem('productionEntries', JSON.stringify(incoming));
-                if (typeof displayProductionList === 'function') displayProductionList();
+                safeUIUpdate(() => {
+                    if (typeof displayProductionList === 'function') displayProductionList();
+                });
             } else if (key === 'completedItems') {
                 completedItems = incoming;
                 localStorage.setItem('completedItems', JSON.stringify(incoming));
-                if (typeof updateDashboard === 'function') updateDashboard();
+                safeUIUpdate(() => {
+                    if (typeof updateDashboard === 'function') updateDashboard();
+                    if (typeof displayProductionList === 'function') displayProductionList();
+                    if (typeof displayJobCardList === 'function') displayJobCardList();
+                });
             }
 
             receivingFromFirebase = false;
@@ -1357,24 +1377,28 @@ function recordProduction() {
 function displayProductionList() {
     const listDiv = document.getElementById('productionList');
     const header = document.getElementById('entriesHeader');
-    
-    // Show only started items (no filtering by completed)
-    const filtered = productionEntries.filter(e => e.status === 'started');
-    
+
+    if (!listDiv || !header) return; // Guard: DOM not ready yet
+
+    // Show ALL entries (both ongoing and completed) sorted newest first
+    const allEntries = [...productionEntries].sort((a, b) =>
+        new Date(b.startTime) - new Date(a.startTime)
+    );
+
     header.textContent = 'Started Production';
     document.getElementById('recordBtn').textContent = 'Record Entry';
-    
-    if (filtered.length === 0) {
+
+    if (allEntries.length === 0) {
         listDiv.innerHTML = '<p style="text-align: center; color: #999;">No production items yet</p>';
         return;
     }
-    
-    // PERFORMANCE: Limit to last 100 items for fast rendering
+
+    // PERFORMANCE: Show last 100 entries
     const MAX_DISPLAY = 100;
-    const displayItems = filtered.slice(-MAX_DISPLAY).reverse();
-    
-    if (filtered.length > MAX_DISPLAY) {
-        header.textContent = `Started Production (Showing latest ${MAX_DISPLAY} of ${filtered.length})`;
+    const displayItems = allEntries.slice(0, MAX_DISPLAY);
+
+    if (allEntries.length > MAX_DISPLAY) {
+        header.textContent = `Started Production (Showing latest ${MAX_DISPLAY} of ${allEntries.length})`;
     }
     
     listDiv.innerHTML = displayItems.map(entry => {
@@ -1659,7 +1683,9 @@ function parseWidthData(data) {
 
 function displayJobCardList() {
     const listDiv = document.getElementById('jobCardList');
-    const jobCards = Object.keys(jobCardData);
+    if (!listDiv) return;
+
+    const jobCards = getJobCardsList(true); // Use sorted list
     
     if (jobCards.length === 0) {
         listDiv.innerHTML = '<p style="text-align: center; color: #999;">No job cards yet</p>';
@@ -2654,7 +2680,7 @@ function cleanupOldEntries() {
     
     const removed = before - productionEntries.length;
     if (removed > 0) {
-        localStorage.setItem('productionEntries', JSON.stringify(productionEntries));
+        saveData('productionEntries', productionEntries); // Syncs to Firebase too
         console.log(`🧹 Cleaned up ${removed} old entries`);
     }
     
