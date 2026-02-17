@@ -724,98 +724,192 @@ function initFirebase() {
 }
 
 // Flag to prevent infinite loop when Firebase listener triggers a save
-let receivingFromFirebase = false;
+// ============================================================================
+// SCALABLE FIREBASE LAYER
+// Proper Firestore structure - one document per item, scales to 10,000+
+//
+// Collections:
+//   jobCards/{jobCardId}            – one small doc per job card
+//   productions/{entryId}           – one small doc per production entry
+//   completedItems/{jobCardId}      – one doc per job card's completions
+// ============================================================================
 
-// ── WRITE to Firebase ─────────────────────────────────────────────────────
-function saveToFirebase(key, data) {
-    if (!firebaseActive || !db) return;
-    db.collection('productionData').doc(key).set({ data: data })
-        .then(() => console.log('☁️ Firebase saved:', key))
-        .catch(err => console.warn('⚠️ Firebase write failed:', key, err.message));
-}
+let receivingFromFirebase = false;  // Prevents write-back loops
 
-// Safe UI update - only runs when user is logged in and app is shown
+// ── Only runs UI updates when the user is logged in ───────────────────────
 function safeUIUpdate(fn) {
-    // If app wrapper is visible (user logged in), run immediately
     const appWrapper = document.querySelector('.app-wrapper');
     if (appWrapper && appWrapper.classList.contains('show')) {
         try { fn(); } catch(e) { console.warn('UI update error:', e); }
     }
-    // If not logged in yet, data is already saved to localStorage/memory
-    // - it will be displayed correctly when user logs in and calls initializeApp()
 }
 
-// ── READ / REAL-TIME LISTENERS ────────────────────────────────────────────
+// ── WRITE a single job card ───────────────────────────────────────────────
+function saveJobCardToFirebase(jobCardId, data) {
+    if (!firebaseActive || !db) return;
+    db.collection('jobCards').doc(jobCardId).set(data)
+        .then(() => console.log('☁️ Saved jobCard:', jobCardId))
+        .catch(err => console.warn('⚠️ Firebase jobCard write failed:', err.message));
+}
+
+// ── WRITE a single production entry ──────────────────────────────────────
+function saveProductionEntryToFirebase(entry) {
+    if (!firebaseActive || !db) return;
+    db.collection('productions').doc(String(entry.id)).set(entry)
+        .then(() => console.log('☁️ Saved production entry:', entry.id))
+        .catch(err => console.warn('⚠️ Firebase production write failed:', err.message));
+}
+
+// ── WRITE completed items for ONE job card ────────────────────────────────
+function saveCompletedItemsForJob(jobCardId) {
+    if (!firebaseActive || !db) return;
+    // Extract only the keys that belong to this job card
+    const jobKeys = {};
+    Object.keys(completedItems).forEach(k => {
+        if (k.startsWith(jobCardId + '-')) jobKeys[k] = true;
+    });
+    db.collection('completedItems').doc(jobCardId).set({ items: jobKeys })
+        .then(() => console.log('☁️ Saved completedItems for:', jobCardId))
+        .catch(err => console.warn('⚠️ Firebase completedItems write failed:', err.message));
+}
+
+// ── DELETE a job card and its related data ────────────────────────────────
+function deleteJobCardFromFirebase(jobCardId) {
+    if (!firebaseActive || !db) return;
+    db.collection('jobCards').doc(jobCardId).delete()
+        .catch(err => console.warn('⚠️ Firebase delete failed:', err.message));
+    db.collection('completedItems').doc(jobCardId).delete()
+        .catch(err => console.warn('⚠️ Firebase completedItems delete failed:', err.message));
+}
+
+// ── DELETE a production entry ─────────────────────────────────────────────
+function deleteProductionEntryFromFirebase(entryId) {
+    if (!firebaseActive || !db) return;
+    db.collection('productions').doc(String(entryId)).delete()
+        .catch(err => console.warn('⚠️ Firebase entry delete failed:', err.message));
+}
+
+// ── REAL-TIME LISTENERS ───────────────────────────────────────────────────
 function setupFirebaseListeners() {
     if (!firebaseActive || !db) return;
 
-    const keys = ['jobCardData', 'productionEntries', 'completedItems'];
-
-    keys.forEach(key => {
-        db.collection('productionData').doc(key).onSnapshot(doc => {
-            if (!doc.exists || !doc.data() || !doc.data().data) return;
-
-            const incoming = doc.data().data;
-
-            // Prevent the listener triggering another Firebase write
-            receivingFromFirebase = true;
-
-            // Update in-memory data
-            if (key === 'jobCardData') {
-                jobCardData = incoming;
-                invalidateCache();
-                localStorage.setItem('jobCardData', JSON.stringify(incoming));
-                safeUIUpdate(() => {
-                    if (typeof populateJobCardDropdowns === 'function') populateJobCardDropdowns();
-                    if (typeof displayJobCardList === 'function') displayJobCardList(); // Manage tab
-                    if (typeof updateDashboard === 'function') updateDashboard();
-                });
-            } else if (key === 'productionEntries') {
-                productionEntries = incoming;
-                localStorage.setItem('productionEntries', JSON.stringify(incoming));
-                safeUIUpdate(() => {
-                    if (typeof displayProductionList === 'function') displayProductionList();
-                });
-            } else if (key === 'completedItems') {
-                completedItems = incoming;
-                localStorage.setItem('completedItems', JSON.stringify(incoming));
-                safeUIUpdate(() => {
-                    if (typeof updateDashboard === 'function') updateDashboard();
-                    if (typeof displayProductionList === 'function') displayProductionList();
-                    if (typeof displayJobCardList === 'function') displayJobCardList();
-                });
+    // 1. Listen to ALL job cards (collection-level listener)
+    db.collection('jobCards').onSnapshot(snapshot => {
+        if (receivingFromFirebase) return;
+        receivingFromFirebase = true;
+        snapshot.docChanges().forEach(change => {
+            const id = change.doc.id;
+            if (change.type === 'removed') {
+                delete jobCardData[id];
+            } else {
+                jobCardData[id] = change.doc.data();
             }
-
-            receivingFromFirebase = false;
-            console.log('🔄 Received from Firebase:', key);
-        }, err => {
-            console.warn('⚠️ Firebase listener error:', key, err.message);
         });
-    });
+        invalidateCache();
+        localStorage.setItem('jobCardData', JSON.stringify(jobCardData));
+        safeUIUpdate(() => {
+            populateJobCardDropdowns();
+            displayJobCardList();
+        });
+        receivingFromFirebase = false;
+        console.log('🔄 jobCards synced from Firebase');
+    }, err => console.warn('⚠️ jobCards listener error:', err.message));
 
-    console.log('✅ Firebase real-time listeners active');
+    // 2. Listen to ALL production entries (collection-level listener)
+    db.collection('productions').onSnapshot(snapshot => {
+        if (receivingFromFirebase) return;
+        receivingFromFirebase = true;
+        snapshot.docChanges().forEach(change => {
+            const entry = change.doc.data();
+            const idx = productionEntries.findIndex(e => String(e.id) === change.doc.id);
+            if (change.type === 'removed') {
+                if (idx !== -1) productionEntries.splice(idx, 1);
+            } else {
+                if (idx !== -1) productionEntries[idx] = entry;
+                else productionEntries.push(entry);
+            }
+        });
+        localStorage.setItem('productionEntries', JSON.stringify(productionEntries));
+        safeUIUpdate(() => {
+            displayProductionList();
+        });
+        receivingFromFirebase = false;
+        console.log('🔄 productions synced from Firebase');
+    }, err => console.warn('⚠️ productions listener error:', err.message));
+
+    // 3. Listen to ALL completedItems docs (one per job card)
+    db.collection('completedItems').onSnapshot(snapshot => {
+        if (receivingFromFirebase) return;
+        receivingFromFirebase = true;
+        snapshot.docChanges().forEach(change => {
+            const data = change.doc.data();
+            if (change.type === 'removed') {
+                // Remove all keys for this job card
+                Object.keys(completedItems).forEach(k => {
+                    if (k.startsWith(change.doc.id + '-')) delete completedItems[k];
+                });
+            } else if (data.items) {
+                Object.assign(completedItems, data.items);
+            }
+        });
+        localStorage.setItem('completedItems', JSON.stringify(completedItems));
+        safeUIUpdate(() => {
+            updateDashboard();
+            displayProductionList();
+            displayJobCardList();
+        });
+        receivingFromFirebase = false;
+        console.log('🔄 completedItems synced from Firebase');
+    }, err => console.warn('⚠️ completedItems listener error:', err.message));
+
+    console.log('✅ Firebase real-time listeners active (scalable mode)');
 }
 
-// ── LOCAL + CLOUD SAVE ────────────────────────────────────────────────────
+// ── UNIFIED SAVE (localStorage + Firebase) ───────────────────────────────
+// Call this for jobCardData and completedItems (legacy keys)
+// For production entries, call saveProductionEntry() directly
 function saveData(key, data) {
-    // Always save to localStorage immediately (instant, offline-safe)
+    // Always save to localStorage immediately
     try {
         localStorage.setItem(key, JSON.stringify(data));
-    } catch (e) {
-        console.error('LocalStorage error:', e);
-    }
+    } catch(e) { console.error('localStorage error:', e); }
 
-    // Invalidate cache if job card data changed
     if (key === 'jobCardData') invalidateCache();
-
-    // Skip Firebase write if we're receiving data FROM Firebase (prevent loop)
     if (receivingFromFirebase) return;
 
-    // Queue debounced Firebase write
-    queueFirebaseSync(key, data);
+    // For each key, write to the correct Firebase collection
+    if (key === 'jobCardData') {
+        // Write each job card that changed to its own document
+        Object.keys(data).forEach(jobCardId => {
+            saveJobCardToFirebase(jobCardId, data[jobCardId]);
+        });
+    } else if (key === 'completedItems') {
+        // Group by job card and write one doc per job card
+        const byJob = {};
+        Object.keys(data).forEach(k => {
+            const jobCardId = k.split('-').slice(0, 2).join('-'); // e.g. "EG25-814"
+            if (!byJob[jobCardId]) byJob[jobCardId] = {};
+            byJob[jobCardId][k] = true;
+        });
+        Object.keys(byJob).forEach(jobCardId => {
+            db.collection('completedItems').doc(jobCardId).set({ items: byJob[jobCardId] })
+                .catch(err => console.warn('⚠️ completedItems write failed:', err.message));
+        });
+    } else if (key === 'productionEntries') {
+        // Write each entry to its own document
+        data.forEach(entry => saveProductionEntryToFirebase(entry));
+    }
 }
 
-// Load from localStorage (Firebase listeners keep it up-to-date automatically)
+// ── SAVE a single production entry (most efficient path) ─────────────────
+function saveProductionEntry(entry) {
+    const idx = productionEntries.findIndex(e => e.id === entry.id);
+    if (idx !== -1) productionEntries[idx] = entry;
+    else productionEntries.push(entry);
+    localStorage.setItem('productionEntries', JSON.stringify(productionEntries));
+    if (!receivingFromFirebase) saveProductionEntryToFirebase(entry);
+}
+
 function loadData(key) {
     const localData = localStorage.getItem(key);
     return localData ? JSON.parse(localData) : null;
@@ -1346,9 +1440,11 @@ function recordProduction() {
             endRemarks: null
         };
         productionEntries.push(entry);
+        saveProductionEntry(entry); // Write just this one entry to Firebase
     }
 
-    saveData('productionEntries', productionEntries);
+    // Always save full list to localStorage as backup
+    localStorage.setItem('productionEntries', JSON.stringify(productionEntries));
 
     const successMsg = document.getElementById('successMsg');
     successMsg.classList.add('show');
@@ -1725,20 +1821,27 @@ function toggleHold(jobCard) {
 
 function deleteJobCard(jobCard) {
     if (confirm(`Are you sure you want to PERMANENTLY DELETE job card ${jobCard}?\n\nThis will remove:\n- Job card data\n- All production entries\n- All completion records\n\nThis cannot be undone!`)) {
+        // Delete from Firebase first (proper collection deletes)
+        deleteJobCardFromFirebase(jobCard);
+        
+        // Delete each production entry from Firebase
+        productionEntries
+            .filter(e => e.jobCard === jobCard)
+            .forEach(e => deleteProductionEntryFromFirebase(e.id));
+
+        // Update local data
         delete jobCardData[jobCard];
-        
         productionEntries = productionEntries.filter(e => e.jobCard !== jobCard);
-        
         Object.keys(completedItems).forEach(key => {
-            if (key.startsWith(jobCard + '-')) {
-                delete completedItems[key];
-            }
+            if (key.startsWith(jobCard + '-')) delete completedItems[key];
         });
-        
-        saveData('jobCardData', jobCardData);
-        saveData('productionEntries', productionEntries);
-        saveData('completedItems', completedItems);
-        
+
+        // Save updated local data
+        localStorage.setItem('jobCardData', JSON.stringify(jobCardData));
+        localStorage.setItem('productionEntries', JSON.stringify(productionEntries));
+        localStorage.setItem('completedItems', JSON.stringify(completedItems));
+        invalidateCache();
+
         populateJobCardDropdowns();
         displayJobCardList();
         displayCustomers();
@@ -2525,9 +2628,9 @@ function completeStartedItem(entryId) {
         completedItems[k] = true;
     }
 
-    // Save both to localStorage AND Firebase
-    saveData('completedItems', completedItems);
-    saveData('productionEntries', productionEntries);
+    // Save both to localStorage AND Firebase (efficient - one doc each)
+    saveProductionEntry(entry);  // Writes just this entry to productions/{id}
+    saveData('completedItems', completedItems); // Writes per-job completedItems docs
 
     alert(`✓ ${width}mm ${itemType} completed successfully!`);
     displayProductionList();
@@ -2558,55 +2661,6 @@ function unholdJobCard(jobCard) {
 
 
 
-
-// ============================================================================
-// FIREBASE SYNC QUEUE (Non-blocking, debounced)
-// ============================================================================
-
-// Queue for pending Firebase syncs
-let firebaseSyncQueue = {};
-let firebaseSyncTimeout = null;
-
-// Queue a Firebase sync (debounced - max once per 3 seconds)
-function queueFirebaseSync(key, data) {
-    // Add to queue
-    firebaseSyncQueue[key] = data;
-    
-    // Clear existing timeout
-    if (firebaseSyncTimeout) {
-        clearTimeout(firebaseSyncTimeout);
-    }
-    
-    // Sync after 1.5 seconds of inactivity (fast enough for real-time feel)
-    firebaseSyncTimeout = setTimeout(function() {
-        procesFirebaseSyncQueue();
-    }, 1500);
-    
-    console.log('📤 Queued for Firebase sync:', key);
-}
-
-// Process the Firebase sync queue
-function procesFirebaseSyncQueue() {
-    if (Object.keys(firebaseSyncQueue).length === 0) return;
-    
-    console.log('🔄 Syncing to Firebase (background)...');
-    
-    const itemsToSync = {...firebaseSyncQueue};
-    firebaseSyncQueue = {};
-    
-    Object.keys(itemsToSync).forEach(function(key) {
-        const data = itemsToSync[key];
-        // Direct call - saveToFirebase now properly defined
-        saveToFirebase(key, data);
-    });
-}
-
-// Sync immediately on page unload (before closing)
-window.addEventListener('beforeunload', function() {
-    if (Object.keys(firebaseSyncQueue).length > 0) {
-        procesFirebaseSyncQueue();
-    }
-});
 
 // Complete entire job - mark all widths as done
 function completeEntireJob(jobCard) {
