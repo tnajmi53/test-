@@ -4,12 +4,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Production Tracker - Evergreen Metal Works</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js">
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+// Update Firebase status indicator
+function updateFirebaseStatus() {
+    const statusEl = document.getElementById('firebaseStatus');
+    const dotEl = statusEl ? statusEl.querySelector('.status-dot') : null;
+    const textEl = document.getElementById('statusText');
+    
+    if (!statusEl || !dotEl || !textEl) return;
+    
+    if (firebaseActive) {
+        statusEl.className = 'firebase-status active';
+        dotEl.className = 'status-dot active';
+        textEl.textContent = 'Cloud Sync';
+    } else {
+        statusEl.className = 'firebase-status inactive';
+        dotEl.className = 'status-dot inactive';
+        textEl.textContent = 'Local';
+    }
+}
+
+// Call this after Firebase init
+setTimeout(updateFirebaseStatus, 1000);
+
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
+
+// Update Firebase status indicator
+function updateFirebaseStatus() {
+    const statusEl = document.getElementById('firebaseStatus');
+    const dotEl = statusEl ? statusEl.querySelector('.status-dot') : null;
+    const textEl = document.getElementById('statusText');
+    
+    if (!statusEl || !dotEl || !textEl) return;
+    
+    if (firebaseActive) {
+        statusEl.className = 'firebase-status active';
+        dotEl.className = 'status-dot active';
+        textEl.textContent = 'Cloud Sync';
+    } else {
+        statusEl.className = 'firebase-status inactive';
+        dotEl.className = 'status-dot inactive';
+        textEl.textContent = 'Local';
+    }
+}
+
+// Call this after Firebase init
+setTimeout(updateFirebaseStatus, 1000);
+
+</script>
+
+    <!-- Firebase SDK - OPTIONAL (works without config) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
+
+// Update Firebase status indicator
+function updateFirebaseStatus() {
+    const statusEl = document.getElementById('firebaseStatus');
+    const dotEl = statusEl ? statusEl.querySelector('.status-dot') : null;
+    const textEl = document.getElementById('statusText');
+    
+    if (!statusEl || !dotEl || !textEl) return;
+    
+    if (firebaseActive) {
+        statusEl.className = 'firebase-status active';
+        dotEl.className = 'status-dot active';
+        textEl.textContent = 'Cloud Sync';
+    } else {
+        statusEl.className = 'firebase-status inactive';
+        dotEl.className = 'status-dot inactive';
+        textEl.textContent = 'Local';
+    }
+}
+
+// Call this after Firebase init
+setTimeout(updateFirebaseStatus, 1000);
+
+</script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js">
+
+// Update Firebase status indicator
+function updateFirebaseStatus() {
+    const statusEl = document.getElementById('firebaseStatus');
+    const dotEl = statusEl ? statusEl.querySelector('.status-dot') : null;
+    const textEl = document.getElementById('statusText');
+    
+    if (!statusEl || !dotEl || !textEl) return;
+    
+    if (firebaseActive) {
+        statusEl.className = 'firebase-status active';
+        dotEl.className = 'status-dot active';
+        textEl.textContent = 'Cloud Sync';
+    } else {
+        statusEl.className = 'firebase-status inactive';
+        dotEl.className = 'status-dot inactive';
+        textEl.textContent = 'Local';
+    }
+}
+
+// Call this after Firebase init
+setTimeout(updateFirebaseStatus, 1000);
+
+</script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -236,9 +332,52 @@
         .edit-modal.show { display: flex; }
         .edit-modal-content { background: white; padding: 25px; border-radius: 15px; max-width: 500px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
 
-        /* Firebase Status */
-        .firebase-status { position: fixed; bottom: 20px; right: 20px; background: white; padding: 6px 12px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); font-size: 10px; font-weight: 600; z-index: 999; border: 2px solid #ffc107; color: #ffc107; }
-        .firebase-status.active { border-color: #28a745; color: #28a745; }
+        /* Firebase Status Indicator */
+        .firebase-status { position: fixed; bottom: 20px; right: 20px; background: white; padding: 6px 12px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); font-size: 10px; font-weight: 600; z-index: 999; display: flex; align-items: center; gap: 6px; }
+        .firebase-status.active { border: 2px solid #28a745; color: #28a745; }
+        .firebase-status.inactive { border: 2px solid #ffc107; color: #ffc107; }
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+        .status-dot.active { background: #28a745; animation: pulse 2s infinite; }
+        .status-dot.inactive { background: #ffc107; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    
+        
+        /* Loading indicator */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        .loading-overlay.show {
+            display: flex;
+        }
+        .loading-spinner {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2d7a3e;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
     </style>
 </head>
 <body>
@@ -311,7 +450,7 @@
                 </div>
                 <div class="sub-tab-container">
                     <button class="sub-tab active" data-subtab="started">Started</button>
-                    <button class="sub-tab" data-subtab="completed">Completed</button>
+                    
                 </div>
                 <div class="card">
                     <h2 style="color: #2d7a3e; margin-bottom: 20px;">Record Production</h2>
@@ -421,7 +560,7 @@
                         <h4>🔹 Yoke/Side Production</h4>
                         <div style="overflow-x: auto;">
                             <table class="production-table">
-                                <thead><tr><th>Width (mm)</th><th>Blades</th><th>Weight (kg)</th><th>Status</th></tr></thead>
+                                <thead><tr><th>Width (mm)</th><th>Blades</th><th>Status</th></tr></thead>
                                 <tbody id="yokeSideTableBody"></tbody>
                             </table>
                         </div>
@@ -430,7 +569,7 @@
                         <h4>🔹 Centre Production</h4>
                         <div style="overflow-x: auto;">
                             <table class="production-table">
-                                <thead><tr><th>Width (mm)</th><th>Blades</th><th>Weight (kg)</th><th>Status</th></tr></thead>
+                                <thead><tr><th>Width (mm)</th><th>Blades</th><th>Status</th></tr></thead>
                                 <tbody id="centreTableBody"></tbody>
                             </table>
                         </div>
@@ -505,7 +644,7 @@
                         <div class="summary-box"><h4>Total Job Cards</h4><p id="monthlyJobCards">0</p></div>
                         <div class="summary-box"><h4>Completed Jobs</h4><p id="monthlyCompleted">0</p></div>
                         <div class="summary-box"><h4>Pending Jobs</h4><p id="monthlyPending">0</p></div>
-                        <div class="summary-box"><h4>Total Blades Produced</h4><p id="monthlyBlades">0</p></div>
+                        
                     </div>
                     <div class="card" style="background: #f8f9fa;">
                         <h3 style="color: #2d7a3e; margin-bottom: 15px;">Production Trend</h3>
@@ -541,10 +680,15 @@
     <script>
 
 // ========================================
-// FIREBASE CONFIGURATION (SIMPLE - NO AUTO-REFRESH)
+// FIREBASE CONFIGURATION (PASTE YOUR CONFIG HERE)
 // ========================================
 
-// Paste your Firebase config here
+// 📝 INSTRUCTIONS: After you create your Firebase project:
+// 1. Go to Firebase Console → Project Settings → Your apps → Web app
+// 2. Copy your config values
+// 3. Replace the values below with YOUR values
+// 4. Save and upload
+
 const firebaseConfig = {
   apiKey: "AIzaSyCWSaMePMKIKZqJNCgJf2xabITJzS_o7no",
   authDomain: "production-tracker-test.firebaseapp.com",
@@ -554,13 +698,14 @@ const firebaseConfig = {
   appId: "1:494949012026:web:362368c328be14f4e49b03"
 };
 
+// Firebase initialization (safe - won't break if config is empty)
 let db = null;
 let firebaseActive = false;
 
-// Initialize Firebase (NO real-time listeners)
 function initFirebase() {
+    // Check if config is provided
     if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-        console.log("ℹ️ Firebase not configured - using localStorage");
+        
         firebaseActive = false;
         return;
     }
@@ -569,73 +714,83 @@ function initFirebase() {
         firebase.initializeApp(firebaseConfig);
         db = firebase.firestore();
         firebaseActive = true;
-        console.log("✅ Firebase initialized");
         
-        // Load initial data once, then NO auto-updates
-        loadDataFromFirebase();
+        setupFirebaseListeners();
     } catch (error) {
         console.error("⚠️ Firebase init error:", error);
+        
         firebaseActive = false;
     }
 }
 
-// Save to Firebase (debounced to prevent loops)
-let savePending = {};
-function saveToFirebase(key, data) {
-    localStorage.setItem(key, JSON.stringify(data));
-    
-    if (!firebaseActive || !db) return;
-    
-    // Clear any pending save
-    if (savePending[key]) {
-        clearTimeout(savePending[key]);
+// Save to Firebase OR localStorage (automatic fallback)
+function saveData(key, data) {
+    // STEP 1: Save to localStorage immediately (INSTANT, non-blocking)
+    try {
+        localStorage.setItem(key, JSON.stringify(data));
+        console.log('✓ Saved to localStorage:', key);
+    } catch (e) {
+        console.error('LocalStorage error:', e);
     }
     
-    // Debounce Firebase save (2 seconds)
-    savePending[key] = setTimeout(() => {
-        db.collection('productionData').doc(key).set({
-            data: data,
-            updated: firebase.firestore.FieldValue.serverTimestamp()
-        }).catch(err => console.error('Firebase save error:', err));
-    }, 2000);
+    // STEP 2: Queue Firebase save for background (async, debounced)
+    if (typeof queueFirebaseSync === 'function') {
+        queueFirebaseSync(key, data);
+    }
+
+    
+    // Invalidate cache if job card data changed
+    if (key === 'jobCardData') {
+        invalidateCache();
+    }
+
 }
 
-// Load from Firebase (ONE TIME only, no listeners)
-function loadDataFromFirebase() {
+// Load from Firebase OR localStorage
+function loadData(key) {
+    const localData = localStorage.getItem(key);
+    return localData ? JSON.parse(localData) : null;
+}
+
+// Setup real-time listeners (only if Firebase active)
+function setupFirebaseListeners() {
     if (!firebaseActive || !db) return;
     
-    Promise.all([
-        db.collection('productionData').doc('jobCardData').get(),
-        db.collection('productionData').doc('productionEntries').get(),
-        db.collection('productionData').doc('completedItems').get()
-    ]).then(([jobDoc, entriesDoc, completedDoc]) => {
-        if (jobDoc.exists && jobDoc.data().data) {
-            jobCardData = jobDoc.data().data;
-            saveToFirebase('jobCardData', jobCardData);
+    // Listen for job card changes
+    db.collection('productionData').doc('jobCardData').onSnapshot(doc => {
+        if (doc.exists && doc.data().data) {
+            jobCardData = doc.data().data;
+            saveData('jobCardData', jobCardData);
+            if (typeof populateJobCardDropdowns === 'function') populateJobCardDropdowns();
+            if (typeof displayJobCardList === 'function') displayJobCardList();
+            if (typeof updateDashboard === 'function') updateDashboard();
         }
-        if (entriesDoc.exists && entriesDoc.data().data) {
-            productionEntries = entriesDoc.data().data;
-            saveToFirebase('productionEntries', productionEntries);
-        }
-        if (completedDoc.exists && completedDoc.data().data) {
-            completedItems = completedDoc.data().data;
-            saveToFirebase('completedItems', completedItems);
-        }
-        console.log("✅ Data loaded from Firebase");
-        
-        // Refresh UI once
-        if (typeof populateJobCardDropdowns === 'function') populateJobCardDropdowns();
-        if (typeof displayJobCardList === 'function') displayJobCardList();
-    }).catch(error => {
-        console.error("Error loading from Firebase:", error);
     });
+    
+    // Listen for production entries
+    db.collection('productionData').doc('productionEntries').onSnapshot(doc => {
+        if (doc.exists && doc.data().data) {
+            productionEntries = doc.data().data;
+            saveData('productionEntries', productionEntries);
+        }
+    });
+    
+    // Listen for completed items
+    db.collection('productionData').doc('completedItems').onSnapshot(doc => {
+        if (doc.exists && doc.data().data) {
+            completedItems = doc.data().data;
+            saveData('completedItems', completedItems);
+            if (typeof updateDashboard === 'function') updateDashboard();
+        }
+    });
+    
+    
 }
 
-// Initialize when page loads
+// Initialize Firebase when page loads
 document.addEventListener('DOMContentLoaded', function() {
     initFirebase();
 });
-
 
 
 // ========================================
@@ -722,13 +877,24 @@ function setupUserInterface() {
 // ========================================
 
 let jobCardData = {};
+
+
+// ============================================================================
+// PERFORMANCE OPTIMIZATION - Pagination & Limits
+// ============================================================================
+
+const ITEMS_PER_PAGE = 50; // Show 50 items at a time
+let currentPage = 1;
+let jobCardCache = null;
+let lastCacheUpdate = 0;
+const CACHE_DURATION = 5000; // Cache for 5 seconds
+
 let productionEntries = JSON.parse(localStorage.getItem('productionEntries')) || [];
 let completedItems = JSON.parse(localStorage.getItem('completedItems')) || {};
 let currentSubTab = 'started';
 let monthlyChart = null;
 
 // Load job card data
-// Load from localStorage (Firebase loads separately)
 const savedJobCards = localStorage.getItem('jobCardData');
 if (savedJobCards) {
     jobCardData = JSON.parse(savedJobCards);
@@ -749,10 +915,76 @@ function initializeApp() {
     displayCustomers();
     
     // Event listeners
-    document.getElementById('jobCard').addEventListener('change', updateJobDetails);
+    
+// ============================================================================
+// PERFORMANCE OPTIMIZATIONS
+// ============================================================================
+
+// Debounce utility to prevent rapid-fire function calls
+function debounce(func, delay) {
+    let timeoutId;
+    return function(...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+// Flag to prevent cascading updates
+let isUpdating = false;
+
+// Optimized job card selection handler
+function handleJobCardSelection() {
+    if (isUpdating) return;
+    isUpdating = true;
+    
+    try {
+        populateJobCardDetails();
+        updateWidths();
+    } finally {
+        setTimeout(() => { isUpdating = false; }, 100);
+    }
+}
+
+// Optimized dashboard selection handler
+function handleDashboardSelection() {
+    if (isUpdating) return;
+    isUpdating = true;
+    
+    try {
+        updateDashboard();
+    } finally {
+        setTimeout(() => { isUpdating = false; }, 100);
+    }
+}
+
+// Debounced versions (300ms delay for smooth performance)
+const debouncedJobCardHandler = debounce(handleJobCardSelection, 300);
+const debouncedDashboardHandler = debounce(handleDashboardSelection, 300);
+
+
+const jobCardSelect = document.getElementById('jobCard');
+    if (jobCardSelect) {
+        // Remove any existing listeners (prevent duplicates)
+        jobCardSelect.removeEventListener('change', updateJobDetails);
+        
+        // Add new listener with immediate execution
+        jobCardSelect.addEventListener('change', function(e) {
+            console.log('Job card dropdown changed to:', e.target.value);
+            // Force immediate execution
+            try {
+                updateJobDetails();
+            } catch (error) {
+                console.error('Error in updateJobDetails:', error);
+            }
+        }, false);
+        
+        console.log('Job card event listener attached');
+    } else {
+        console.error('Job card select element not found!');
+    }
     document.getElementById('itemType').addEventListener('change', updateWidths);
     document.getElementById('productionTypeFilter').addEventListener('change', filterJobCardsByType);
-    document.getElementById('dashboardJobCard').addEventListener('change', updateDashboard);
+    document.getElementById('dashboardJobCard').addEventListener('change', debouncedDashboardHandler);
     document.getElementById('reportMonth').addEventListener('change', updateMonthlyReport);
     document.getElementById('reportYear').addEventListener('change', updateMonthlyReport);
     document.getElementById('recordBtn').addEventListener('click', recordProduction);
@@ -843,29 +1075,87 @@ function filterJobCardsByType() {
     }
 }
 
-function populateJobCardDropdowns() {
-    filterJobCardsByType();
+
+
+// Sort job cards in descending order (newest first)
+function sortJobCards(jobCards) {
+    return jobCards.sort((a, b) => {
+        // Extract numbers from job card strings (e.g., "EG25-814" -> 814)
+        const numA = parseInt(a.split('-').pop()) || 0;
+        const numB = parseInt(b.split('-').pop()) || 0;
+        return numB - numA; // Descending order
+    });
+}
+
+// Get job cards with caching for performance
+
+
+// Invalidate cache when data changes
+function invalidateCache() {
+    jobCardCache = null;
+    lastCacheUpdate = 0;
+}
+
+
+function getJobCardsList(forceRefresh = false) {
+    const now = Date.now();
     
-    const dashboardSelect = document.getElementById('dashboardJobCard');
-    dashboardSelect.innerHTML = '';
-    
-    const jobCards = Object.keys(jobCardData);
-    
-    if (jobCards.length === 0) {
-        dashboardSelect.innerHTML = '<option value="">No job cards available</option>';
-        return;
+    // Use cache if valid and not forced refresh
+    if (!forceRefresh && jobCardCache && (now - lastCacheUpdate) < CACHE_DURATION) {
+        return jobCardCache;
     }
     
-    jobCards.forEach(jobCard => {
-        const data = jobCardData[jobCard];
-        const option = document.createElement('option');
-        option.value = jobCard;
-        let label = jobCard;
-        if (data.archived) label += ' (Archived)';
-        if (data.held) label += ' (On Hold)';
-        option.textContent = label;
-        dashboardSelect.appendChild(option);
-    });
+    // Rebuild cache
+    const cards = Object.keys(jobCardData).filter(jc => !jobCardData[jc].archived);
+    jobCardCache = sortJobCards(cards);
+    lastCacheUpdate = now;
+    
+    return jobCardCache;
+}
+
+
+function populateJobCardDropdowns() {
+    const jobCards = getJobCardsList(); // Sorted, cached list
+    
+    // Populate Reporter dropdown (jobCard)
+    const reporterSelect = document.getElementById('jobCard');
+    if (reporterSelect) {
+        const currentValue = reporterSelect.value; // Preserve selection
+        reporterSelect.innerHTML = '<option value="">Select Job Card</option>';
+        
+        jobCards.forEach(jobCard => {
+            const data = jobCardData[jobCard];
+            const option = document.createElement('option');
+            option.value = jobCard;
+            let label = jobCard;
+            if (data.held) label += ' (On Hold)';
+            option.textContent = label;
+            reporterSelect.appendChild(option);
+        });
+        
+        if (currentValue) reporterSelect.value = currentValue; // Restore selection
+    }
+    
+    // Populate Dashboard dropdown (dashboardJobCard)
+    const dashboardSelect = document.getElementById('dashboardJobCard');
+    if (dashboardSelect) {
+        const currentValue = dashboardSelect.value; // Preserve selection
+        dashboardSelect.innerHTML = '<option value="">Select Job Card</option>';
+        
+        jobCards.forEach(jobCard => {
+            const data = jobCardData[jobCard];
+            const option = document.createElement('option');
+            option.value = jobCard;
+            let label = jobCard;
+            if (data.held) label += ' (On Hold)';
+            option.textContent = label;
+            dashboardSelect.appendChild(option);
+        });
+        
+        if (currentValue) dashboardSelect.value = currentValue; // Restore selection
+    }
+    
+    console.log('Dropdowns populated with', jobCards.length, 'job cards (sorted)');
 }
 
 // ========================================
@@ -877,14 +1167,18 @@ function updateJobDetails() {
     const detailsRow = document.getElementById('jobDetailsRow');
     const additionalDetails = document.getElementById('additionalDetails');
     
-    if (!jobCard) {
-        detailsRow.style.display = 'none';
-        additionalDetails.style.display = 'none';
-        document.getElementById('widthGrid').innerHTML = '';
+    console.log('updateJobDetails called, job card:', jobCard);
+    
+    if (!jobCard || !jobCardData[jobCard]) {
+        if (detailsRow) detailsRow.style.display = 'none';
+        if (additionalDetails) additionalDetails.style.display = 'none';
+        const widthGrid = document.getElementById('widthGrid');
+        if (widthGrid) widthGrid.innerHTML = '';
         return;
     }
 
     const data = jobCardData[jobCard];
+    console.log('Job card data loaded:', data);
     
     document.getElementById('displayJobCard').textContent = jobCard;
     document.getElementById('displayWorkOrder').textContent = data.workOrder;
@@ -999,7 +1293,7 @@ function recordProduction() {
             const key = diamondMM ? `${jobCard}-3-${width}-${diamondMM}` : `${jobCard}-3-${width}`;
             completedItems[key] = true;
         }
-        saveToFirebase('completedItems', completedItems);
+        saveData('completedItems', completedItems);
     } else {
         const entry = {
             id: Date.now(),
@@ -1020,7 +1314,7 @@ function recordProduction() {
         productionEntries.push(entry);
     }
 
-    saveToFirebase('productionEntries', productionEntries);
+    saveData('productionEntries', productionEntries);
 
     const successMsg = document.getElementById('successMsg');
     successMsg.classList.add('show');
@@ -1050,22 +1344,26 @@ function displayProductionList() {
     const listDiv = document.getElementById('productionList');
     const header = document.getElementById('entriesHeader');
     
-    const filtered = productionEntries.filter(e => e.status === currentSubTab);
+    // Show only started items (no filtering by completed)
+    const filtered = productionEntries.filter(e => e.status === 'started');
     
-    if (currentSubTab === 'started') {
-        header.textContent = 'Started Production';
-        document.getElementById('recordBtn').textContent = 'Record Entry';
-    } else {
-        header.textContent = 'Completed Production';
-        document.getElementById('recordBtn').textContent = 'Record Entry';
-    }
+    header.textContent = 'Started Production';
+    document.getElementById('recordBtn').textContent = 'Record Entry';
     
     if (filtered.length === 0) {
-        listDiv.innerHTML = `<p style="text-align: center; color: #999;">No ${currentSubTab} items yet</p>`;
+        listDiv.innerHTML = '<p style="text-align: center; color: #999;">No production items yet</p>';
         return;
     }
     
-    listDiv.innerHTML = filtered.reverse().map(entry => {
+    // PERFORMANCE: Limit to last 100 items for fast rendering
+    const MAX_DISPLAY = 100;
+    const displayItems = filtered.slice(-MAX_DISPLAY).reverse();
+    
+    if (filtered.length > MAX_DISPLAY) {
+        header.textContent = `Started Production (Showing latest ${MAX_DISPLAY} of ${filtered.length})`;
+    }
+    
+    listDiv.innerHTML = displayItems.map(entry => {
         const startDate = new Date(entry.startTime);
         const endDate = entry.endTime ? new Date(entry.endTime) : null;
         
@@ -1074,15 +1372,25 @@ function displayProductionList() {
             displayType += ` (${entry.diamondMM})`;
         }
         
+        // Show complete button only if not yet completed (no endTime)
+        const completeBtn = !endDate ? 
+            `<button onclick="completeStartedItem(${entry.id})" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; margin-top: 10px; float: right;">✓ Complete</button>` : '';
+        
+        // Green border for completed items
+        const borderStyle = endDate ? 'border-left: 5px solid #28a745; background: #f8fff9;' : '';
+        
         return `
-            <div class="production-item">
-                <h3>${entry.jobCard} - ${entry.workOrder}</h3>
+            <div class="production-item" style="${borderStyle}">
+                <h3>${entry.jobCard} - NO: ${entry.workOrder}</h3>
                 <p><strong>Type:</strong> ${displayType} | <strong>Machine:</strong> ${entry.machine} | <strong>Item:</strong> ${entry.itemType} | <strong>Width:</strong> ${entry.width}mm</p>
                 <p><strong>Operator:</strong> ${entry.operator}</p>
-                <p class="time">Started: ${startDate.toLocaleString()}</p>
-                ${endDate ? `<p class="time">Completed: ${endDate.toLocaleString()}</p>` : ''}
-                ${entry.startRemarks ? `<div class="remark">Start Notes: ${entry.startRemarks}</div>` : ''}
-                ${entry.endRemarks ? `<div class="remark">End Notes: ${entry.endRemarks}</div>` : ''}
+                <p class="time"><strong>Started:</strong> ${startDate.toLocaleString()}</p>
+                ${endDate ? `<p class="time"><strong>Completed:</strong> ${endDate.toLocaleString()}</p>` : ''}
+                ${entry.startRemarks ? `<div class="remark"><strong>Start Notes:</strong> ${entry.startRemarks}</div>` : ''}
+                ${entry.endRemarks ? `<div class="remark"><strong>End Notes:</strong> ${entry.endRemarks}</div>` : ''}
+                ${endDate && entry.endOperator ? `<p><strong>Completed by:</strong> ${entry.endOperator}</p>` : ''}
+                ${completeBtn}
+                <div style="clear: both;"></div>
             </div>
         `;
     }).join('');
@@ -1113,8 +1421,8 @@ function updateDashboard() {
     
     let totalBlades = 0;
     let completedBlades = 0;
-    let totalWeight = 0;
-    let completedWeight = 0;
+    
+    
     
     const groupProgress = [0, 0, 0];
     const groupTotals = [0, 0, 0];
@@ -1124,7 +1432,7 @@ function updateDashboard() {
         Object.keys(group.widths).forEach(width => {
             const widthData = group.widths[width];
             totalBlades += widthData.blades;
-            totalWeight += widthData.weight;
+            
             groupTotals[groupNum - 1] += widthData.blades;
             
             if (data.productionType === 'Normal') {
@@ -1132,9 +1440,9 @@ function updateDashboard() {
                     const key = `${jobCard}-${groupNum}-${width}-${mm}`;
                     if (completedItems[key]) {
                         const bladesPerMM = widthData.blades / 3;
-                        const weightPerMM = widthData.weight / 3;
+                        
                         completedBlades += bladesPerMM;
-                        completedWeight += weightPerMM;
+                        
                         groupProgress[groupNum - 1] += bladesPerMM;
                     }
                 });
@@ -1142,7 +1450,7 @@ function updateDashboard() {
                 const key = `${jobCard}-${groupNum}-${width}`;
                 if (completedItems[key]) {
                     completedBlades += widthData.blades;
-                    completedWeight += widthData.weight;
+                    
                     groupProgress[groupNum - 1] += widthData.blades;
                 }
             }
@@ -1153,8 +1461,8 @@ function updateDashboard() {
     
     document.getElementById('completedBlades').textContent = Math.round(completedBlades);
     document.getElementById('totalBlades').textContent = totalBlades;
-    document.getElementById('completedWeight').textContent = Math.round(completedWeight) + ' kg';
-    document.getElementById('totalWeight').textContent = totalWeight + ' kg';
+    
+    
     document.getElementById('overallPercent').textContent = overallPercent + '%';
     
     const progressBar = document.getElementById('overallProgress');
@@ -1175,6 +1483,8 @@ function updateDashboard() {
 function updateProductionTables(jobCard, data) {
     const yokeSideBody = document.getElementById('yokeSideTableBody');
     const centreBody = document.getElementById('centreTableBody');
+    
+    if (!yokeSideBody || !centreBody) return;
     
     yokeSideBody.innerHTML = '';
     centreBody.innerHTML = '';
@@ -1201,7 +1511,6 @@ function updateProductionTables(jobCard, data) {
             row.innerHTML = `
                 <td>${width}mm</td>
                 <td>${widthData.blades}</td>
-                <td>${widthData.weight} kg</td>
                 <td><span class="status-badge ${isComplete ? 'status-completed' : 'status-pending'}">${isComplete ? '✓ Done' : '⏳ Pending'}</span></td>
             `;
             yokeSideBody.appendChild(row);
@@ -1229,7 +1538,6 @@ function updateProductionTables(jobCard, data) {
         row.innerHTML = `
             <td>${width}mm</td>
             <td>${widthData.blades}</td>
-            <td>${widthData.weight} kg</td>
             <td><span class="status-badge ${isComplete ? 'status-completed' : 'status-pending'}">${isComplete ? '✓ Done' : '⏳ Pending'}</span></td>
         `;
         centreBody.appendChild(row);
@@ -1283,7 +1591,7 @@ function parsePastedData() {
             held: false
         };
         
-        saveToFirebase('jobCardData', jobCardData);
+        saveData('jobCardData', jobCardData);
         
         document.getElementById('uploadSuccessMsg').classList.add('show');
         setTimeout(() => {
@@ -1357,7 +1665,7 @@ function displayJobCardList() {
                     <p>Type: ${data.productionType} | Grade: ${data.grade} | Customer: ${data.customer || 'N/A'}</p>
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button class="manage-btn edit-btn" onclick="editJobCard(\'\${jobCard}\')">✏️ Edit</button>
+                    <button class="manage-btn" onclick="completeEntireJob('${jobCard}')" style="background: #28a745; color: white;">✓ Complete Job</button>
                     <button class="manage-btn hold-btn" onclick="toggleHold('${jobCard}')">${data.held ? '▶️ Resume' : '⏸️ Hold'}</button>
                     <button class="manage-btn delete-btn" onclick="deleteJobCard('${jobCard}')">🗑️ Delete</button>
                 </div>
@@ -1370,7 +1678,7 @@ function displayJobCardList() {
 
 function toggleHold(jobCard) {
     jobCardData[jobCard].held = !jobCardData[jobCard].held;
-    saveToFirebase('jobCardData', jobCardData);
+    saveData('jobCardData', jobCardData);
     populateJobCardDropdowns();
     displayJobCardList();
 }
@@ -1387,9 +1695,9 @@ function deleteJobCard(jobCard) {
             }
         });
         
-        saveToFirebase('jobCardData', jobCardData);
-        saveToFirebase('productionEntries', productionEntries);
-        saveToFirebase('completedItems', completedItems);
+        saveData('jobCardData', jobCardData);
+        saveData('productionEntries', productionEntries);
+        saveData('completedItems', completedItems);
         
         populateJobCardDropdowns();
         displayJobCardList();
@@ -1478,7 +1786,7 @@ function updateMonthlyReport() {
     document.getElementById('monthlyJobCards').textContent = jobCardsInMonth.size;
     document.getElementById('monthlyCompleted').textContent = completedJobCards.size;
     document.getElementById('monthlyPending').textContent = jobCardsInMonth.size - completedJobCards.size;
-    document.getElementById('monthlyBlades').textContent = Math.round(totalBlades);
+    
     
     updateMonthlyChart(monthlyEntries);
     displayMonthlyJobList(Array.from(jobCardsInMonth));
@@ -1495,6 +1803,11 @@ function updateMonthlyChart(entries) {
     
     const labels = Object.keys(dailyData).sort();
     const data = labels.map(label => dailyData[label]);
+    
+    if (!ctx) {
+        console.error('Chart canvas not found');
+        return;
+    }
     
     if (monthlyChart) {
         monthlyChart.destroy();
@@ -1570,28 +1883,72 @@ function displayMonthlyJobList(jobCards) {
 }
 
 function exportMonthlyReport() {
-    const month = parseInt(document.getElementById('reportMonth').value);
-    const year = parseInt(document.getElementById('reportYear').value);
+    const data = [];
+    let slNo = 1;
     
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    const reportName = `${monthNames[month]}_${year}_Report`;
+    const jobCards = Object.keys(jobCardData).sort();
     
+    jobCards.forEach(jobCard => {
+        const jobData = jobCardData[jobCard];
+        let totalItems = 0;
+        let completedCount = 0;
+        
+        [1, 2, 3].forEach(groupNum => {
+            const group = jobData.groups[groupNum];
+            if (group && group.widths) {
+                Object.keys(group.widths).forEach(width => {
+                    totalItems++;
+                    
+                    if (jobData.productionType === 'Normal') {
+                        const allComplete = ['05mm', '00mm', '10mm'].every(mm => {
+                            const key = `${jobCard}-${groupNum}-${width}-${mm}`;
+                            return completedItems[key];
+                        });
+                        if (allComplete) completedCount++;
+                    } else {
+                        const key = `${jobCard}-${groupNum}-${width}`;
+                        if (completedItems[key]) completedCount++;
+                    }
+                });
+            }
+        });
+        
+        const isCompleted = totalItems > 0 && completedCount === totalItems;
+        const status = isCompleted ? 'Completed' : 'Pending';
+        
+        let completionDate = '-';
+        if (isCompleted) {
+            const completedEntries = productionEntries.filter(e => 
+                e.jobCard === jobCard && e.status === 'completed' && e.endTime
+            );
+            
+            if (completedEntries.length > 0) {
+                const latestEntry = completedEntries.reduce((latest, entry) => {
+                    const entryDate = new Date(entry.endTime);
+                    const latestDate = new Date(latest.endTime);
+                    return entryDate > latestDate ? entry : latest;
+                });
+                completionDate = new Date(latestEntry.endTime).toLocaleDateString();
+            }
+        }
+        
+        data.push({
+            'SL No': slNo++,
+            'Job Card': jobCard,
+            'Customer': jobData.customer || '-',
+            'Status': status,
+            'Date Completed': completionDate
+        });
+    });
+    
+    const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Production Report');
     
-    const summaryData = [
-        ['Monthly Production Report'],
-        ['Month', monthNames[month] + ' ' + year],
-        [''],
-        ['Total Job Cards', document.getElementById('monthlyJobCards').textContent],
-        ['Completed Jobs', document.getElementById('monthlyCompleted').textContent],
-        ['Pending Jobs', document.getElementById('monthlyPending').textContent],
-        ['Total Blades Produced', document.getElementById('monthlyBlades').textContent]
-    ];
+    const fileName = 'Production_Report_' + new Date().toISOString().split('T')[0] + '.xlsx';
+    XLSX.writeFile(wb, fileName);
     
-    const ws = XLSX.utils.aoa_to_sheet(summaryData);
-    XLSX.utils.book_append_sheet(wb, ws, 'Summary');
-    
-    XLSX.writeFile(wb, reportName + '.xlsx');
+    alert('Excel file exported successfully!');
 }
 
 // ========================================
@@ -1746,8 +2103,8 @@ function showOrderDetails(jobCard) {
     let completedCount = 0;
     let totalBlades = 0;
     let completedBlades = 0;
-    let totalWeight = 0;
-    let completedWeight = 0;
+    
+    
     
     const groupDetails = [1, 2, 3].map(groupNum => {
         const group = data.groups[groupNum];
@@ -1759,7 +2116,7 @@ function showOrderDetails(jobCard) {
         const widthRows = widths.map(width => {
             const widthData = group.widths[width];
             totalBlades += widthData.blades;
-            totalWeight += widthData.weight;
+            
             groupTotal++;
             
             let isComplete = false;
@@ -1774,7 +2131,7 @@ function showOrderDetails(jobCard) {
                     isComplete = true;
                     completedCount += 3;
                     completedBlades += widthData.blades;
-                    completedWeight += widthData.weight;
+                    
                     groupCompleted++;
                 }
             } else {
@@ -1784,7 +2141,7 @@ function showOrderDetails(jobCard) {
                     isComplete = true;
                     completedCount++;
                     completedBlades += widthData.blades;
-                    completedWeight += widthData.weight;
+                    
                     groupCompleted++;
                 }
             }
@@ -2007,7 +2364,7 @@ function saveEditedJobCard(jobCard) {
     jobCardData[jobCard].rating = rating;
     jobCardData[jobCard].customer = customer;
     
-    saveToFirebase('jobCardData', jobCardData);
+    saveData('jobCardData', jobCardData);
     
     closeEditModal();
     
@@ -2076,29 +2433,374 @@ function importData(input) {
 
 
 
-// Update Firebase status
+// Update Firebase status indicator
 function updateFirebaseStatus() {
     const statusEl = document.getElementById('firebaseStatus');
+    const dotEl = statusEl ? statusEl.querySelector('.status-dot') : null;
     const textEl = document.getElementById('statusText');
-    if (statusEl && textEl) {
-        if (firebaseActive) {
-            statusEl.className = 'firebase-status active';
-            textEl.textContent = 'Cloud';
-        } else {
-            statusEl.className = 'firebase-status';
-            textEl.textContent = 'Local';
-        }
+    
+    if (!statusEl || !dotEl || !textEl) return;
+    
+    if (firebaseActive) {
+        statusEl.className = 'firebase-status active';
+        dotEl.className = 'status-dot active';
+        textEl.textContent = 'Cloud Sync';
+    } else {
+        statusEl.className = 'firebase-status inactive';
+        dotEl.className = 'status-dot inactive';
+        textEl.textContent = 'Local';
     }
 }
 
+// Call this after Firebase init
 setTimeout(updateFirebaseStatus, 1000);
+
+
+
+// Complete a started production item
+function completeStartedItem(entryId) {
+    const entry = productionEntries.find(e => e.id === entryId);
+    if (!entry) {
+        alert('Item not found!');
+        return;
+    }
+    
+    const operatorName = prompt('Enter operator name for completion:', entry.operator);
+    if (!operatorName) return;
+    
+    const remarks = prompt('Enter completion remarks (optional):');
+    
+    entry.status = 'completed';
+    entry.endTime = new Date().toISOString();
+    entry.endOperator = operatorName;
+    if (remarks) {
+        entry.endRemarks = remarks;
+    }
+    
+    const jobCard = entry.jobCard;
+    const width = entry.width;
+    const itemType = entry.itemType;
+    const diamondMM = entry.diamondMM;
+    
+    if (itemType === 'yoke-side') {
+        for (let group = 1; group <= 2; group++) {
+            const key = diamondMM ? `${jobCard}-${group}-${width}-${diamondMM}` : `${jobCard}-${group}-${width}`;
+            completedItems[key] = true;
+        }
+    } else if (itemType === 'centre') {
+        const key = diamondMM ? `${jobCard}-3-${width}-${diamondMM}` : `${jobCard}-3-${width}`;
+        completedItems[key] = true;
+    }
+    
+    saveData('completedItems', completedItems);
+    saveData('productionEntries', productionEntries);
+    
+    alert(`✓ ${width}mm ${itemType} completed successfully!`);
+    
+    displayProductionList();
+    updateDashboard();
+}
+
+
+
+
+// Complete a started production item
+function completeStartedItem(entryId) {
+    const entry = productionEntries.find(e => e.id === entryId);
+    if (!entry) {
+        alert('Item not found!');
+        return;
+    }
+    
+    const operatorName = prompt('Enter operator name for completion:', entry.operator);
+    if (!operatorName) return;
+    
+    const remarks = prompt('Enter completion remarks (optional):');
+    
+    entry.status = 'completed';
+    entry.endTime = new Date().toISOString();
+    entry.endOperator = operatorName;
+    if (remarks) {
+        entry.endRemarks = remarks;
+    }
+    
+    const jobCard = entry.jobCard;
+    const width = entry.width;
+    const itemType = entry.itemType;
+    const diamondMM = entry.diamondMM;
+    
+    if (itemType === 'yoke-side') {
+        for (let group = 1; group <= 2; group++) {
+            const key = diamondMM ? `${jobCard}-${group}-${width}-${diamondMM}` : `${jobCard}-${group}-${width}`;
+            completedItems[key] = true;
+        }
+    } else if (itemType === 'centre') {
+        const key = diamondMM ? `${jobCard}-3-${width}-${diamondMM}` : `${jobCard}-3-${width}`;
+        completedItems[key] = true;
+    }
+    
+    localStorage.setItem('completedItems', JSON.stringify(completedItems));
+    localStorage.setItem('productionEntries', JSON.stringify(productionEntries));
+    
+    alert(`✓ ${width}mm ${itemType} completed successfully!`);
+    
+    displayProductionList();
+    if (typeof updateDashboard === 'function') updateDashboard();
+}
+
+// Hold/Unhold functions
+function holdJobCard(jobCard) {
+    if (!confirm('Are you sure you want to hold ' + jobCard + '?')) {
+        return;
+    }
+    
+    if (jobCardData[jobCard]) {
+        jobCardData[jobCard].held = true;
+        localStorage.setItem('jobCardData', JSON.stringify(jobCardData));
+        alert('Job card ' + jobCard + ' has been put on hold');
+        if (typeof displayJobCards === 'function') displayJobCards();
+        populateJobCardDropdowns();
+    }
+}
+
+function unholdJobCard(jobCard) {
+    if (jobCardData[jobCard]) {
+        jobCardData[jobCard].held = false;
+        localStorage.setItem('jobCardData', JSON.stringify(jobCardData));
+        alert('Job card ' + jobCard + ' has been resumed');
+        if (typeof displayJobCards === 'function') displayJobCards();
+        populateJobCardDropdowns();
+    }
+}
+
+
+
+
+// ============================================================================
+// FIREBASE SYNC QUEUE (Non-blocking, debounced)
+// ============================================================================
+
+// Queue for pending Firebase syncs
+let firebaseSyncQueue = {};
+let firebaseSyncTimeout = null;
+
+// Queue a Firebase sync (debounced - max once per 3 seconds)
+function queueFirebaseSync(key, data) {
+    // Add to queue
+    firebaseSyncQueue[key] = data;
+    
+    // Clear existing timeout
+    if (firebaseSyncTimeout) {
+        clearTimeout(firebaseSyncTimeout);
+    }
+    
+    // PERFORMANCE: Increased delay to 5 seconds for large datasets
+    firebaseSyncTimeout = setTimeout(function() {
+        procesFirebaseSyncQueue();
+    }, 5000); // Wait 5 seconds (was 3)
+    
+    console.log('📤 Queued for Firebase sync:', key);
+}
+
+// Process the Firebase sync queue
+function procesFirebaseSyncQueue() {
+    if (Object.keys(firebaseSyncQueue).length === 0) {
+        return; // Nothing to sync
+    }
+    
+    console.log('🔄 Syncing to Firebase (background)...');
+    
+    // Get all queued items
+    const itemsToSync = {...firebaseSyncQueue};
+    
+    // Clear the queue
+    firebaseSyncQueue = {};
+    
+    // Sync each item (async, non-blocking)
+    Object.keys(itemsToSync).forEach(function(key) {
+        const data = itemsToSync[key];
+        
+        // Use setTimeout to make it truly async (won't block UI)
+        setTimeout(function() {
+            try {
+                if (typeof saveToFirebase === 'function') {
+                    saveToFirebase(key, data);
+                }
+            } catch (e) {
+                console.warn('⚠ Firebase sync failed for', key, '(non-critical):', e);
+                // Don't throw - keep UI working even if Firebase fails
+            }
+        }, 0);
+    });
+}
+
+// Sync immediately on page unload (before closing)
+window.addEventListener('beforeunload', function() {
+    if (Object.keys(firebaseSyncQueue).length > 0) {
+        procesFirebaseSyncQueue();
+    }
+});
+
+// Complete entire job - mark all widths as done
+function completeEntireJob(jobCard) {
+    if (!jobCardData[jobCard]) {
+        alert('Job card not found!');
+        return;
+    }
+    
+    const data = jobCardData[jobCard];
+    const confirmMsg = `Are you sure you want to mark ALL production for ${jobCard} as completed?\n\nThis will mark ALL widths in ALL groups as done.`;
+    
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+    
+    let itemsCompleted = 0;
+    
+    // Mark all widths in all groups as completed
+    [1, 2, 3].forEach(groupNum => {
+        const group = data.groups[groupNum];
+        if (group && group.widths) {
+            Object.keys(group.widths).forEach(width => {
+                if (data.productionType === 'Normal') {
+                    // Normal type: complete all three diamond sizes
+                    ['05mm', '00mm', '10mm'].forEach(mm => {
+                        const key = `${jobCard}-${groupNum}-${width}-${mm}`;
+                        if (!completedItems[key]) {
+                            completedItems[key] = true;
+                            itemsCompleted++;
+                        }
+                    });
+                } else {
+                    // Taper Lap or Step Lap: complete the width
+                    const key = `${jobCard}-${groupNum}-${width}`;
+                    if (!completedItems[key]) {
+                        completedItems[key] = true;
+                        itemsCompleted++;
+                    }
+                }
+            });
+        }
+    });
+    
+    // Save to localStorage
+    localStorage.setItem('completedItems', JSON.stringify(completedItems));
+    
+    // Queue Firebase sync
+    if (typeof queueFirebaseSync === 'function') {
+        queueFirebaseSync('completedItems', completedItems);
+    }
+    
+    alert(`✓ Job ${jobCard} marked as complete!\n${itemsCompleted} items completed.`);
+    
+    // Refresh displays
+    if (typeof displayJobCards === 'function') displayJobCards();
+    if (typeof updateDashboard === 'function') updateDashboard();
+}
+
+
+
+
+// ============================================================================
+// DATA CLEANUP & MAINTENANCE
+// ============================================================================
+
+// Clean old completed production entries (keep last 6 months)
+function cleanupOldEntries() {
+    const sixMonthsAgo = Date.now() - (180 * 24 * 60 * 60 * 1000);
+    const before = productionEntries.length;
+    
+    productionEntries = productionEntries.filter(entry => {
+        // Keep if started in last 6 months OR not completed yet
+        const entryTime = new Date(entry.startTime).getTime();
+        return entryTime > sixMonthsAgo || !entry.endTime;
+    });
+    
+    const removed = before - productionEntries.length;
+    if (removed > 0) {
+        localStorage.setItem('productionEntries', JSON.stringify(productionEntries));
+        console.log(`🧹 Cleaned up ${removed} old entries`);
+    }
+    
+    return removed;
+}
+
+// Run cleanup on startup (after 5 seconds)
+setTimeout(function() {
+    cleanupOldEntries();
+}, 5000);
+
+// Auto-cleanup every 24 hours
+setInterval(function() {
+    cleanupOldEntries();
+}, 24 * 60 * 60 * 1000);
+
+
+
+
+// ============================================================================
+// PERFORMANCE MONITORING
+// ============================================================================
+
+// Monitor performance and show warnings
+function checkPerformance() {
+    const jobCount = Object.keys(jobCardData).length;
+    const entryCount = productionEntries.length;
+    const storageSize = JSON.stringify(localStorage).length;
+    
+    console.log('📊 Performance Stats:');
+    console.log('  Job Cards:', jobCount);
+    console.log('  Production Entries:', entryCount);
+    console.log('  Storage Size:', (storageSize / 1024).toFixed(2), 'KB');
+    
+    // Warn if getting large
+    if (jobCount > 150) {
+        console.warn('⚠️ High job card count. Consider archiving old jobs.');
+    }
+    if (entryCount > 5000) {
+        console.warn('⚠️ High entry count. Running cleanup...');
+        cleanupOldEntries();
+    }
+    if (storageSize > 4 * 1024 * 1024) { // 4MB
+        console.warn('⚠️ Storage getting full. Consider cleanup.');
+    }
+}
+
+// Run performance check on startup
+setTimeout(checkPerformance, 3000);
+
+// Run every hour
+setInterval(checkPerformance, 60 * 60 * 1000);
+
+
+
+
+// Show/hide loading overlay
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+
 
 </script>
 
-    <!-- Firebase Status -->
-    <div id="firebaseStatus" class="firebase-status">
+    <!-- Firebase Status Indicator -->
+    <div id="firebaseStatus" class="firebase-status inactive">
+        <span class="status-dot inactive"></span>
         <span id="statusText">Local</span>
     </div>
 
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Processing...</p>
+        </div>
+    </div>
+    
 </body>
 </html>
