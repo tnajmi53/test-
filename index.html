@@ -378,6 +378,53 @@ setTimeout(updateFirebaseStatus, 1000);
             100% { transform: rotate(360deg); }
         }
 
+        /* Complete Button Styles */
+        .complete-btn {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .complete-btn:hover {
+            background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
+            transform: translateY(-2px);
+        }
+        .complete-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+        }
+
+        /* Slide in/out animations for notification */
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -560,7 +607,7 @@ setTimeout(updateFirebaseStatus, 1000);
                         <h4>🔹 Yoke/Side Production</h4>
                         <div style="overflow-x: auto;">
                             <table class="production-table">
-                                <thead><tr><th>Width (mm)</th><th>Blades</th><th>Status</th></tr></thead>
+                                <thead><tr><th>Width (mm)</th><th>Blades</th><th>Status</th><th>Action</th></tr></thead>
                                 <tbody id="yokeSideTableBody"></tbody>
                             </table>
                         </div>
@@ -569,7 +616,7 @@ setTimeout(updateFirebaseStatus, 1000);
                         <h4>🔹 Centre Production</h4>
                         <div style="overflow-x: auto;">
                             <table class="production-table">
-                                <thead><tr><th>Width (mm)</th><th>Blades</th><th>Status</th></tr></thead>
+                                <thead><tr><th>Width (mm)</th><th>Blades</th><th>Status</th><th>Action</th></tr></thead>
                                 <tbody id="centreTableBody"></tbody>
                             </table>
                         </div>
@@ -1642,10 +1689,20 @@ function updateProductionTables(jobCard, data) {
             
             const row = document.createElement('tr');
             row.className = isComplete ? 'completed' : 'pending';
+            
+            // Create action button HTML
+            let actionHTML = '';
+            if (isComplete) {
+                actionHTML = '<td><span style="color: #4caf50; font-weight: bold;">✓ Done</span></td>';
+            } else {
+                actionHTML = `<td><button class="complete-btn" onclick="markWidthComplete('${jobCard}', ${groupNum}, ${width}, '${data.productionType}')">Complete</button></td>`;
+            }
+            
             row.innerHTML = `
                 <td>${width}mm</td>
                 <td>${widthData.blades}</td>
                 <td><span class="status-badge ${isComplete ? 'status-completed' : 'status-pending'}">${isComplete ? '✓ Done' : '⏳ Pending'}</span></td>
+                ${actionHTML}
             `;
             yokeSideBody.appendChild(row);
         });
@@ -1669,13 +1726,88 @@ function updateProductionTables(jobCard, data) {
         
         const row = document.createElement('tr');
         row.className = isComplete ? 'completed' : 'pending';
+        
+        // Create action button HTML
+        let actionHTML = '';
+        if (isComplete) {
+            actionHTML = '<td><span style="color: #4caf50; font-weight: bold;">✓ Done</span></td>';
+        } else {
+            actionHTML = `<td><button class="complete-btn" onclick="markWidthComplete('${jobCard}', 3, ${width}, '${data.productionType}')">Complete</button></td>`;
+        }
+        
         row.innerHTML = `
             <td>${width}mm</td>
             <td>${widthData.blades}</td>
             <td><span class="status-badge ${isComplete ? 'status-completed' : 'status-pending'}">${isComplete ? '✓ Done' : '⏳ Pending'}</span></td>
+            ${actionHTML}
         `;
         centreBody.appendChild(row);
     });
+}
+
+// ========================================
+// MARK WIDTH AS COMPLETE (NEW FUNCTION)
+// ========================================
+
+function markWidthComplete(jobCard, groupNum, width, productionType) {
+    // Show confirmation
+    if (!confirm(`Mark ${width}mm (Group ${groupNum}) as complete?`)) {
+        return;
+    }
+    
+    // Mark as complete based on production type
+    if (productionType === 'Normal') {
+        // For Normal production, mark all 3 mm variations as complete
+        ['05mm', '00mm', '10mm'].forEach(mm => {
+            const key = `${jobCard}-${groupNum}-${width}-${mm}`;
+            completedItems[key] = true;
+        });
+    } else {
+        // For other production types, mark the width directly
+        const key = `${jobCard}-${groupNum}-${width}`;
+        completedItems[key] = true;
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('completedItems', JSON.stringify(completedItems));
+    
+    // Save to Firebase if active
+    saveCompletedItemsForJob(jobCard);
+    
+    // Refresh the display
+    const data = jobCardData[jobCard];
+    if (data) {
+        updateProductionTables(jobCard, data);
+        updateProgressBar(jobCard, data);
+    }
+    
+    // Show success message
+    showTemporaryMessage('✓ Width marked as complete!', 'success');
+}
+
+// Helper function to show temporary messages
+function showTemporaryMessage(message, type = 'success') {
+    const msgDiv = document.createElement('div');
+    msgDiv.textContent = message;
+    msgDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#4caf50' : '#f44336'};
+        color: white;
+        padding: 15px 25px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        z-index: 10000;
+        font-weight: 500;
+        animation: slideIn 0.3s ease-out;
+    `;
+    document.body.appendChild(msgDiv);
+    
+    setTimeout(() => {
+        msgDiv.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => msgDiv.remove(), 300);
+    }, 2000);
 }
 
 // ========================================
