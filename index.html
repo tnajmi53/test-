@@ -379,20 +379,21 @@ setTimeout(updateFirebaseStatus, 1000);
         }
 
         /* Complete Button Styles */
-        .complete-btn {
-            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
-            color: white;
-            border: none;
-            padding: 6px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+      /* Complete Button Styles */
+.complete-btn {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+    color: white;
+    border: none;
+    padding: 4px 12px;        /* ← SMALLER PADDING */
+    border-radius: 4px;       /* ← SMALLER RADIUS */
+    cursor: pointer;
+    font-size: 11px;          /* ← SMALLER FONT */
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;    /* ← SMALLER SPACING */
+}
         .complete-btn:hover {
             background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
             box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
@@ -2952,3 +2953,4 @@ function hideLoading() {
     
 </body>
 </html>
+
