@@ -308,7 +308,7 @@ setTimeout(updateFirebaseStatus, 1000);
         .modal-overall-title { color: #2d7a3e; font-size: 12px; text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
         .modal-overall-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         .modal-overall-stat { text-align: center; }
-        .modal-overall-value { font-size: 20px; font-weight: bold; color: #2d7a3e; }
+        .modal-overall-value { font-size: px; font-weight: bold; color: #2d7a3e; }
         .modal-overall-label { font-size: 10px; color: #666; margin-top: 2px; }
         
         @media (max-width: 600px) {
@@ -378,7 +378,7 @@ setTimeout(updateFirebaseStatus, 1000);
             100% { transform: rotate(360deg); }
         }
 
-        /* Complete Button Styles */
+       /* Complete Button Styles */
 .complete-btn {
     background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
     color: white;
@@ -857,6 +857,7 @@ function setupFirebaseListeners() {
         safeUIUpdate(() => {
             populateJobCardDropdowns();
             displayJobCardList();
+            if (typeof updateMonthlyReport === 'function') updateMonthlyReport();
         });
         receivingFromFirebase = false;
         console.log('🔄 jobCards synced from Firebase');
@@ -904,6 +905,7 @@ function setupFirebaseListeners() {
             updateDashboard();
             displayProductionList();
             displayJobCardList();
+            if (typeof updateMonthlyReport === 'function') updateMonthlyReport();
         });
         receivingFromFirebase = false;
         console.log('🔄 completedItems synced from Firebase');
@@ -965,6 +967,21 @@ function loadData(key) {
 // Initialize Firebase when page loads
 document.addEventListener('DOMContentLoaded', function() {
     initFirebase();
+    
+    // Migration: Add dateAdded to existing job cards that don't have it
+    setTimeout(function() {
+        let needsSave = false;
+        Object.keys(jobCardData).forEach(jobCard => {
+            if (!jobCardData[jobCard].dateAdded) {
+                jobCardData[jobCard].dateAdded = new Date().toISOString();
+                needsSave = true;
+            }
+        });
+        if (needsSave) {
+            localStorage.setItem('jobCardData', JSON.stringify(jobCardData));
+            console.log('✓ Added dateAdded to existing job cards');
+        }
+    }, 1000);
 });
 
 
@@ -1854,7 +1871,8 @@ function parsePastedData() {
             customer: customer || '',
             groups,
             archived: false,
-            held: false
+            held: false,
+            dateAdded: new Date().toISOString()  // Track when job card was added
         };
         
         saveData('jobCardData', jobCardData);
@@ -1999,72 +2017,85 @@ function updateMonthlyReport() {
     const startDate = new Date(year, month, 1);
     const endDate = new Date(year, month + 1, 0, 23, 59, 59);
     
-    const monthlyEntries = productionEntries.filter(e => {
-        const entryDate = new Date(e.startTime);
-        return entryDate >= startDate && entryDate <= endDate;
-    });
-    
-    const jobCardsInMonth = new Set();
-    const completedJobCards = new Set();
-    let totalBlades = 0;
-    
-    monthlyEntries.forEach(entry => {
-        jobCardsInMonth.add(entry.jobCard);
-        if (entry.status === 'completed') {
-            const data = jobCardData[entry.jobCard];
-            if (data) {
-                const groupNum = entry.itemType === 'centre' ? 3 : (entry.itemType === 'yoke-side' ? [1, 2] : []);
-                const groups = Array.isArray(groupNum) ? groupNum : [groupNum];
-                
-                groups.forEach(g => {
-                    const widthData = data.groups[g].widths[entry.width];
-                    if (widthData) {
-                        if (entry.productionType === 'Normal') {
-                            totalBlades += widthData.blades / 3;
-                        } else {
-                            totalBlades += widthData.blades;
-                        }
-                    }
-                });
-            }
+    // JOB CARDS ADDED THIS MONTH (based on dateAdded field)
+    const jobCardsAddedThisMonth = [];
+    Object.keys(jobCardData).forEach(jobCard => {
+        const data = jobCardData[jobCard];
+        
+        // Skip archived job cards
+        if (data.archived) return;
+        
+        // Check if added this month
+        let addedThisMonth = false;
+        if (data.createdDate) {
+            // New job cards have createdDate
+            const createdDate = new Date(data.createdDate);
+            addedThisMonth = createdDate >= startDate && createdDate <= endDate;
+        } else if (data.dateAdded) {
+            // Fallback for older format
+            const addedDate = new Date(data.dateAdded);
+            addedThisMonth = addedDate >= startDate && addedDate <= endDate;
+        } else {
+            // Very old job cards: check if has production activity this month
+            const hasActivityThisMonth = productionEntries.some(e => {
+                if (e.jobCard !== jobCard) return false;
+                const entryDate = new Date(e.startTime);
+                return entryDate >= startDate && entryDate <= endDate;
+            });
+            addedThisMonth = hasActivityThisMonth;
+        }
+        
+        if (addedThisMonth) {
+            jobCardsAddedThisMonth.push(jobCard);
         }
     });
     
-    jobCardsInMonth.forEach(jobCard => {
+    // COMPLETED JOB CARDS (from those added this month)
+    const completedJobCards = [];
+    jobCardsAddedThisMonth.forEach(jobCard => {
         const data = jobCardData[jobCard];
         if (data) {
             let totalItems = 0;
             let completedCount = 0;
             
             [1, 2, 3].forEach(groupNum => {
-                Object.keys(data.groups[groupNum].widths).forEach(width => {
-                    if (data.productionType === 'Normal') {
-                        totalItems += 3;
-                        ['05mm', '00mm', '10mm'].forEach(mm => {
-                            const key = `${jobCard}-${groupNum}-${width}-${mm}`;
+                const group = data.groups[groupNum];
+                if (group && group.widths) {
+                    Object.keys(group.widths).forEach(width => {
+                        if (data.productionType === 'Normal') {
+                            totalItems += 3;
+                            ['05mm', '00mm', '10mm'].forEach(mm => {
+                                const key = `${jobCard}-${groupNum}-${width}-${mm}`;
+                                if (completedItems[key]) completedCount++;
+                            });
+                        } else {
+                            totalItems += 1;
+                            const key = `${jobCard}-${groupNum}-${width}`;
                             if (completedItems[key]) completedCount++;
-                        });
-                    } else {
-                        totalItems += 1;
-                        const key = `${jobCard}-${groupNum}-${width}`;
-                        if (completedItems[key]) completedCount++;
-                    }
-                });
+                        }
+                    });
+                }
             });
             
-            if (completedCount === totalItems) {
-                completedJobCards.add(jobCard);
+            if (completedCount === totalItems && totalItems > 0) {
+                completedJobCards.push(jobCard);
             }
         }
     });
     
-    document.getElementById('monthlyJobCards').textContent = jobCardsInMonth.size;
-    document.getElementById('monthlyCompleted').textContent = completedJobCards.size;
-    document.getElementById('monthlyPending').textContent = jobCardsInMonth.size - completedJobCards.size;
+    // PRODUCTION ENTRIES THIS MONTH (for chart)
+    const monthlyEntries = productionEntries.filter(e => {
+        const entryDate = new Date(e.startTime);
+        return entryDate >= startDate && entryDate <= endDate;
+    });
     
+    // UPDATE DISPLAY
+    document.getElementById('monthlyJobCards').textContent = jobCardsAddedThisMonth.length;
+    document.getElementById('monthlyCompleted').textContent = completedJobCards.length;
+    document.getElementById('monthlyPending').textContent = jobCardsAddedThisMonth.length - completedJobCards.length;
     
     updateMonthlyChart(monthlyEntries);
-    displayMonthlyJobList(Array.from(jobCardsInMonth));
+    displayMonthlyJobList(jobCardsAddedThisMonth);
 }
 
 function updateMonthlyChart(entries) {
@@ -2952,5 +2983,3 @@ function hideLoading() {
     
 </body>
 </html>
-
-
