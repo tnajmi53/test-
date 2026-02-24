@@ -880,6 +880,7 @@ function setupFirebaseListeners() {
         localStorage.setItem('productionEntries', JSON.stringify(productionEntries));
         safeUIUpdate(() => {
             displayProductionList();
+            if (typeof updateMonthlyReport === 'function') updateMonthlyReport();
         });
         receivingFromFirebase = false;
         console.log('🔄 productions synced from Firebase');
@@ -2011,8 +2012,14 @@ function setCurrentMonth() {
 }
 
 function updateMonthlyReport() {
-    const month = parseInt(document.getElementById('reportMonth').value);
-    const year = parseInt(document.getElementById('reportYear').value);
+    const monthEl = document.getElementById('reportMonth');
+    const yearEl = document.getElementById('reportYear');
+    
+    // Guard: DOM not ready
+    if (!monthEl || !yearEl) return;
+    
+    const month = parseInt(monthEl.value);
+    const year = parseInt(yearEl.value);
     
     const startDate = new Date(year, month, 1);
     const endDate = new Date(year, month + 1, 0, 23, 59, 59);
@@ -2025,28 +2032,12 @@ function updateMonthlyReport() {
         // Skip archived job cards
         if (data.archived) return;
         
-        // Check if added this month
-        let addedThisMonth = false;
-        if (data.createdDate) {
-            // New job cards have createdDate
-            const createdDate = new Date(data.createdDate);
-            addedThisMonth = createdDate >= startDate && createdDate <= endDate;
-        } else if (data.dateAdded) {
-            // Fallback for older format
+        // Check if added this month using dateAdded
+        if (data.dateAdded) {
             const addedDate = new Date(data.dateAdded);
-            addedThisMonth = addedDate >= startDate && addedDate <= endDate;
-        } else {
-            // Very old job cards: check if has production activity this month
-            const hasActivityThisMonth = productionEntries.some(e => {
-                if (e.jobCard !== jobCard) return false;
-                const entryDate = new Date(e.startTime);
-                return entryDate >= startDate && entryDate <= endDate;
-            });
-            addedThisMonth = hasActivityThisMonth;
-        }
-        
-        if (addedThisMonth) {
-            jobCardsAddedThisMonth.push(jobCard);
+            if (addedDate >= startDate && addedDate <= endDate) {
+                jobCardsAddedThisMonth.push(jobCard);
+            }
         }
     });
     
@@ -2083,16 +2074,33 @@ function updateMonthlyReport() {
         }
     });
     
-    // PRODUCTION ENTRIES THIS MONTH (for chart)
+    // PRODUCTION ENTRIES THIS MONTH (for chart - show completion trend)
     const monthlyEntries = productionEntries.filter(e => {
-        const entryDate = new Date(e.startTime);
-        return entryDate >= startDate && entryDate <= endDate;
+        if (e.endTime) {
+            // Show entries COMPLETED this month
+            const completedDate = new Date(e.endTime);
+            return completedDate >= startDate && completedDate <= endDate;
+        }
+        return false;
     });
     
     // UPDATE DISPLAY
-    document.getElementById('monthlyJobCards').textContent = jobCardsAddedThisMonth.length;
-    document.getElementById('monthlyCompleted').textContent = completedJobCards.length;
-    document.getElementById('monthlyPending').textContent = jobCardsAddedThisMonth.length - completedJobCards.length;
+    const jobCardsEl = document.getElementById('monthlyJobCards');
+    const completedEl = document.getElementById('monthlyCompleted');
+    const pendingEl = document.getElementById('monthlyPending');
+    
+    if (jobCardsEl) jobCardsEl.textContent = jobCardsAddedThisMonth.length;
+    if (completedEl) completedEl.textContent = completedJobCards.length;
+    if (pendingEl) pendingEl.textContent = jobCardsAddedThisMonth.length - completedJobCards.length;
+    
+    console.log('📊 Monthly Report Updated:', {
+        month: month + 1,
+        year: year,
+        totalAdded: jobCardsAddedThisMonth.length,
+        completed: completedJobCards.length,
+        pending: jobCardsAddedThisMonth.length - completedJobCards.length,
+        chartEntries: monthlyEntries.length
+    });
     
     updateMonthlyChart(monthlyEntries);
     displayMonthlyJobList(jobCardsAddedThisMonth);
@@ -2101,19 +2109,23 @@ function updateMonthlyReport() {
 function updateMonthlyChart(entries) {
     const ctx = document.getElementById('monthlyChart');
     
-    const dailyData = {};
-    entries.forEach(entry => {
-        const date = new Date(entry.startTime).toLocaleDateString();
-        dailyData[date] = (dailyData[date] || 0) + 1;
-    });
-    
-    const labels = Object.keys(dailyData).sort();
-    const data = labels.map(label => dailyData[label]);
-    
     if (!ctx) {
         console.error('Chart canvas not found');
         return;
     }
+    
+    // Group entries by completion date
+    const dailyData = {};
+    entries.forEach(entry => {
+        // Use endTime (completion date) for the trend
+        const date = new Date(entry.endTime).toLocaleDateString();
+        dailyData[date] = (dailyData[date] || 0) + 1;
+    });
+    
+    const labels = Object.keys(dailyData).sort((a, b) => {
+        return new Date(a) - new Date(b);
+    });
+    const data = labels.map(label => dailyData[label]);
     
     if (monthlyChart) {
         monthlyChart.destroy();
@@ -2124,18 +2136,30 @@ function updateMonthlyChart(entries) {
         data: {
             labels: labels,
             datasets: [{
-                label: 'Production Entries',
+                label: 'Completed Production',
                 data: data,
                 borderColor: '#2d7a3e',
                 backgroundColor: 'rgba(45, 122, 62, 0.1)',
-                tension: 0.4
+                tension: 0.4,
+                fill: true
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { display: false }
+                legend: { 
+                    display: true,
+                    position: 'top'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
             }
         }
     });
