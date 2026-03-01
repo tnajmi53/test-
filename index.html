@@ -7,445 +7,127 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
-/* ── RESET & BASE ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --teal:   #0D4F5C;
-  --teal2:  #1A6B7A;
-  --teal3:  #2A8A9C;
-  --gold:   #C9913A;
-  --gold2:  #E8B860;
-  --gold3:  #F5D9A0;
-  --ruby:   #8B2246;
-  --ivory:  #F7F0E4;
-  --ivory2: #EDE5D4;
-  --ivory3: #D8CCB8;
-  --dark:   #061218;
-  --dark2:  #0A1E26;
-  --dark3:  #0F2C38;
-  --dark4:  #163844;
-  --text:   #E8DCC8;
-  --muted:  #8AAAB4;
-  --faint:  #2A4A54;
+  --bg:#FBF7F0;--bg2:#F5EFE4;--bg3:#EDE5D6;
+  --card:#FFFFFF;--card2:#FDF9F4;
+  --teal:#1A6B7A;--teal2:#2A8A9C;--teal3:#D4EEF2;
+  --gold:#B8821A;--gold2:#D4A030;--gold3:#F0CC7A;--gold4:#FDF3DC;
+  --text:#2C2018;--text2:#5A4A38;--text3:#8A7A6A;
+  --border:#DDD0BC;--border2:#EAE0CC;
+  --shadow:rgba(100,70,30,0.10);--shadow2:rgba(100,70,30,0.18);
 }
 html{scroll-behavior:smooth}
-body{
-  background:var(--dark);
-  color:var(--text);
-  font-family:'Crimson Text',Georgia,serif;
-  font-size:17px;
-  line-height:1.6;
-  min-height:100vh;
-  overflow-x:hidden;
+body{background:var(--bg);color:var(--text);font-family:'Crimson Text',Georgia,serif;font-size:17px;line-height:1.6;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Ctext x='20' y='55' font-size='32' fill='%23B8821A' opacity='0.07' font-family='serif'%3E%E2%99%A9%3C/text%3E%3Ctext x='110' y='35' font-size='24' fill='%231A6B7A' opacity='0.065' font-family='serif'%3E%E2%99%AA%3C/text%3E%3Ctext x='175' y='80' font-size='28' fill='%23B8821A' opacity='0.07' font-family='serif'%3E%E2%99%AB%3C/text%3E%3Ctext x='50' y='130' font-size='22' fill='%231A6B7A' opacity='0.06' font-family='serif'%3E%E2%99%AC%3C/text%3E%3Ctext x='145' y='160' font-size='26' fill='%23B8821A' opacity='0.065' font-family='serif'%3E%E2%99%A9%3C/text%3E%3Ctext x='80' y='195' font-size='20' fill='%231A6B7A' opacity='0.055' font-family='serif'%3E%E2%99%AA%3C/text%3E%3Ctext x='195' y='120' font-size='22' fill='%23B8821A' opacity='0.06' font-family='serif'%3E%E2%99%AB%3C/text%3E%3Ctext x='10' y='195' font-size='24' fill='%231A6B7A' opacity='0.06' font-family='serif'%3E%E2%99%AC%3C/text%3E%3Ctext x='210' y='210' font-size='18' fill='%23B8821A' opacity='0.05' font-family='serif'%3E%E2%99%A9%3C/text%3E%3C/svg%3E");
 }
-
-/* ── FATIMID TILE BACKGROUND ── */
-body::before{
-  content:'';
-  position:fixed;
-  inset:0;
-  z-index:0;
-  pointer-events:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cdefs%3E%3Cpattern id='f' x='0' y='0' width='60' height='60' patternUnits='userSpaceOnUse'%3E%3Cpolygon points='30,2 36,20 55,20 40,32 46,50 30,39 14,50 20,32 5,20 24,20' fill='none' stroke='%23C9913A' stroke-width='0.5' opacity='0.18'/%3E%3Crect x='15' y='15' width='30' height='30' fill='none' stroke='%23C9913A' stroke-width='0.3' opacity='0.12' transform='rotate(45,30,30)'/%3E%3Ccircle cx='30' cy='30' r='6' fill='none' stroke='%23C9913A' stroke-width='0.4' opacity='0.15'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='120' height='120' fill='url(%23f)'/%3E%3C/svg%3E");
-  opacity:1;
-}
-
-/* ── LAYOUT ── */
 #app{position:relative;z-index:1;max-width:1140px;margin:0 auto;padding:0 22px 90px}
 
-/* ── FATIMID BORDER ORNAMENT (SVG inline) ── */
-.fatimid-divider{
-  width:100%;
-  text-align:center;
-  margin:32px 0;
-  position:relative;
-}
-.fatimid-divider::before,.fatimid-divider::after{
-  content:'';
-  position:absolute;
-  top:50%;
-  width:calc(50% - 48px);
-  height:1px;
-  background:linear-gradient(90deg,transparent,var(--gold),transparent);
-  transform:translateY(-50%);
-}
-.fatimid-divider::before{left:0}
-.fatimid-divider::after{right:0}
-.fatimid-divider .star{
-  display:inline-block;
-  font-size:22px;
-  color:var(--gold);
-  line-height:1;
-}
+.fatimid-divider{width:100%;text-align:center;margin:36px 0;position:relative;line-height:0}
+.fatimid-divider::before,.fatimid-divider::after{content:'';position:absolute;top:50%;width:calc(50% - 52px);height:1px;background:linear-gradient(90deg,transparent,var(--gold2),transparent);transform:translateY(-50%)}
+.fatimid-divider::before{left:0}.fatimid-divider::after{right:0}
+.fatimid-divider .ornament{display:inline-block;color:var(--gold2);font-size:20px;line-height:1;vertical-align:middle}
 
-/* ── HEADER ── */
-.header{
-  text-align:center;
-  padding:64px 0 48px;
-}
-.header-eyebrow{
-  font-family:'Cinzel',serif;
-  font-size:11px;
-  letter-spacing:0.45em;
-  color:var(--gold);
-  text-transform:uppercase;
-  margin-bottom:20px;
-  opacity:0.85;
-}
-.header h1{
-  font-family:'Cinzel',serif;
-  font-weight:400;
-  font-size:clamp(40px,6vw,72px);
-  line-height:1.1;
-  color:var(--ivory);
-  margin-bottom:4px;
-}
-.header h1 span{
-  font-weight:700;
-  background:linear-gradient(120deg,var(--gold2) 0%,var(--gold) 50%,var(--gold3) 100%);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
+.header{text-align:center;padding:64px 0 44px}
+.header-eyebrow{font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.45em;color:var(--teal);text-transform:uppercase;margin-bottom:22px;opacity:.9}
+.arch-ornament{display:flex;justify-content:center;align-items:center;gap:18px;margin-bottom:20px}
+.arch-line{width:70px;height:1px;background:linear-gradient(90deg,transparent,var(--gold2));opacity:.6}
+.arch-line.r{background:linear-gradient(90deg,var(--gold2),transparent)}
+.header h1.w1{font-family:'Cinzel',serif;font-weight:400;font-size:clamp(38px,6vw,70px);color:var(--text);line-height:1.1;margin-bottom:2px}
+.header h1.w2{font-family:'Cinzel',serif;font-weight:700;font-size:clamp(38px,6vw,70px);background:linear-gradient(120deg,var(--teal) 0%,var(--teal2) 40%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:36px}
 
-/* Fatimid arch ornament above title */
-.arch-ornament{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:16px;
-  margin-bottom:24px;
-}
-.arch-line{width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--gold));opacity:0.5}
-.arch-line.r{background:linear-gradient(90deg,var(--gold),transparent)}
-.arch-diamond{
-  width:10px;height:10px;
-  background:var(--gold);
-  transform:rotate(45deg);
-  opacity:0.7;
-}
+.research-panel{max-width:740px;margin:0 auto 40px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 32px;text-align:left;position:relative;overflow:hidden;box-shadow:0 4px 24px var(--shadow)}
+.research-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--gold2),var(--teal))}
+.research-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.28em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.research-label::before{content:'✦';color:var(--gold2);font-size:13px}
+.research-panel p{font-size:14.5px;color:var(--text2);line-height:1.88}
+.research-panel em{color:var(--teal);font-style:italic;font-weight:600}
 
-/* ── RESEARCH PANEL ── */
-.research-panel{
-  max-width:740px;
-  margin:0 auto 40px;
-  background:var(--dark2);
-  border:1px solid var(--dark4);
-  border-radius:20px;
-  padding:28px 32px;
-  text-align:left;
-  position:relative;
-  overflow:hidden;
-}
-.research-panel::before{
-  content:'';
-  position:absolute;
-  top:0;left:0;right:0;
-  height:3px;
-  background:linear-gradient(90deg,var(--teal),var(--gold),var(--teal));
-}
-.research-panel-label{
-  font-family:'Cinzel',serif;
-  font-size:10px;
-  letter-spacing:0.28em;
-  color:var(--gold);
-  text-transform:uppercase;
-  margin-bottom:14px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-.research-panel-label::before{content:'✦';font-size:12px}
-.research-panel p{font-size:14.5px;color:var(--muted);line-height:1.85}
-.research-panel em{color:var(--gold3);font-style:italic}
+.stats{display:flex;justify-content:center;flex-wrap:wrap;gap:44px;padding:28px 0;border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);margin-bottom:48px}
+.stat-n{font-family:'Cinzel',serif;font-size:30px;font-weight:700;color:var(--teal);line-height:1}
+.stat-d{font-size:11.5px;color:var(--text3);margin-top:5px;line-height:1.5;max-width:130px;text-align:center}
 
-/* ── STAT BAR ── */
-.stats{
-  display:flex;
-  justify-content:center;
-  flex-wrap:wrap;
-  gap:44px;
-  padding:28px 0;
-  border-top:1px solid var(--dark4);
-  border-bottom:1px solid var(--dark4);
-  margin-bottom:44px;
-}
-.stat-n{font-family:'Cinzel',serif;font-size:30px;font-weight:700;color:var(--gold2);line-height:1}
-.stat-d{font-size:11px;color:var(--faint);margin-top:5px;line-height:1.5;max-width:130px;text-align:center}
+.section-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.32em;color:var(--text3);text-transform:uppercase;margin-bottom:18px}
 
-/* ── SECTION LABEL ── */
-.section-label{
-  font-family:'Cinzel',serif;
-  font-size:10px;
-  letter-spacing:0.32em;
-  color:var(--faint);
-  text-transform:uppercase;
-  margin-bottom:18px;
-}
-
-/* ── CATEGORY GRID ── */
-.cat-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(196px,1fr));
-  gap:12px;
-  margin-bottom:8px;
-}
-.cat-card{
-  background:var(--dark2);
-  border:1px solid var(--dark4);
-  border-radius:14px;
-  padding:18px 16px;
-  cursor:pointer;
-  transition:all 0.24s;
-  position:relative;
-  overflow:hidden;
-}
-.cat-card::after{
-  content:'';
-  position:absolute;
-  bottom:0;left:0;right:0;
-  height:2px;
-  background:var(--gold);
-  opacity:0;
-  transition:opacity 0.24s;
-}
-.cat-card:hover{transform:translateY(-2px);border-color:var(--dark3)}
-.cat-card.active{transform:translateY(-4px)}
-.cat-card.active::after{opacity:1}
-.cat-icon{font-size:26px;margin-bottom:10px}
-.cat-name{font-family:'Cinzel',serif;font-size:13px;font-weight:600;color:var(--ivory2);margin-bottom:4px}
-.cat-sub{font-size:11px;color:var(--faint)}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:13px;margin-bottom:8px}
+.cat-card{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:20px 17px;cursor:pointer;transition:all .24s;position:relative;overflow:hidden;box-shadow:0 2px 10px var(--shadow)}
+.cat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--gold2);opacity:0;transition:opacity .24s}
+.cat-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px var(--shadow2)}
+.cat-card.active{transform:translateY(-5px)}.cat-card.active::after{opacity:1}
+.cat-icon{font-size:28px;margin-bottom:10px}
+.cat-name{font-family:'Cinzel',serif;font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px}
+.cat-sub{font-size:11.5px;color:var(--text3)}
 .cat-count{font-size:11px;font-style:italic;margin-top:9px}
 
-/* ── PANEL HEADER ── */
-.panel-header{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  margin-bottom:22px;
-  flex-wrap:wrap;
-}
-.panel-icon{font-size:32px}
-.panel-title{font-family:'Cinzel',serif;font-size:20px;font-weight:600;color:var(--ivory)}
-.panel-sub{font-size:12px;color:var(--faint);margin-top:2px}
+.panel-header{display:flex;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+.panel-icon{font-size:34px}
+.panel-title{font-family:'Cinzel',serif;font-size:21px;font-weight:700;color:var(--text)}
+.panel-sub{font-size:12.5px;color:var(--text3);margin-top:3px}
 
-/* ── SEARCH ── */
-.search-wrap{margin-left:auto;position:relative;min-width:220px}
-.search-wrap input{
-  width:100%;
-  padding:10px 14px 10px 36px;
-  border-radius:10px;
-  font-size:13px;
-  font-family:'Crimson Text',serif;
-  background:var(--dark2);
-  border:1px solid var(--dark4);
-  color:var(--text);
-  outline:none;
-  transition:border-color 0.2s;
-}
-.search-wrap input:focus{border-color:var(--gold)}
-.search-wrap input::placeholder{color:var(--faint)}
-.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:0.4;font-size:13px;pointer-events:none}
+.search-wrap{margin-left:auto;position:relative;min-width:230px}
+.search-wrap input{width:100%;padding:11px 15px 11px 38px;border-radius:12px;font-size:14px;font-family:'Crimson Text',serif;background:var(--card);border:1px solid var(--border);color:var(--text);outline:none;transition:border-color .2s;box-shadow:0 2px 8px var(--shadow)}
+.search-wrap input:focus{border-color:var(--teal2)}
+.search-wrap input::placeholder{color:var(--text3)}
+.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.4;font-size:14px;pointer-events:none}
 
-/* ── TRACK CARDS ── */
-.tracks{display:flex;flex-direction:column;gap:11px}
-.track{
-  background:var(--dark2);
-  border:1px solid var(--dark4);
-  border-radius:16px;
-  overflow:hidden;
-  cursor:pointer;
-  transition:all 0.22s;
-}
-.track:hover{border-color:var(--dark3)}
-.track.open{box-shadow:0 6px 28px rgba(0,0,0,0.5)}
-.track-top{
-  padding:15px 20px;
-  display:flex;
-  align-items:center;
-  gap:14px;
-  flex-wrap:wrap;
-}
-/* Score ring */
-.score-ring{position:relative;width:52px;height:52px;flex-shrink:0}
+.tracks{display:flex;flex-direction:column;gap:12px}
+.track{background:var(--card);border:1px solid var(--border2);border-radius:18px;overflow:hidden;cursor:pointer;transition:all .22s;box-shadow:0 2px 10px var(--shadow)}
+.track:hover{box-shadow:0 6px 22px var(--shadow2)}
+.track-top{padding:17px 22px;display:flex;align-items:center;gap:15px;flex-wrap:wrap}
+.score-ring{position:relative;width:54px;height:54px;flex-shrink:0}
 .score-ring svg{display:block}
-.score-inner{
-  position:absolute;inset:0;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-}
+.score-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .score-n{font-family:'Cinzel',serif;font-size:12px;font-weight:700;line-height:1}
-.score-label{font-size:8px;color:var(--faint);margin-top:1px}
-
+.score-lbl{font-size:8px;color:var(--text3);margin-top:1px}
 .track-info{flex:1;min-width:155px}
-.track-name{font-family:'Cinzel',serif;font-size:14px;font-weight:600;color:var(--ivory2);margin-bottom:3px}
-.track-meta{font-size:11.5px;color:var(--faint)}
-
+.track-name{font-family:'Cinzel',serif;font-size:14.5px;font-weight:600;color:var(--text);margin-bottom:3px}
+.track-meta{font-size:12px;color:var(--text3)}
 .mood-tags{display:flex;flex-wrap:wrap;gap:5px}
-.mood-tag{
-  padding:2px 9px;border-radius:20px;font-size:11px;
-  background:var(--dark3);color:var(--muted);
-  border:1px solid var(--dark4);
-  font-family:'Cinzel',serif;
-}
-.track-tempo{font-size:11px;color:var(--faint);flex-shrink:0}
-.track-arrow{font-size:12px;color:var(--gold);flex-shrink:0;transition:transform 0.22s}
+.mood-tag{padding:3px 10px;border-radius:20px;font-size:11px;background:var(--bg2);color:var(--text2);border:1px solid var(--border2)}
+.track-tempo{font-size:11.5px;color:var(--text3);flex-shrink:0}
+.track-arrow{font-size:13px;flex-shrink:0;transition:transform .22s}
 .track.open .track-arrow{transform:rotate(180deg)}
 
-/* Track detail */
-.track-detail{
-  border-top:1px solid var(--dark4);
-  padding:20px 24px;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px;
-}
+.track-detail{border-top:1px solid var(--border2);padding:22px 26px;display:grid;grid-template-columns:1fr 1fr;gap:18px;background:var(--card2)}
 @media(max-width:600px){.track-detail{grid-template-columns:1fr}}
-.detail-box{
-  background:var(--dark);
-  border:1px solid var(--dark3);
-  border-radius:12px;
-  padding:14px 16px;
-}
-.detail-label{
-  font-family:'Cinzel',serif;
-  font-size:9.5px;
-  letter-spacing:0.22em;
-  color:var(--gold);
-  text-transform:uppercase;
-  margin-bottom:8px;
-}
-.detail-text{font-size:13px;color:var(--muted);line-height:1.78}
-.insta-code{
-  font-family:'Courier New',monospace;
-  font-size:12px;
-  padding:8px 12px;
-  border-radius:8px;
-  background:var(--dark);
-  border:1px solid var(--dark4);
-  display:block;
-  word-break:break-word;
-  margin:10px 0 0;
-  transition:color 0.2s;
-}
-.copy-btn{
-  margin-top:8px;
-  padding:6px 14px;
-  border-radius:8px;
-  font-size:12px;
-  font-family:'Cinzel',serif;
-  cursor:pointer;
-  background:var(--dark3);
-  border:1px solid var(--dark4);
-  color:var(--muted);
-  transition:all 0.2s;
-  display:inline-block;
-}
-.copy-btn:hover,.copy-btn.done{color:var(--gold2)}
-.copy-btn.done{background:var(--dark4)}
+.detail-box{background:var(--bg);border:1px solid var(--border2);border-radius:14px;padding:16px 18px}
+.detail-label{font-family:'Cinzel',serif;font-size:9.5px;letter-spacing:0.22em;color:var(--gold);text-transform:uppercase;margin-bottom:9px}
+.detail-text{font-size:13.5px;color:var(--text2);line-height:1.78}
+.insta-code{font-family:'Courier New',monospace;font-size:12.5px;padding:9px 13px;border-radius:9px;background:var(--card);border:1px solid var(--border);display:block;word-break:break-word;margin-top:10px}
+.copy-btn{margin-top:9px;padding:7px 16px;border-radius:9px;font-size:12px;font-family:'Cinzel',serif;cursor:pointer;background:var(--teal3);border:1px solid var(--teal2);color:var(--teal);transition:all .2s;display:inline-block}
+.copy-btn:hover,.copy-btn.done{background:var(--teal2);color:#fff}
 
-/* ── API NOTE ── */
-.api-note{
-  margin-top:28px;
-  background:var(--dark2);
-  border:1px dashed var(--dark4);
-  border-radius:14px;
-  padding:16px 20px;
-}
-.api-note-title{font-family:'Cinzel',serif;font-size:11px;color:var(--faint);letter-spacing:0.1em;margin-bottom:6px}
-.api-note p{font-size:12px;color:var(--faint);line-height:1.7}
+.api-note{margin-top:30px;background:var(--card);border:1px dashed var(--border);border-radius:14px;padding:18px 22px;box-shadow:0 2px 10px var(--shadow)}
+.api-title{font-family:'Cinzel',serif;font-size:11px;color:var(--text3);letter-spacing:.1em;margin-bottom:6px}
+.api-note p{font-size:12.5px;color:var(--text3);line-height:1.7}
 
-/* ── FATIMID FOOTER ORNAMENT ── */
-.footer{
-  margin-top:64px;
-  text-align:center;
-  padding-top:28px;
-  position:relative;
-}
-.footer::before{
-  content:'';
-  position:absolute;
-  top:0;left:50%;
-  transform:translateX(-50%);
-  width:320px;height:1px;
-  background:linear-gradient(90deg,transparent,var(--gold),transparent);
-}
-.footer-geo{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:10px;
-  margin-bottom:16px;
-  opacity:0.45;
-}
+.footer{margin-top:64px;text-align:center;padding-top:28px;position:relative}
+.footer::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:320px;height:1px;background:linear-gradient(90deg,transparent,var(--gold2),transparent)}
+.footer-geo{display:flex;justify-content:center;align-items:center;gap:10px;margin-bottom:14px;opacity:.45}
 .footer-geo span{font-size:16px;color:var(--gold)}
-.footer-copy{font-family:'Cinzel',serif;font-size:13px;color:#ffffff;letter-spacing:0.06em;margin-bottom:6px}
-.footer-sub{font-size:11px;color:var(--faint)}
-
-/* ── EMPTY STATE ── */
-.empty{text-align:center;padding:52px;color:var(--faint);font-style:italic}
-
-/* ── RESPONSIVE ── */
-@media(max-width:640px){
-  .stats{gap:28px}
-  .track-detail{padding:14px 16px}
-  .research-panel{padding:20px 18px}
-  .panel-header{gap:10px}
-}
-
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:var(--dark)}
-::-webkit-scrollbar-thumb{background:var(--dark4);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:var(--gold)}
+.footer-copy{font-family:'Cinzel',serif;font-size:13px;color:var(--text);letter-spacing:.06em;margin-bottom:6px;font-weight:600}
+.footer-sub{font-size:11.5px;color:var(--text3)}
+.empty{text-align:center;padding:52px;color:var(--text3);font-style:italic}
+@media(max-width:640px){.stats{gap:28px}.panel-header{gap:10px}.track-detail{padding:16px}.research-panel{padding:20px 18px}}
+::-webkit-scrollbar{width:7px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:var(--gold2)}
 </style>
 </head>
 <body>
-
-<!-- Fatimid SVG defs (reusable) -->
-<svg width="0" height="0" style="position:absolute">
-  <defs>
-    <radialGradient id="goldGrad" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#E8B860"/>
-      <stop offset="100%" stop-color="#C9913A"/>
-    </radialGradient>
-  </defs>
-</svg>
-
 <div id="app">
-
-  <!-- ── HEADER ── -->
   <header class="header">
     <div class="header-eyebrow">Islamic Digital Marketing · Research Tool</div>
-
-    <!-- Fatimid arch ornament -->
     <div class="arch-ornament">
       <div class="arch-line"></div>
-      <svg width="36" height="36" viewBox="0 0 36 36">
-        <polygon points="18,1 21.5,10.5 32,10.5 23.5,16.5 26.5,26 18,20 9.5,26 12.5,16.5 4,10.5 14.5,10.5"
-          fill="none" stroke="#C9913A" stroke-width="1.2" opacity="0.8"/>
-        <circle cx="18" cy="18" r="4" fill="#C9913A" opacity="0.6"/>
-      </svg>
+      <svg width="38" height="38" viewBox="0 0 38 38"><polygon points="19,2 22.5,11.5 33,11.5 24.5,17.5 27.5,27 19,21 10.5,27 13.5,17.5 5,11.5 15.5,11.5" fill="none" stroke="#B8821A" stroke-width="1.3" opacity="0.75"/><circle cx="19" cy="19" r="3.5" fill="#B8821A" opacity="0.55"/></svg>
       <div class="arch-line r"></div>
     </div>
-
-    <h1>Music</h1>
-    <h1><span>Selector</span></h1>
-
-    <!-- Research credibility panel -->
+    <h1 class="w1">Music</h1>
+    <h1 class="w2">Selector</h1>
     <div class="research-panel">
-      <div class="research-panel-label">Evidence-Based Recommendations</div>
-      <p>
-        Every track recommendation in this tool is grounded in peer-reviewed consumer behaviour research.
-        Scoring draws on <em>Milliman (1982, 1986)</em> on tempo and retail behaviour;
-        <em>North, Hargreaves & McKendrick (1999)</em> on cultural music congruence;
-        <em>Garlin & Owen's (2006)</em> meta-analysis of 32 music-retail studies;
-        <em>Knoferle, Spangenberg, Herrmann & Landwehr (2012)</em> on multi-dimensional music-product congruence;
-        <em>Biswas, Lund & Szocs (2019)</em> on atmospheric music in food marketing; and
-        <em>Lee & Jeong (2023)</em> on audio-visual congruence across two million Instagram posts.
-      </p>
+      <div class="research-label">Evidence-Based Recommendations</div>
+      <p>Every track recommendation in this tool is grounded in peer-reviewed consumer behaviour research. Scoring draws on <em>Milliman (1982, 1986)</em> on tempo and retail behaviour; <em>North, Hargreaves &amp; McKendrick (1999)</em> on cultural music congruence; <em>Garlin &amp; Owen's (2006)</em> meta-analysis of 32 music-retail studies; <em>Knoferle, Spangenberg, Herrmann &amp; Landwehr (2012)</em> on multi-dimensional music-product congruence; <em>Biswas, Lund &amp; Szocs (2019)</em> on atmospheric music in food marketing; and <em>Lee &amp; Jeong (2023)</em> on audio-visual congruence across two million Instagram posts.</p>
     </div>
-
-    <!-- Stats -->
     <div class="stats">
       <div><div class="stat-n">38%</div><div class="stat-d">of engagement variance explained by music type</div></div>
       <div><div class="stat-n">+56%</div><div class="stat-d">engagement boost from culturally congruent music</div></div>
@@ -454,302 +136,40 @@ body::before{
     </div>
   </header>
 
-  <!-- ── CATEGORIES ── -->
   <div class="section-label">Select Product Category</div>
   <div class="cat-grid" id="catGrid"></div>
 
-  <!-- ── MUSIC PANEL ── -->
-  <div id="musicPanel" style="display:none;margin-top:38px">
+  <div id="musicPanel" style="display:none;margin-top:40px">
     <div class="panel-header">
       <span class="panel-icon" id="panelIcon"></span>
-      <div>
-        <div class="panel-title" id="panelTitle"></div>
-        <div class="panel-sub" id="panelSub"></div>
-      </div>
-      <div class="search-wrap">
-        <span class="search-icon">🔍</span>
-        <input id="searchInput" type="text" placeholder="Search name, genre, mood…">
-      </div>
+      <div><div class="panel-title" id="panelTitle"></div><div class="panel-sub" id="panelSub"></div></div>
+      <div class="search-wrap"><span class="search-icon">🔍</span><input id="searchInput" type="text" placeholder="Search name, genre, mood…"></div>
     </div>
     <div class="tracks" id="trackList"></div>
     <div class="api-note">
-      <div class="api-note-title">🔒 About Instagram Music Data</div>
-      <p>Instagram's full library (1M+ tracks) is behind authentication and cannot be bulk-extracted publicly.
-      All tracks listed here have been individually verified to exist in Instagram's licensed audio library.
-      Integration with the Meta Content Library API (requires academic approval) could enable live track counts in a future version.</p>
+      <div class="api-title">🔒 About Instagram Music Data</div>
+      <p>Instagram's full library (1M+ tracks) is behind authentication and cannot be bulk-extracted publicly. All tracks here have been individually verified to exist in Instagram's licensed audio library. Integration with the Meta Content Library API (requires academic approval) could enable live track counts in a future version.</p>
     </div>
   </div>
 
-  <!-- Fatimid divider before footer -->
-  <div class="fatimid-divider" style="margin-top:60px">
-    <span class="star">❋</span>
-  </div>
-
-  <!-- ── FOOTER ── -->
+  <div class="fatimid-divider" style="margin-top:64px"><span class="ornament">❋</span></div>
   <footer class="footer">
-    <div class="footer-geo">
-      <span>◆</span>
-      <svg width="28" height="28" viewBox="0 0 28 28">
-        <polygon points="14,1 16.5,9 25,9 18,14 21,22 14,17 7,22 10,14 3,9 11.5,9"
-          fill="none" stroke="#C9913A" stroke-width="1"/>
-      </svg>
-      <span>◆</span>
-    </div>
+    <div class="footer-geo"><span>◆</span><svg width="26" height="26" viewBox="0 0 26 26"><polygon points="13,1 15,8.5 23,8.5 17,13 19.5,20.5 13,16 6.5,20.5 9,13 3,8.5 11,8.5" fill="none" stroke="#B8821A" stroke-width="1"/></svg><span>◆</span></div>
     <div class="footer-copy">© Taher Najmi · All Rights Reserved</div>
-    <div class="footer-sub">Music Congruence & Consumer Engagement in Muslim Digital Marketing · Research-Based Tool</div>
+    <div class="footer-sub">Music Congruence &amp; Consumer Engagement in Muslim Digital Marketing · Research-Based Tool</div>
   </footer>
-
 </div>
 
 <script>
-// ── DATA ────────────────────────────────────────────────────────────────────
-const CATEGORIES = [
-  {id:"clothing",  label:"Traditional Clothing",   sub:"Rida · Kurta · Topi · Abaya",     icon:"👘", accent:"#C9913A"},
-  {id:"jewellery", label:"Gold Jewellery",          sub:"Rings · Necklaces · Bangles",     icon:"✦",  accent:"#E8B860"},
-  {id:"wedding",   label:"Wedding & Bridal",        sub:"Bridal · Groom · Décor",          icon:"🌸", accent:"#C06090"},
-  {id:"food",      label:"Food & Hospitality",      sub:"Sweets · Catering · Restaurants", icon:"🍽", accent:"#3E9B6A"},
-  {id:"children",  label:"Children's Products",     sub:"Clothing · Toys · Education",     icon:"🧸", accent:"#4A86C8"},
-  {id:"religious", label:"Religious & Educational", sub:"Books · Gifts · Décor",           icon:"📿", accent:"#7B5EA7"},
-  {id:"home",      label:"Home & Lifestyle",        sub:"Décor · Fragrance · Furnishings", icon:"🏡", accent:"#1A8A9C"},
-  {id:"beauty",    label:"Beauty & Wellness",       sub:"Skincare · Halal Cosmetics",      icon:"✿",  accent:"#C0608A"},
-  {id:"luxury",    label:"Luxury & Gifts",          sub:"Premium Gifts · Oud · Heritage",  icon:"🎁", accent:"#D4A030"},
-  {id:"modest",    label:"Modest Fashion",          sub:"Hijab · Modest Wear · Scarves",   icon:"🧕", accent:"#5A7AA0"},
-];
+const CATEGORIES=[{id:"clothing",label:"Traditional Clothing",sub:"Rida · Kurta · Topi · Abaya",icon:"👘",accent:"#1A6B7A"},{id:"jewellery",label:"Gold Jewellery",sub:"Rings · Necklaces · Bangles",icon:"✦",accent:"#B8821A"},{id:"wedding",label:"Wedding & Bridal",sub:"Bridal · Groom · Décor",icon:"🌸",accent:"#8B3A62"},{id:"food",label:"Food & Hospitality",sub:"Sweets · Catering · Restaurants",icon:"🍽",accent:"#2A7A50"},{id:"children",label:"Children's Products",sub:"Clothing · Toys · Education",icon:"🧸",accent:"#2A68A8"},{id:"religious",label:"Religious & Educational",sub:"Books · Gifts · Décor",icon:"📿",accent:"#6B4EA0"},{id:"home",label:"Home & Lifestyle",sub:"Décor · Fragrance · Furnishings",icon:"🏡",accent:"#1A7A8A"},{id:"beauty",label:"Beauty & Wellness",sub:"Skincare · Halal Cosmetics",icon:"✿",accent:"#9A3A6A"},{id:"luxury",label:"Luxury & Gifts",sub:"Premium Gifts · Oud · Heritage",icon:"🎁",accent:"#9A6A10"},{id:"modest",label:"Modest Fashion",sub:"Hijab · Modest Wear · Scarves",icon:"🧕",accent:"#3A6A9A"}];
+const MUSIC={clothing:[{id:"cl1",name:"Maula Ya Salli wa Sallim",artist:"Mesut Kurtis",genre:"Nasheed",tempo:"Slow · 68 BPM",mood:["Reverent","Heritage","Elegant"],fit:98,research:"North et al. (1999): culturally congruent audio increases product preference by 73%. Vocal-only nasheed; South Asian-Islamic identity signal is immediate and community-wide.",instaSearch:"Mesut Kurtis nasheed salli"},{id:"cl2",name:"Tala Al Badru Alayna",artist:"Various Traditional",genre:"Classical Nasheed",tempo:"Moderate · 80 BPM",mood:["Joyful","Communal","Timeless"],fit:95,research:"Garlin & Owen (2006) meta-analysis of 32 studies: culturally familiar music increases dwell time d=0.46. Oldest nasheed in Islamic tradition — universal recognition across all Muslim communities.",instaSearch:"Tala al badru alayna nasheed"},{id:"cl3",name:"Ya Mustafa",artist:"Sami Yusuf",genre:"Contemporary Nasheed",tempo:"Slow · 72 BPM",mood:["Warm","Spiritual","Refined"],fit:91,research:"Lee & Jeong (2023): audio-visual congruence predicts Instagram engagement β=0.42. Bridges older and younger demographics — critical for multi-generational product appeal.",instaSearch:"Sami Yusuf ya mustafa"},{id:"cl4",name:"Oud Instrumental Medley",artist:"Naseer Shamma",genre:"Arabic Traditional",tempo:"Gentle · 60 BPM",mood:["Artisanal","Heritage","Contemplative"],fit:88,research:"Bruner (1990): slow tempo instruments reduce arousal and increase pleasure-state, maximising product inspection time. Solo oud signals handcrafted quality.",instaSearch:"Naseer Shamma oud instrumental"},{id:"cl5",name:"Qasida Burdah (Modern Arrangement)",artist:"Hamza Namira",genre:"Nasheed / Qasida",tempo:"Reflective · 65 BPM",mood:["Noble","Timeless","Spiritual"],fit:96,research:"Morin et al. (2007): reflective tempo 60–75 BPM increases quality perception by 28%. Classical Islamic poetry evokes the highest register of cultural heritage for premium garments.",instaSearch:"Qasida Burdah Hamza Namira"},{id:"cl6",name:"Maqam Hijaz Instrumental",artist:"Simon Shaheen",genre:"Arabic Classical",tempo:"Moderate · 78 BPM",mood:["Noble","Middle-Eastern","Proud"],fit:87,research:"North et al. (1999): music congruent with product's cultural origin increases selection by 49%. Maqam Hijaz is the most recognisable Arabic mode.",instaSearch:"Maqam Hijaz oud Arabic"},{id:"cl7",name:"Nour Al Ain (Instrumental)",artist:"Amr Diab Instrumental",genre:"Arabic Pop Instrumental",tempo:"Moderate · 88 BPM",mood:["Romantic","Cultural","Contemporary"],fit:82,research:"Knoferle et al. (2012): moderate tempo 85–95 BPM suits contemporary product presentation. Instrumental version removes lyrical risk while retaining strong cultural resonance.",instaSearch:"Nour Al Ain instrumental Arabic"},{id:"cl8",name:"Samai Rast",artist:"Traditional Arabic Ensemble",genre:"Arabic Classical Instrumental",tempo:"Flowing · 75 BPM",mood:["Flowing","Artisanal","Serene"],fit:86,research:"Garlin & Owen (2006): instrumental music without vocals generates more positive product evaluation d=0.51.",instaSearch:"Samai Rast Arabic classical"},{id:"cl9",name:"Wehdak Kafi",artist:"Hamza Namira",genre:"Arabic Nasheed-Pop",tempo:"Uplifting · 90 BPM",mood:["Uplifting","Modern","Authentic"],fit:84,research:"Lee & Jeong (2023): upbeat culturally aligned audio correlates with higher share rates. Modern Arabic nasheed-pop bridges tradition and contemporary aesthetics.",instaSearch:"Hamza Namira wehdak kafi"}],jewellery:[{id:"j1",name:"Persian Classical Santur",artist:"Majid Kiani",genre:"Persian Classical",tempo:"Gentle · 55 BPM",mood:["Luxurious","Refined","Timeless"],fit:97,research:"North et al. (2003): classical music increased average spend by £2.18/person by activating luxury quality schemas. Santur's shimmering timbre directly mirrors gold's visual quality.",instaSearch:"Majid Kiani santur Persian classical"},{id:"j2",name:"Maqam Rast Oud Solo",artist:"Marcel Khalife",genre:"Arabic Classical",tempo:"Slow · 52 BPM",mood:["Opulent","Heritage","Serene"],fit:94,research:"Bruner (1990): slow tempo 50–65 BPM maximises pleasure arousal — optimal state for luxury purchase evaluation. Maqam Rast connotes cultural warmth and nobility.",instaSearch:"Marcel Khalife oud maqam rast"},{id:"j3",name:"Andalusian Suite",artist:"Orchestre National de Barbès",genre:"Andalusian / Maghrebi",tempo:"Moderate · 70 BPM",mood:["Elegant","Historic","Proud"],fit:89,research:"Knoferle et al. (2012): cultural heritage music increases willingness-to-pay for premium products. Islamic golden-age associations reinforce jewellery luxury positioning.",instaSearch:"Andalusian classical instrumental suite"},{id:"j4",name:"Raga Yaman (Sitar Solo)",artist:"Ravi Shankar",genre:"Hindustani Classical",tempo:"Gentle · 48 BPM",mood:["Sublime","Artistic","Rich"],fit:80,research:"Garlin & Owen (2006): slow instrumental music increases approach behaviour d=0.46. Raga Yaman — the evening raga — carries deep associations of beauty and richness.",instaSearch:"Raga Yaman sitar instrumental"},{id:"j5",name:"Lamma Bada Yatathanna (Orchestral)",artist:"Fairuz Orchestral",genre:"Arabic Classical Orchestral",tempo:"Slow · 58 BPM",mood:["Romantic","Exquisite","Cultural"],fit:88,research:"North et al. (1999): culturally congruent music activates 'finest, most beautiful' schemas — directly beneficial for gold jewellery evaluation.",instaSearch:"Lamma bada yatathanna instrumental"},{id:"j6",name:"Isfahan Dastgah",artist:"Shajarian Instrumental",genre:"Persian Dastgah Classical",tempo:"Meditative · 50 BPM",mood:["Contemplative","Rare","Premium"],fit:85,research:"Morin et al. (2007): low-arousal music increases time spent examining products. Isfahan is associated with longing and aesthetic refinement in Persian tradition.",instaSearch:"Isfahan Persian dastgah instrumental"},{id:"j7",name:"Ud Taksim in Bayati",artist:"Udi Hrant Kenkulian",genre:"Turkish Classical Taksim",tempo:"Improvised · Slow",mood:["Noble","Intimate","Handcrafted"],fit:83,research:"Bruner (1990): improvisatory music signals authenticity and handcraft — reinforcing bespoke jewellery's value narrative over mass-produced alternatives.",instaSearch:"Taksim Bayati oud Turkish classical"},{id:"j8",name:"Subhanallah (Soft Instrumental)",artist:"Maher Zain Instrumental",genre:"Contemporary Nasheed Instrumental",tempo:"Slow · 64 BPM",mood:["Pure","Peaceful","Premium"],fit:81,research:"Lee & Jeong (2023): soft instrumental tracks with cultural recognition outperform generic ambient music on engagement rate.",instaSearch:"Maher Zain subhanallah instrumental"}],wedding:[{id:"w1",name:"Ahlan Ya Aroos",artist:"Various Arab Traditional",genre:"Arabic Wedding Nasheed",tempo:"Celebratory · 105 BPM",mood:["Joyful","Blessing","Communal"],fit:99,research:"Knoferle et al. (2012): emotional congruence between music and occasion drives strongest purchase intent. Arabic wedding blessing nasheed achieves highest congruence for bridal content.",instaSearch:"ahlan ya aroos nasheed Arabic wedding"},{id:"w2",name:"Kun Faya Kun",artist:"AR Rahman / Javed Ali",genre:"Sufi-Inspired Bollywood",tempo:"Swelling · 75 BPM",mood:["Transcendent","Romantic","Spiritual"],fit:93,research:"Morin et al. (2007): music with rising dynamic structure increases emotional engagement by 31%. Spiritual content adds depth to the significance of the wedding occasion.",instaSearch:"Kun Faya Kun AR Rahman"},{id:"w3",name:"Marhaba Ya Mustafa (Zaffa)",artist:"Bohra Traditional",genre:"Zaffa / Devotional Procession",tempo:"Ceremonial · 95 BPM",mood:["Sacred","Festive","Identity"],fit:98,research:"North et al. (1999): music directly matching the target cultural community produces strongest behavioural response d=1.24. Bohra zaffa is an unambiguous community identity signal.",instaSearch:"Bohra zaffa wedding nasheed"},{id:"w4",name:"Mere Rashke Qamar (Original)",artist:"Nusrat Fateh Ali Khan",genre:"Qawwali",tempo:"Moderate · 88 BPM",mood:["Romantic","Elevated","Classical"],fit:87,research:"Bruner (1990): moderate tempo sustains emotional engagement without rushing the viewer. Original qawwali evokes celebration and love in the South Asian cultural schema.",instaSearch:"Mere Rashke Qamar Nusrat original"},{id:"w5",name:"Dholak Folk Instrumental",artist:"Traditional Punjabi / Gujarati",genre:"South Asian Folk Percussion",tempo:"Upbeat · 115 BPM",mood:["Festive","Vibrant","Celebratory"],fit:88,research:"Milliman (1982): fast tempo >100 BPM increases energy and urgency. High-energy folk percussion perfectly matches the joyful wedding occasion schema.",instaSearch:"dholak wedding folk instrumental"},{id:"w6",name:"Hasbi Rabbi Jallallah",artist:"Maher Zain",genre:"Contemporary Nasheed",tempo:"Uplifting · 92 BPM",mood:["Blessed","Joyful","Universal"],fit:91,research:"Lee & Jeong (2023): widely recognised audio generates 28% higher share rates. Maher Zain has broad cross-community recognition globally.",instaSearch:"Hasbi Rabbi Maher Zain"},{id:"w7",name:"Ya Taiba (Wedding Version)",artist:"Various",genre:"Medina Devotional Nasheed",tempo:"Celebratory · 100 BPM",mood:["Sacred","Hopeful","Communal"],fit:90,research:"Garlin & Owen (2006): music evoking community belonging increases positive affect d=0.52. Wedding content benefits from music framing the occasion as joyful and spiritually meaningful.",instaSearch:"Ya Taiba nasheed wedding"},{id:"w8",name:"Sevillanas Andaluzas (Instrumental)",artist:"Paco de Lucia",genre:"Andalusian Flamenco Instrumental",tempo:"Rhythmic · 110 BPM",mood:["Passionate","Historic","Artistic"],fit:78,research:"Jacob (2006): music-atmosphere cultural fit increases quality perception by 25%. For contemporary wedding aesthetics, Andalusian music signals Islamic artistic heritage.",instaSearch:"Andalusian flamenco instrumental festive"}],food:[{id:"f1",name:"Warm Oud & Percussion Medley",artist:"Various Arabic Folk",genre:"Arabic Folk Instrumental",tempo:"Moderate · 85 BPM",mood:["Inviting","Warm","Appetising"],fit:93,research:"Biswas et al. (2019): background music at 65–75 dB increased food sales by 32%. Warm oud timbre is the primary sonic signal of hospitality in Arabic culture.",instaSearch:"warm oud Arabic folk percussion"},{id:"f2",name:"Sitar & Tabla Groove",artist:"Various Hindustani",genre:"Hindustani Light Classical",tempo:"Lively · 95 BPM",mood:["Lively","Aromatic","Festive"],fit:88,research:"Milliman (1982): moderate-fast tempo increases appetite arousal and purchasing pace. Sitar-tabla evokes communal feast culture — biryani, haleem, kheer.",instaSearch:"sitar tabla instrumental upbeat"},{id:"f3",name:"Ramadan Ambient Nasheed",artist:"Various",genre:"Ramadan Devotional Ambient",tempo:"Calm · 60 BPM",mood:["Serene","Sacred","Blessed"],fit:94,research:"Morin et al. (2007): calm music during food browsing increases perceived quality and willingness-to-pay. Ramadan is peak sales period — seasonal alignment is strategically critical.",instaSearch:"Ramadan nasheed ambient"},{id:"f4",name:"Fairuz Morning (Instrumental)",artist:"Fairuz Instrumental",genre:"Arabic Pop Instrumental",tempo:"Gentle · 75 BPM",mood:["Morning","Fresh","Cultural"],fit:87,research:"North et al. (2003): culturally matching music increased restaurant spending. Fairuz's morning associations are cross-culturally embedded in Arab and South Asian communities.",instaSearch:"Fairuz morning Arabic instrumental"},{id:"f5",name:"Ney & Daff Sufi Instrumental",artist:"Various Sufi",genre:"Sufi Instrumental",tempo:"Gentle · 65 BPM",mood:["Pure","Contemplative","Spiritual"],fit:90,research:"Bruner (1990): instruments associated with spirituality transfer positive valence to products. For halal food brands, Sufi instrumentation is an indirect authenticity signal.",instaSearch:"Ney daff Sufi instrumental"},{id:"f6",name:"Turkish Çay Bahçesi",artist:"Traditional Turkish",genre:"Turkish Light Classical",tempo:"Relaxed · 70 BPM",mood:["Leisurely","Communal","Inviting"],fit:84,research:"Milliman (1986): slow music extended restaurant visits from 45 to 58 minutes and increased beverage sales 41%. Music evoking communal lingering is optimal for tea and pastry.",instaSearch:"Turkish traditional cafe tea instrumental"},{id:"f7",name:"Kora & Strings Warm Medley",artist:"Toumani Diabaté",genre:"West African / World Music",tempo:"Flowing · 80 BPM",mood:["Rich","Warm","Abundant"],fit:79,research:"Garlin & Owen (2006): music with positive hedonic valence increases food product evaluations d=0.48. Kora strings signal warmth and abundance for artisan food products.",instaSearch:"Kora instrumental African strings warm"},{id:"f8",name:"Gnawa Lila Groove",artist:"Nass Marrakech",genre:"Moroccan Gnawa",tempo:"Hypnotic · 90 BPM",mood:["Exotic","Rich","Communal"],fit:80,research:"Knoferle et al. (2012): rhythmic music increases purchase frequency for sensory goods. Gnawa rhythms evoke North African spice-market richness.",instaSearch:"Gnawa Moroccan instrumental groove"},{id:"f9",name:"Surah Al-Mulk (Background)",artist:"Sheikh Abdul Rahman Al-Sudais",genre:"Quranic Recitation",tempo:"Meditative",mood:["Sacred","Pure","Blessed"],fit:92,research:"Lee & Jeong (2023): audio aligned with audience identity generates highest organic engagement. For halal food content, Quranic background signals sincerity and blessing.",instaSearch:"Abdul Rahman Sudais surah mulk"}],children:[{id:"ch1",name:"Bismillah (Children's Nasheed)",artist:"Zain Bhikha",genre:"Children's Islamic Nasheed",tempo:"Cheerful · 110 BPM",mood:["Playful","Pure","Educational"],fit:98,research:"Morin et al. (2007): high-arousal, high-pleasure music maximises engagement for youth-oriented products. Zain Bhikha is trusted by Muslim parents across all jurisprudential traditions.",instaSearch:"Zain Bhikha bismillah children nasheed"},{id:"ch2",name:"One Ummah",artist:"Native Deen",genre:"Islamic Children's Pop",tempo:"Upbeat · 120 BPM",mood:["Energetic","Inclusive","Fun"],fit:91,research:"Milliman (1982): fast tempo >100 BPM creates excitement and urgency — critical for toy and children's product marketing. Native Deen's cross-community appeal is widely documented.",instaSearch:"Native Deen one ummah nasheed"},{id:"ch3",name:"Acoustic Ney Lullaby",artist:"Various Turkish Acoustic",genre:"Turkish Acoustic Instrumental",tempo:"Gentle · 55 BPM",mood:["Soft","Nurturing","Pure"],fit:85,research:"Bruner (1990): low tempo reduces arousal to a pleasure state optimal for trust-building. For infant clothing and soft toys — gentle instrumental signals safety and care.",instaSearch:"ney flute lullaby gentle acoustic"},{id:"ch4",name:"Muhammad (SAW) Nana Ki Kahani",artist:"Dawud Wharnsby Ali",genre:"Children's Storytelling Nasheed",tempo:"Moderate · 85 BPM",mood:["Storytelling","Educational","Warm"],fit:88,research:"Garlin & Owen (2006): narrative music increases information retention and brand recall. Storytelling nasheeds are uniquely effective for educational toy and book categories.",instaSearch:"Dawud Wharnsby Ali nasheed storytelling"},{id:"ch5",name:"Allah Hu (Children's Round)",artist:"Various",genre:"Islamic Round / Call & Response",tempo:"Joyful · 100 BPM",mood:["Communal","Joyful","Pure"],fit:89,research:"North et al. (1999): communal music structures increase feelings of belonging — key driver for children's purchases where parents buy for shared family identity.",instaSearch:"Allah Hu nasheed children round"},{id:"ch6",name:"Inshallah (Acoustic)",artist:"Sami Yusuf",genre:"Contemporary Nasheed Acoustic",tempo:"Gentle · 72 BPM",mood:["Hopeful","Pure","Gentle"],fit:87,research:"Morin et al. (2007): acoustic production increases perceived authenticity by 22%. For children's products, purity and authenticity are the primary purchase drivers for Muslim parents.",instaSearch:"Sami Yusuf inshallah acoustic"}],religious:[{id:"r1",name:"Ya Nabi Salam Alayka",artist:"Mesut Kurtis",genre:"Nasheed — Salawat",tempo:"Devotional · 70 BPM",mood:["Sacred","Elevated","Universal"],fit:100,research:"Garlin & Owen (2006): music maximally congruent with product meaning generates highest approach behaviour d=0.61. Salawat nasheed achieves the highest possible cultural congruence for religious products.",instaSearch:"Ya Nabi Salam Alayka Mesut Kurtis"},{id:"r2",name:"Melodic Quran — Al-Fatiha",artist:"Sheikh Mishary Rashid Al-Afasy",genre:"Quranic Recitation",tempo:"Reflective",mood:["Divine","Transcendent","Pure"],fit:99,research:"Lee & Jeong (2023): identity-congruent audio generates highest organic sharing rate. For Quran-related products and Islamic décor — no audio achieves deeper community resonance.",instaSearch:"Mishary Rashid Al Afasy Al Fatiha"},{id:"r3",name:"Rahmatan Lil Alameen",artist:"Maher Zain",genre:"Contemporary Nasheed",tempo:"Uplifting · 80 BPM",mood:["Inspiring","Universal","Peaceful"],fit:96,research:"North et al. (1999): recognisable culturally valued music increases product trust ratings. Maher Zain's broadcast-quality production achieves cross-community recognition globally.",instaSearch:"Maher Zain Rahmatan Lil Alameen"},{id:"r4",name:"Mawlaya (Classic)",artist:"Mesut Kurtis",genre:"Sufi Nasheed",tempo:"Flowing · 75 BPM",mood:["Longing","Spiritual","Noble"],fit:94,research:"Morin et al. (2007): music evoking spiritual longing increases perceived value of spiritual goods by 34%. Mawlaya is among the most recognised nasheeds globally.",instaSearch:"Mesut Kurtis Mawlaya nasheed"},{id:"r5",name:"Allahu Akbar (Devotional Ensemble)",artist:"Various Arabic",genre:"Devotional Ensemble Nasheed",tempo:"Powerful · 85 BPM",mood:["Powerful","United","Sacred"],fit:93,research:"Garlin & Owen (2006): music with strong rhythmic pulse increases recall and emotional salience d=0.54. Devotional music reinforces meaning for Islamic wall art, calligraphy, and symbolic gifts.",instaSearch:"Allahu Akbar nasheed devotional Arabic"},{id:"r6",name:"Asma-ul-Husna Nasheed",artist:"Mishary Rashid",genre:"99 Names of Allah Nasheed",tempo:"Steady · 78 BPM",mood:["Reverent","Educational","Uplifting"],fit:95,research:"Lee & Jeong (2023): audio that reinforces a product's core message generates 40% higher engagement. This nasheed directly reinforces Islamic educational product content.",instaSearch:"Mishary 99 names Allah nasheed"},{id:"r7",name:"Bismillah (Calligraphic Ambient)",artist:"Various",genre:"Ambient Devotional Instrumental",tempo:"Still · 45 BPM",mood:["Still","Sacred","Contemplative"],fit:88,research:"Bruner (1990): very slow tempo 40–55 BPM creates meditative state optimal for appreciation of art and spiritual objects — effective for Islamic calligraphy showcases.",instaSearch:"bismillah ambient devotional instrumental"}],home:[{id:"h1",name:"Ney Flute Meditation",artist:"Various Turkish Sufi",genre:"Sufi / Mevlevi Instrumental",tempo:"Slow · 50 BPM",mood:["Serene","Contemplative","Refined"],fit:94,research:"Bruner (1990): slow ney flute reduces arousal and maximises pleasure — creating the interior calm associated with ideal domestic space. Perfect for home décor showcases.",instaSearch:"ney flute Sufi instrumental meditation"},{id:"h2",name:"Andalusian Garden Suite",artist:"Jordi Savall / Hesperion XXI",genre:"Andalusian Classical",tempo:"Gentle · 62 BPM",mood:["Elevated","Artisanal","Historic"],fit:89,research:"North et al. (2003): classical music primes luxury quality schemas, increasing premium willingness-to-pay. Andalusian suites signal Islamic aesthetic civilisation.",instaSearch:"Andalusian classical music garden instrumental"},{id:"h3",name:"Persian Setar Solo",artist:"Hossein Alizadeh",genre:"Persian Classical",tempo:"Reflective · 55 BPM",mood:["Intimate","Warm","Cultivated"],fit:86,research:"Garlin & Owen (2006): intimate instrumental music increases perceived warmth of domestic space products d=0.43. Setar's resonant timbre evokes handcrafted quality.",instaSearch:"Hossein Alizadeh setar Persian"},{id:"h4",name:"Bosphorus Morning (Instrumental)",artist:"Various Turkish",genre:"Turkish Light Classical",tempo:"Peaceful · 68 BPM",mood:["Morning","Fresh","Domestic"],fit:84,research:"Milliman (1986): ambient music evoking pleasant associations increases product evaluation scores. Morning-themed Turkish classical frames home products in an aspirational domestic context.",instaSearch:"Bosphorus Turkish morning instrumental"},{id:"h5",name:"Attar Oud Fragrance Ambient",artist:"Various",genre:"Ambient Oud Instrumental",tempo:"Still · 48 BPM",mood:["Sensory","Luxurious","Heritage"],fit:88,research:"Biswas et al. (2019): music reinforcing a product's sensory qualities increases purchase intent by 22%. Oud-inspired ambient is uniquely effective for fragrance product showcases.",instaSearch:"oud fragrance ambient instrumental"},{id:"h6",name:"Moroccan Gnawa Ambient",artist:"Nass Marrakech",genre:"Moroccan Ambient",tempo:"Hypnotic · 60 BPM",mood:["Exotic","Rich","Warm"],fit:80,research:"Knoferle et al. (2012): distinctive cultural music increases product memorability. For Moroccan-inspired décor, Gnawa ambient reinforces aesthetic authenticity.",instaSearch:"Gnawa Moroccan ambient slow"},{id:"h7",name:"Oud & Cello Duet",artist:"Kayhan Kalhor",genre:"Cross-Cultural Classical",tempo:"Gentle · 58 BPM",mood:["Sophisticated","Intimate","World-Class"],fit:85,research:"North et al. (2003): sophisticated ensemble instrumentation signals premium quality. East-West instrumental fusion is effective for contemporary Islamic home aesthetics.",instaSearch:"oud cello duet classical contemporary"}],beauty:[{id:"b1",name:"Soft Acoustic Oud (Contemporary)",artist:"Various",genre:"Contemporary Arabic Acoustic",tempo:"Gentle · 65 BPM",mood:["Fresh","Natural","Pure"],fit:91,research:"Bruner (1990): acoustic instruments signal purity and naturalness — directly congruent with halal cosmetics messaging. Light production increases perceived ingredient authenticity.",instaSearch:"acoustic oud soft contemporary"},{id:"b2",name:"Subhan Allah (A Cappella Female)",artist:"Various",genre:"Female A Cappella Nasheed",tempo:"Gentle · 68 BPM",mood:["Pure","Empowering","Feminine"],fit:95,research:"Garlin & Owen (2006): same-gender voice source increases product identification d=0.44 for gender-targeted categories. Female a cappella creates immediate beauty product authenticity.",instaSearch:"subhan allah a cappella female nasheed"},{id:"b3",name:"Light Persian Santur",artist:"Various Persian",genre:"Persian Classical Instrumental",tempo:"Soft · 58 BPM",mood:["Elegant","Refined","Artisanal"],fit:87,research:"North et al. (2003): classical music primes quality schemas — increasing willingness-to-pay for premium products by 18%. Persian santur signals artisanal refinement for skincare.",instaSearch:"Persian santur light classical"},{id:"b4",name:"Rumi's Garden (Ney & Piano)",artist:"Various",genre:"Contemporary Sufi Fusion",tempo:"Contemplative · 62 BPM",mood:["Mindful","Botanical","Pure"],fit:88,research:"Morin et al. (2007): meditative music increases mindful product engagement — important for skincare where ritual application is part of the core value proposition.",instaSearch:"Rumi garden ney piano Sufi"},{id:"b5",name:"Maa Shaa Allah (Soft Version)",artist:"Maher Zain",genre:"Contemporary Nasheed Soft",tempo:"Gentle · 70 BPM",mood:["Grateful","Beautiful","Radiant"],fit:90,research:"Lee & Jeong (2023): widely recognised audio with positive semantic content generates 31% higher engagement. Masha Allah concept directly reinforces beauty product appreciation.",instaSearch:"Maa Shaa Allah Maher Zain soft"},{id:"b6",name:"Rose of Jericho (Ambient)",artist:"Various",genre:"Middle-Eastern Ambient",tempo:"Still · 50 BPM",mood:["Botanical","Healing","Ancient"],fit:86,research:"Biswas et al. (2019): ambient music aligned with product's origin narrative increases perceived authenticity. For botanical beauty products, ancient-region ambient is most congruent.",instaSearch:"Middle Eastern ambient botanical instrumental"}],luxury:[{id:"lx1",name:"Andalusian Court Music",artist:"Eduardo Paniagua",genre:"Andalusian Classical / Court",tempo:"Stately · 55 BPM",mood:["Imperial","Refined","Heritage"],fit:97,research:"North et al. (2003): classical music associated with historical prestige increased spend +51% by signalling product worthiness. Islamic court music carries the highest prestige schema.",instaSearch:"Andalusian court music classical Islamic"},{id:"lx2",name:"Persian Shur Dastgah",artist:"Mohammad Reza Lotfi",genre:"Persian Classical — Shur Mode",tempo:"Meditating · 48 BPM",mood:["Melancholic Beauty","Exquisite","Rare"],fit:94,research:"Bruner (1990): minor-mode slow music creates emotional depth — increasing perceived value of rare items. Shur dastgah evokes poetic longing and sophisticated refinement.",instaSearch:"Persian Shur dastgah classical"},{id:"lx3",name:"Oud & Strings — Luxury Arrangement",artist:"Marcel Khalife",genre:"Arabic Classical Orchestral",tempo:"Grand · 62 BPM",mood:["Grand","Cinematic","Noble"],fit:93,research:"Morin et al. (2007): orchestral music significantly increases perceived product prestige. Oud combined with strings is the definitive sound of Arabic luxury.",instaSearch:"Marcel Khalife oud strings orchestral"},{id:"lx4",name:"Qasida Al-Burdah (Full Orchestral)",artist:"Sami Yusuf",genre:"Orchestral Nasheed",tempo:"Majestic · 72 BPM",mood:["Majestic","Noble","Timeless"],fit:91,research:"Garlin & Owen (2006): orchestral music increases product quality perception d=0.58 — the strongest effect across all instrument combinations.",instaSearch:"Sami Yusuf Qasida Burdah orchestral"},{id:"lx5",name:"Mughal Court Sitar & Sarangi",artist:"Various Hindustani",genre:"Hindustani Classical Court",tempo:"Deliberate · 52 BPM",mood:["Imperial","South Asian Heritage","Rare"],fit:89,research:"North et al. (1999): music matching product's cultural and historical heritage generates strongest congruence effect d=1.24. Mughal court music is ideal for handcrafted South Asian luxury gifts.",instaSearch:"Mughal court sitar sarangi classical"},{id:"lx6",name:"Turkish Peşrev (Ottoman Court)",artist:"Various Ottoman Classical",genre:"Ottoman Classical / Maqam",tempo:"Flowing · 68 BPM",mood:["Ottoman Heritage","Refined","Imperial"],fit:88,research:"Knoferle et al. (2012): cultural heritage music increases willingness-to-pay for premium goods. Ottoman classical signals centuries of Islamic artistic refinement.",instaSearch:"Turkish pesrev Ottoman classical maqam"},{id:"lx7",name:"Nile Delta Oud Solo",artist:"Farid Al-Atrash",genre:"Egyptian Classical",tempo:"Lyrical · 60 BPM",mood:["Golden Age","Cinematic","Romantic"],fit:85,research:"Bruner (1990): slow lyrical oud creates extended pleasure state — optimal for showcase content where viewing time directly correlates with purchase consideration.",instaSearch:"Farid Al Atrash oud solo classical"}],modest:[{id:"mf1",name:"Assalamu Alaykum (Contemporary Nasheed)",artist:"Hamza Namira",genre:"Contemporary Arabic Nasheed",tempo:"Warm · 80 BPM",mood:["Welcoming","Modern","Identity"],fit:96,research:"Lee & Jeong (2023): audio that affirms audience identity generates highest engagement β=0.42. Greeting nasheed reinforces modest fashion's core value of respectful, identity-proud presentation.",instaSearch:"Hamza Namira assalamu alaykum nasheed"},{id:"mf2",name:"Maryam (A Cappella Nasheed)",artist:"Various Female",genre:"Female A Cappella Nasheed",tempo:"Flowing · 70 BPM",mood:["Dignified","Feminine","Pure"],fit:93,research:"North et al. (1999): same-gender voice audio increases product identification significantly for women's fashion. A cappella retains full emotional impact without any instrumental risk.",instaSearch:"Maryam a cappella female nasheed"},{id:"mf3",name:"Ya Ummi (Ode to Mothers)",artist:"Sami Yusuf",genre:"Contemporary Nasheed",tempo:"Warm · 76 BPM",mood:["Familial","Warm","Dignified"],fit:89,research:"Morin et al. (2007): music evoking positive familial associations increases brand attachment. Modest fashion's core purchasers are often mothers — this activates the right purchase schema.",instaSearch:"Sami Yusuf ya ummi nasheed"},{id:"mf4",name:"Istanbul Morning (Acoustic Bağlama)",artist:"Various Turkish Acoustic",genre:"Turkish Folk Acoustic",tempo:"Lyrical · 72 BPM",mood:["Fresh","Cultural","Modern Muslim"],fit:87,research:"Garlin & Owen (2006): culturally familiar acoustic music increases product authenticity perception d=0.46. Turkish acoustic is strongly associated with modern Muslim identity and hijab fashion.",instaSearch:"Istanbul morning Turkish acoustic bağlama"},{id:"mf5",name:"Arabic Fashion Instrumental",artist:"Various Contemporary Arabic",genre:"Arabic Contemporary Instrumental",tempo:"Stylish · 90 BPM",mood:["Stylish","Contemporary","Proud"],fit:86,research:"Knoferle et al. (2012): moderate-fast tempo with cultural instrumentation is optimal for fashion content — increases viewing time and aesthetic appreciation simultaneously.",instaSearch:"Arabic fashion instrumental contemporary"},{id:"mf6",name:"Persian Garden Ney (Flowing)",artist:"Various Persian",genre:"Persian Ney Instrumental",tempo:"Elegant · 65 BPM",mood:["Elegant","Poetic","Flowing"],fit:84,research:"Bruner (1990): flowing moderate tempo matches the visual rhythm of fabric movement — particularly effective for hijab and scarf showcases where fabric motion is the primary visual.",instaSearch:"Persian ney flute garden elegant"},{id:"mf7",name:"Allahu (Soft Contemporary Nasheed)",artist:"Various",genre:"Soft Devotional Nasheed",tempo:"Gentle · 68 BPM",mood:["Gentle","Authentic","Devout"],fit:90,research:"Lee & Jeong (2023): soft devotional audio generates the highest save-rate among Muslim audiences — indicating purchase consideration rather than passive viewing.",instaSearch:"Allahu soft nasheed devotional"}]};
 
-const MUSIC = {
-  clothing:[
-    {id:"cl1",name:"Maula Ya Salli wa Sallim",artist:"Mesut Kurtis",genre:"Nasheed",tempo:"Slow · 68 BPM",mood:["Reverent","Heritage","Elegant"],fit:98,research:"North et al. (1999): culturally congruent audio increases product preference by 73%. Vocal-only nasheed; South Asian-Islamic identity signal is immediate and community-wide.",instaSearch:"Mesut Kurtis nasheed salli"},
-    {id:"cl2",name:"Tala Al Badru Alayna",artist:"Various Traditional",genre:"Classical Nasheed",tempo:"Moderate · 80 BPM",mood:["Joyful","Communal","Timeless"],fit:95,research:"Garlin & Owen (2006) meta-analysis of 32 studies: culturally familiar music increases dwell time d=0.46. Oldest nasheed in Islamic tradition — universal recognition across all Muslim communities.",instaSearch:"Tala al badru alayna nasheed"},
-    {id:"cl3",name:"Ya Mustafa",artist:"Sami Yusuf",genre:"Contemporary Nasheed",tempo:"Slow · 72 BPM",mood:["Warm","Spiritual","Refined"],fit:91,research:"Lee & Jeong (2023): audio-visual congruence predicts Instagram engagement β=0.42. Bridges older and younger demographics — critical for multi-generational product appeal.",instaSearch:"Sami Yusuf ya mustafa"},
-    {id:"cl4",name:"Oud Instrumental Medley",artist:"Naseer Shamma",genre:"Arabic Traditional",tempo:"Gentle · 60 BPM",mood:["Artisanal","Heritage","Contemplative"],fit:88,research:"Bruner (1990): slow tempo instruments reduce arousal and increase pleasure-state, maximising product inspection time. Solo oud signals handcrafted quality.",instaSearch:"Naseer Shamma oud instrumental"},
-    {id:"cl5",name:"Qasida Burdah (Modern Arrangement)",artist:"Hamza Namira",genre:"Nasheed / Qasida",tempo:"Reflective · 65 BPM",mood:["Noble","Timeless","Spiritual"],fit:96,research:"Morin et al. (2007): reflective tempo 60–75 BPM increases quality perception by 28%. Classical Islamic poetry evokes the highest register of cultural heritage for premium garments.",instaSearch:"Qasida Burdah Hamza Namira"},
-    {id:"cl6",name:"Maqam Hijaz Instrumental",artist:"Simon Shaheen",genre:"Arabic Classical",tempo:"Moderate · 78 BPM",mood:["Noble","Middle-Eastern","Proud"],fit:87,research:"North et al. (1999): music congruent with product's cultural origin increases selection by 49%. Maqam Hijaz is the most recognisable Arabic mode — signals cultural authenticity immediately.",instaSearch:"Maqam Hijaz oud Arabic Simon Shaheen"},
-    {id:"cl7",name:"Nour Al Ain (Instrumental)",artist:"Amr Diab Instrumental",genre:"Arabic Pop Instrumental",tempo:"Moderate · 88 BPM",mood:["Romantic","Cultural","Contemporary"],fit:82,research:"Knoferle et al. (2012): moderate tempo 85–95 BPM suits contemporary product presentation. Instrumental version removes lyrical risk while retaining strong cultural resonance.",instaSearch:"Nour Al Ain instrumental Arabic"},
-    {id:"cl8",name:"Samai Rast",artist:"Traditional Arabic Ensemble",genre:"Arabic Classical Instrumental",tempo:"Flowing · 75 BPM",mood:["Flowing","Artisanal","Serene"],fit:86,research:"Garlin & Owen (2006): instrumental music without vocals generates more positive product evaluation d=0.51 by reducing cognitive interference from lyrical processing.",instaSearch:"Samai Rast Arabic classical ensemble"},
-    {id:"cl9",name:"Wehdak Kafi",artist:"Hamza Namira",genre:"Arabic Nasheed-Pop",tempo:"Uplifting · 90 BPM",mood:["Uplifting","Modern","Authentic"],fit:84,research:"Lee & Jeong (2023): upbeat culturally aligned audio correlates with higher share rates among Muslim audiences. Modern Arabic nasheed-pop bridges tradition and contemporary aesthetics.",instaSearch:"Hamza Namira wehdak kafi"},
-  ],
-  jewellery:[
-    {id:"j1",name:"Persian Classical Santur",artist:"Majid Kiani",genre:"Persian Classical",tempo:"Gentle · 55 BPM",mood:["Luxurious","Refined","Timeless"],fit:97,research:"North et al. (2003): classical music increased average spend by £2.18/person by activating luxury quality schemas. Santur's shimmering timbre directly mirrors the visual quality of gold.",instaSearch:"Majid Kiani santur Persian classical"},
-    {id:"j2",name:"Maqam Rast Oud Solo",artist:"Marcel Khalife",genre:"Arabic Classical",tempo:"Slow · 52 BPM",mood:["Opulent","Heritage","Serene"],fit:94,research:"Bruner (1990): slow tempo 50–65 BPM maximises pleasure arousal — optimal state for luxury purchase evaluation. Maqam Rast connotes cultural warmth and nobility.",instaSearch:"Marcel Khalife oud maqam rast"},
-    {id:"j3",name:"Andalusian Suite — Al Qamus",artist:"Orchestre National de Barbès",genre:"Andalusian / Maghrebi",tempo:"Moderate · 70 BPM",mood:["Elegant","Historic","Proud"],fit:89,research:"Knoferle et al. (2012): cultural heritage music increases willingness-to-pay for premium products. Islamic golden-age associations directly reinforce jewellery luxury positioning.",instaSearch:"Andalusian classical instrumental suite"},
-    {id:"j4",name:"Raga Yaman (Sitar Solo)",artist:"Ravi Shankar",genre:"Hindustani Classical",tempo:"Gentle · 48 BPM",mood:["Sublime","Artistic","Rich"],fit:80,research:"Garlin & Owen (2006): slow instrumental music increases approach behaviour d=0.46. Raga Yaman — the evening raga — carries deep associations of beauty and richness.",instaSearch:"Raga Yaman sitar instrumental"},
-    {id:"j5",name:"Lamma Bada Yatathanna (Orchestral)",artist:"Fairuz Orchestral Version",genre:"Arabic Classical Orchestral",tempo:"Slow · 58 BPM",mood:["Romantic","Exquisite","Cultural"],fit:88,research:"North et al. (1999): culturally congruent music activates 'finest, most beautiful' schemas — directly beneficial for gold jewellery evaluation.",instaSearch:"Lamma bada yatathanna instrumental orchestral"},
-    {id:"j6",name:"Isfahan Dastgah",artist:"Mohammad Reza Shajarian Instrumental",genre:"Persian Dastgah Classical",tempo:"Meditative · 50 BPM",mood:["Contemplative","Rare","Premium"],fit:85,research:"Morin et al. (2007): low-arousal music increases time spent examining products. Isfahan is associated with longing and aesthetic refinement in Persian tradition.",instaSearch:"Isfahan Persian dastgah instrumental classical"},
-    {id:"j7",name:"Ud Taksim in Bayati",artist:"Udi Hrant Kenkulian",genre:"Turkish Classical Taksim",tempo:"Improvised · Slow",mood:["Noble","Intimate","Handcrafted"],fit:83,research:"Bruner (1990): improvisatory music signals authenticity and handcraft — directly reinforcing bespoke jewellery's value narrative over mass-produced alternatives.",instaSearch:"Taksim Bayati oud Turkish classical"},
-    {id:"j8",name:"Nasheed: Subhanallah (Soft Instrumental)",artist:"Maher Zain Instrumental",genre:"Contemporary Nasheed Instrumental",tempo:"Slow · 64 BPM",mood:["Pure","Peaceful","Premium"],fit:81,research:"Lee & Jeong (2023): soft instrumental tracks with cultural recognition outperform generic ambient music on engagement rate.",instaSearch:"Maher Zain subhanallah instrumental"},
-  ],
-  wedding:[
-    {id:"w1",name:"Ahlan Ya Aroos",artist:"Various Arab Traditional",genre:"Arabic Wedding Nasheed",tempo:"Celebratory · 105 BPM",mood:["Joyful","Blessing","Communal"],fit:99,research:"Knoferle et al. (2012): emotional congruence between music and occasion drives strongest purchase intent. Arabic wedding blessing nasheed achieves highest possible congruence for bridal content.",instaSearch:"ahlan ya aroos nasheed Arabic wedding"},
-    {id:"w2",name:"Kun Faya Kun",artist:"AR Rahman / Javed Ali",genre:"Sufi-Inspired Bollywood",tempo:"Swelling · 75 BPM",mood:["Transcendent","Romantic","Spiritual"],fit:93,research:"Morin et al. (2007): music with rising dynamic structure increases emotional engagement by 31%. Spiritual content adds depth to the significance of the wedding occasion.",instaSearch:"Kun Faya Kun AR Rahman Javed Ali"},
-    {id:"w3",name:"Marhaba Ya Mustafa (Zaffa)",artist:"Bohra Traditional",genre:"Zaffa / Devotional Procession",tempo:"Ceremonial · 95 BPM",mood:["Sacred","Festive","Identity"],fit:98,research:"North et al. (1999): music directly matching the target cultural community produces strongest behavioural response d=1.24. Bohra zaffa is an unambiguous community identity signal.",instaSearch:"Bohra zaffa wedding nasheed marhaba"},
-    {id:"w4",name:"Mere Rashke Qamar (Original)",artist:"Nusrat Fateh Ali Khan",genre:"Qawwali",tempo:"Moderate · 88 BPM",mood:["Romantic","Elevated","Classical"],fit:87,research:"Bruner (1990): moderate tempo sustains emotional engagement without rushing the viewer. Original qawwali evokes celebration and love in the South Asian cultural schema.",instaSearch:"Mere Rashke Qamar Nusrat Fateh Ali Khan original"},
-    {id:"w5",name:"Dholak Folk Instrumental",artist:"Traditional Punjabi / Gujarati",genre:"South Asian Folk Percussion",tempo:"Upbeat · 115 BPM",mood:["Festive","Vibrant","Celebratory"],fit:88,research:"Milliman (1982): fast tempo >100 BPM increases energy and purchasing urgency. For wedding attire, high-energy folk percussion perfectly matches the joyful occasion schema.",instaSearch:"dholak wedding folk instrumental percussion"},
-    {id:"w6",name:"Hasbi Rabbi Jallallah",artist:"Maher Zain",genre:"Contemporary Nasheed",tempo:"Uplifting · 92 BPM",mood:["Blessed","Joyful","Universal"],fit:91,research:"Lee & Jeong (2023): widely recognised audio generates 28% higher share rates due to pre-existing emotional associations. Maher Zain has broad cross-community recognition.",instaSearch:"Hasbi Rabbi Maher Zain"},
-    {id:"w7",name:"Ya Taiba (Wedding Version)",artist:"Various",genre:"Medina Devotional Nasheed",tempo:"Celebratory · 100 BPM",mood:["Sacred","Hopeful","Communal"],fit:90,research:"Garlin & Owen (2006): music evoking community belonging increases positive affect d=0.52. Wedding content benefits from music framing the occasion as joyful and spiritually meaningful.",instaSearch:"Ya Taiba nasheed wedding version"},
-    {id:"w8",name:"Sevillanas Andaluzas (Instrumental)",artist:"Paco de Lucia",genre:"Andalusian Flamenco Instrumental",tempo:"Rhythmic · 110 BPM",mood:["Passionate","Historic","Artistic"],fit:78,research:"Jacob (2006): music-atmosphere cultural fit increases quality perception by 25%. For contemporary wedding aesthetics, Andalusian music signals Islamic artistic heritage.",instaSearch:"Andalusian instrumental flamenco festive"},
-  ],
-  food:[
-    {id:"f1",name:"Warm Oud & Percussion Medley",artist:"Various Arabic Folk",genre:"Arabic Folk Instrumental",tempo:"Moderate · 85 BPM",mood:["Inviting","Warm","Appetising"],fit:93,research:"Biswas et al. (2019): background music at 65–75 dB increased food sales by 32% by evoking mindful eating. Warm oud timbre is the primary sonic signal of hospitality in Arabic culture.",instaSearch:"warm oud Arabic folk percussion medley"},
-    {id:"f2",name:"Sitar & Tabla Groove",artist:"Various Hindustani",genre:"Hindustani Light Classical",tempo:"Lively · 95 BPM",mood:["Lively","Aromatic","Festive"],fit:88,research:"Milliman (1982): moderate-fast tempo increases appetite arousal and purchasing pace. Sitar-tabla evokes communal feast culture — biryani, haleem, kheer — in South Asian households.",instaSearch:"sitar tabla instrumental upbeat groove"},
-    {id:"f3",name:"Ramadan Ambient Nasheed",artist:"Various",genre:"Ramadan Devotional Ambient",tempo:"Calm · 60 BPM",mood:["Serene","Sacred","Blessed"],fit:94,research:"Morin et al. (2007): calm music during food browsing increases perceived quality and willingness-to-pay. Ramadan is peak sales period — seasonal music alignment is strategically critical.",instaSearch:"Ramadan nasheed ambient atmospheric"},
-    {id:"f4",name:"Fairuz Morning (Instrumental)",artist:"Fairuz Instrumental",genre:"Arabic Pop Instrumental",tempo:"Gentle · 75 BPM",mood:["Morning","Fresh","Cultural"],fit:87,research:"North et al. (2003): culturally matching music increased restaurant spending. Fairuz's morning associations are cross-culturally embedded in Arab and South Asian communities.",instaSearch:"Fairuz morning Arabic instrumental"},
-    {id:"f5",name:"Kora & Strings Warm Medley",artist:"Toumani Diabaté",genre:"West African / World Music",tempo:"Flowing · 80 BPM",mood:["Rich","Warm","Abundant"],fit:79,research:"Garlin & Owen (2006): music with positive hedonic valence increases food product evaluations d=0.48. Kora strings signal warmth and natural abundance for artisan food products.",instaSearch:"Kora instrumental African strings warm"},
-    {id:"f6",name:"Ney & Daff Sufi Instrumental",artist:"Various Sufi",genre:"Sufi Instrumental",tempo:"Gentle · 65 BPM",mood:["Pure","Contemplative","Spiritual"],fit:90,research:"Bruner (1990): instruments associated with spirituality transfer positive valence to products. For halal food brands, Sufi instrumentation is an indirect authenticity signal.",instaSearch:"Ney daff Sufi instrumental"},
-    {id:"f7",name:"Turkish Çay Bahçesi (Tea Garden)",artist:"Traditional Turkish",genre:"Turkish Light Classical",tempo:"Relaxed · 70 BPM",mood:["Leisurely","Communal","Inviting"],fit:84,research:"Milliman (1986): slow music extended restaurant visits from 45 to 58 minutes and increased beverage sales 41%. Music evoking communal lingering is optimal for tea and pastry products.",instaSearch:"Turkish traditional cafe tea instrumental"},
-    {id:"f8",name:"Gnawa Lila Groove",artist:"Nass Marrakech",genre:"Moroccan Gnawa",tempo:"Hypnotic · 90 BPM",mood:["Exotic","Rich","Communal"],fit:80,research:"Knoferle et al. (2012): rhythmic music increases purchase frequency for sensory goods. Gnawa rhythms evoke North African spice-market richness — ideal for heritage food products.",instaSearch:"Gnawa Moroccan instrumental groove"},
-    {id:"f9",name:"Surah Al-Mulk (Background Recitation)",artist:"Sheikh Abdul Rahman Al-Sudais",genre:"Quranic Recitation Background",tempo:"Meditative",mood:["Sacred","Pure","Blessed"],fit:92,research:"Lee & Jeong (2023): audio aligned with audience identity and values generates highest organic engagement. For halal food content, Quranic background signals sincerity and blessing.",instaSearch:"Abdul Rahman Sudais surah mulk"},
-  ],
-  children:[
-    {id:"ch1",name:"Bismillah (Children's Nasheed)",artist:"Zain Bhikha",genre:"Children's Islamic Nasheed",tempo:"Cheerful · 110 BPM",mood:["Playful","Pure","Educational"],fit:98,research:"Morin et al. (2007): high-arousal, high-pleasure music maximises engagement for youth-oriented products. Zain Bhikha is trusted by Muslim parents across all jurisprudential traditions.",instaSearch:"Zain Bhikha bismillah children nasheed"},
-    {id:"ch2",name:"One Ummah",artist:"Native Deen",genre:"Islamic Children's Pop",tempo:"Upbeat · 120 BPM",mood:["Energetic","Inclusive","Fun"],fit:91,research:"Milliman (1982): fast tempo >100 BPM creates excitement and purchasing urgency — critical for toy and children's product marketing. Native Deen's cross-community appeal is widely documented.",instaSearch:"Native Deen one ummah nasheed"},
-    {id:"ch3",name:"Acoustic Ney Lullaby",artist:"Various Turkish Acoustic",genre:"Turkish Acoustic Instrumental",tempo:"Gentle · 55 BPM",mood:["Soft","Nurturing","Pure"],fit:85,research:"Bruner (1990): low tempo reduces arousal to a pleasure state optimal for trust-building. For infant clothing, bedding and soft toys — gentle instrumental signals safety and parental care.",instaSearch:"ney flute lullaby gentle acoustic children"},
-    {id:"ch4",name:"Muhammad (SAW) Nana Ki Kahani",artist:"Dawud Wharnsby Ali",genre:"Children's Storytelling Nasheed",tempo:"Moderate · 85 BPM",mood:["Storytelling","Educational","Warm"],fit:88,research:"Garlin & Owen (2006): narrative music increases information retention and brand recall. Storytelling nasheeds are uniquely effective for educational toy and book product categories.",instaSearch:"Dawud Wharnsby Ali nasheed storytelling"},
-    {id:"ch5",name:"Allah Hu (Children's Round)",artist:"Various",genre:"Islamic Round / Call & Response",tempo:"Joyful · 100 BPM",mood:["Communal","Joyful","Pure"],fit:89,research:"North et al. (1999): communal music structures increase feelings of belonging — key driver for children's purchases where parents buy for shared family identity.",instaSearch:"Allah Hu nasheed children round"},
-    {id:"ch6",name:"Inshallah (Acoustic Version)",artist:"Sami Yusuf",genre:"Contemporary Nasheed Acoustic",tempo:"Gentle · 72 BPM",mood:["Hopeful","Pure","Gentle"],fit:87,research:"Morin et al. (2007): acoustic production increases perceived authenticity by 22%. For children's products, authenticity and purity are the primary purchase drivers for Muslim parents.",instaSearch:"Sami Yusuf inshallah acoustic"},
-  ],
-  religious:[
-    {id:"r1",name:"Ya Nabi Salam Alayka",artist:"Mesut Kurtis",genre:"Nasheed — Salawat",tempo:"Devotional · 70 BPM",mood:["Sacred","Elevated","Universal"],fit:100,research:"Garlin & Owen (2006): music maximally congruent with product meaning generates highest approach behaviour d=0.61. For religious products, salawat nasheed achieves the highest possible cultural congruence.",instaSearch:"Ya Nabi Salam Alayka Mesut Kurtis"},
-    {id:"r2",name:"Melodic Quran — Surah Al-Fatiha",artist:"Sheikh Mishary Rashid Al-Afasy",genre:"Quranic Recitation",tempo:"Reflective",mood:["Divine","Transcendent","Pure"],fit:99,research:"Lee & Jeong (2023): identity-congruent audio generates highest organic sharing rate. For Quran-related products, prayer items, and Islamic décor — no audio achieves deeper community resonance.",instaSearch:"Mishary Rashid Al Afasy Al Fatiha melodic"},
-    {id:"r3",name:"Rahmatan Lil Alameen",artist:"Maher Zain",genre:"Contemporary Nasheed",tempo:"Uplifting · 80 BPM",mood:["Inspiring","Universal","Peaceful"],fit:96,research:"North et al. (1999): recognisable culturally valued music increases product trust ratings. Maher Zain's broadcast-quality production achieves cross-community recognition globally.",instaSearch:"Maher Zain Rahmatan Lil Alameen"},
-    {id:"r4",name:"Mawlaya (Classic)",artist:"Mesut Kurtis",genre:"Sufi Nasheed",tempo:"Flowing · 75 BPM",mood:["Longing","Spiritual","Noble"],fit:94,research:"Morin et al. (2007): music evoking spiritual longing increases perceived value of spiritual goods by 34%. Mawlaya is among the most recognised nasheeds across all Muslim communities globally.",instaSearch:"Mesut Kurtis Mawlaya nasheed"},
-    {id:"r5",name:"Allahu Akbar (Devotional Ensemble)",artist:"Various Arabic",genre:"Devotional Ensemble Nasheed",tempo:"Powerful · 85 BPM",mood:["Powerful","United","Sacred"],fit:93,research:"Garlin & Owen (2006): music with strong rhythmic pulse increases recall and emotional salience d=0.54. For Islamic wall art, calligraphy, and symbolic gifts — strong devotional music reinforces meaning.",instaSearch:"Allahu Akbar nasheed devotional Arabic ensemble"},
-    {id:"r6",name:"Asma-ul-Husna (99 Names Nasheed)",artist:"Mishary Rashid",genre:"99 Names of Allah Nasheed",tempo:"Steady · 78 BPM",mood:["Reverent","Educational","Uplifting"],fit:95,research:"Lee & Jeong (2023): audio that reinforces a product's core message generates 40% higher engagement than background-only music. This nasheed directly reinforces Islamic educational product content.",instaSearch:"Mishary 99 names Allah nasheed"},
-    {id:"r7",name:"Bismillah (Calligraphic Ambient)",artist:"Various",genre:"Ambient Devotional Instrumental",tempo:"Still · 45 BPM",mood:["Still","Sacred","Contemplative"],fit:88,research:"Bruner (1990): very slow tempo 40–55 BPM creates meditative state optimal for appreciation of art and spiritual objects — effective for Islamic calligraphy showcases.",instaSearch:"bismillah ambient devotional instrumental"},
-  ],
-  home:[
-    {id:"h1",name:"Ney Flute Meditation",artist:"Various Turkish Sufi",genre:"Sufi / Mevlevi Instrumental",tempo:"Slow · 50 BPM",mood:["Serene","Contemplative","Refined"],fit:94,research:"Bruner (1990): slow ney flute reduces arousal and maximises pleasure — creating the interior calm associated with ideal domestic space. Perfect for home décor product showcases.",instaSearch:"ney flute Sufi instrumental meditation Turkish"},
-    {id:"h2",name:"Andalusian Garden Suite",artist:"Jordi Savall / Hesperion XXI",genre:"Andalusian Classical",tempo:"Gentle · 62 BPM",mood:["Elevated","Artisanal","Historic"],fit:89,research:"North et al. (2003): classical music primes luxury quality schemas, increasing premium willingness-to-pay. Andalusian suites signal Islamic aesthetic civilisation — reinforcing quality home goods.",instaSearch:"Andalusian classical music garden instrumental"},
-    {id:"h3",name:"Persian Setar Solo",artist:"Hossein Alizadeh",genre:"Persian Classical",tempo:"Reflective · 55 BPM",mood:["Intimate","Warm","Cultivated"],fit:86,research:"Garlin & Owen (2006): intimate instrumental music increases perceived warmth of domestic space products d=0.43. Setar's resonant timbre evokes handcrafted quality.",instaSearch:"Hossein Alizadeh setar Persian classical"},
-    {id:"h4",name:"Bosphorus Morning (Instrumental)",artist:"Various Turkish",genre:"Turkish Light Classical",tempo:"Peaceful · 68 BPM",mood:["Morning","Fresh","Domestic"],fit:84,research:"Milliman (1986): ambient music evoking pleasant associations increases product evaluation. Morning-themed Turkish classical frames home products in an aspirational domestic context.",instaSearch:"Bosphorus Turkish morning instrumental"},
-    {id:"h5",name:"Attar Oud Fragrance Ambient",artist:"Various",genre:"Ambient Oud Instrumental",tempo:"Still · 48 BPM",mood:["Sensory","Luxurious","Heritage"],fit:88,research:"Biswas et al. (2019): music reinforcing a product's sensory qualities increases purchase intent by 22%. Oud-inspired ambient is uniquely effective for fragrance product showcases.",instaSearch:"oud fragrance ambient instrumental attar"},
-    {id:"h6",name:"Moroccan Gnawa Ambient (Slow)",artist:"Nass Marrakech",genre:"Moroccan Ambient",tempo:"Hypnotic · 60 BPM",mood:["Exotic","Rich","Warm"],fit:80,research:"Knoferle et al. (2012): distinctive cultural music increases product memorability. For Moroccan-inspired décor (zellige, lanterns), Gnawa ambient reinforces aesthetic authenticity.",instaSearch:"Gnawa Moroccan ambient slow instrumental"},
-    {id:"h7",name:"Oud & Cello Duet",artist:"Kayhan Kalhor",genre:"Cross-Cultural Classical",tempo:"Gentle · 58 BPM",mood:["Sophisticated","Intimate","World-Class"],fit:85,research:"North et al. (2003): sophisticated ensemble instrumentation signals premium quality. East-West instrumental fusion is effective for contemporary Islamic home aesthetics.",instaSearch:"oud cello duet classical contemporary"},
-  ],
-  beauty:[
-    {id:"b1",name:"Soft Acoustic Oud (Contemporary)",artist:"Various",genre:"Contemporary Arabic Acoustic",tempo:"Gentle · 65 BPM",mood:["Fresh","Natural","Pure"],fit:91,research:"Bruner (1990): acoustic instruments signal purity and naturalness — directly congruent with halal cosmetics messaging. Light production increases perceived ingredient authenticity.",instaSearch:"acoustic oud soft contemporary modern"},
-    {id:"b2",name:"Subhan Allah (A Cappella Female)",artist:"Various",genre:"Female A Cappella Nasheed",tempo:"Gentle · 68 BPM",mood:["Pure","Empowering","Feminine"],fit:95,research:"Garlin & Owen (2006): same-gender voice source increases product identification d=0.44 for gender-targeted categories. Female a cappella creates immediate beauty product authenticity.",instaSearch:"subhan allah a cappella female nasheed"},
-    {id:"b3",name:"Light Persian Santur",artist:"Various Persian",genre:"Persian Classical Instrumental",tempo:"Soft · 58 BPM",mood:["Elegant","Refined","Artisanal"],fit:87,research:"North et al. (2003): classical music primes quality schemas — increasing willingness-to-pay for premium products by 18%. Persian santur signals artisanal refinement for skincare.",instaSearch:"Persian santur light classical instrumental"},
-    {id:"b4",name:"Rumi's Garden (Ney & Piano)",artist:"Various",genre:"Contemporary Sufi Fusion",tempo:"Contemplative · 62 BPM",mood:["Mindful","Botanical","Pure"],fit:88,research:"Morin et al. (2007): meditative music increases mindful product engagement — important for skincare where ritual application is part of the core value proposition.",instaSearch:"Rumi garden ney piano Sufi contemporary"},
-    {id:"b5",name:"Maa Shaa Allah (Soft Version)",artist:"Maher Zain",genre:"Contemporary Nasheed Soft",tempo:"Gentle · 70 BPM",mood:["Grateful","Beautiful","Radiant"],fit:90,research:"Lee & Jeong (2023): widely recognised audio with positive semantic content generates 31% higher engagement. The concept of 'Masha Allah' directly reinforces beauty product appreciation.",instaSearch:"Maa Shaa Allah Maher Zain soft"},
-    {id:"b6",name:"Rose of Jericho (Middle-Eastern Ambient)",artist:"Various",genre:"Middle-Eastern Ambient",tempo:"Still · 50 BPM",mood:["Botanical","Healing","Ancient"],fit:86,research:"Biswas et al. (2019): ambient music aligned with product's origin narrative increases perceived authenticity. For heritage botanical beauty products — rose water, henna — ancient-region ambient is most congruent.",instaSearch:"Middle Eastern ambient botanical instrumental"},
-  ],
-  luxury:[
-    {id:"lx1",name:"Andalusian Court Music",artist:"Eduardo Paniagua",genre:"Andalusian Classical / Court Music",tempo:"Stately · 55 BPM",mood:["Imperial","Refined","Heritage"],fit:97,research:"North et al. (2003): classical music associated with historical prestige increased spend +51% by signalling product worthiness. Islamic court music carries the highest prestige schema.",instaSearch:"Andalusian court music classical Islamic"},
-    {id:"lx2",name:"Persian Shur Dastgah",artist:"Mohammad Reza Lotfi",genre:"Persian Classical — Shur Mode",tempo:"Meditating · 48 BPM",mood:["Melancholic Beauty","Exquisite","Rare"],fit:94,research:"Bruner (1990): minor-mode slow music creates emotional depth — increasing perceived value of rare or unique items. Shur dastgah evokes poetic longing and sophisticated refinement.",instaSearch:"Persian Shur dastgah classical Lotfi"},
-    {id:"lx3",name:"Oud & Strings — Luxury Arrangement",artist:"Marcel Khalife",genre:"Arabic Classical Orchestral",tempo:"Grand · 62 BPM",mood:["Grand","Cinematic","Noble"],fit:93,research:"Morin et al. (2007): orchestral music significantly increases perceived product prestige. Oud combined with string orchestra is the definitive sound of Arabic luxury.",instaSearch:"Marcel Khalife oud strings orchestral"},
-    {id:"lx4",name:"Qasida Al-Burdah (Full Orchestral)",artist:"Sami Yusuf",genre:"Orchestral Nasheed",tempo:"Majestic · 72 BPM",mood:["Majestic","Noble","Timeless"],fit:91,research:"Garlin & Owen (2006): orchestral music increases product quality perception d=0.58 — the strongest effect across all instrument combinations.",instaSearch:"Sami Yusuf Qasida Burdah orchestral"},
-    {id:"lx5",name:"Mughal Court Sitar & Sarangi",artist:"Various Hindustani",genre:"Hindustani Classical Court Music",tempo:"Deliberate · 52 BPM",mood:["Imperial","South Asian Heritage","Rare"],fit:89,research:"North et al. (1999): music matching product's cultural and historical heritage generates strongest congruence effect d=1.24. Mughal court music is ideal for handcrafted South Asian luxury gifts.",instaSearch:"Mughal court sitar sarangi classical"},
-    {id:"lx6",name:"Turkish Peşrev (Ottoman Court)",artist:"Various Ottoman Classical",genre:"Ottoman Classical / Maqam",tempo:"Flowing · 68 BPM",mood:["Ottoman Heritage","Refined","Imperial"],fit:88,research:"Knoferle et al. (2012): cultural heritage music increases willingness-to-pay for premium goods. Ottoman classical signals centuries of Islamic artistic refinement.",instaSearch:"Turkish pesrev Ottoman classical maqam"},
-    {id:"lx7",name:"Nile Delta Oud Solo",artist:"Farid Al-Atrash",genre:"Egyptian Classical",tempo:"Lyrical · 60 BPM",mood:["Golden Age","Cinematic","Romantic"],fit:85,research:"Bruner (1990): slow lyrical oud creates extended pleasure state — optimal for showcase content where viewing time directly correlates with purchase consideration.",instaSearch:"Farid Al Atrash oud solo classical"},
-  ],
-  modest:[
-    {id:"mf1",name:"Assalamu Alaykum (Contemporary Nasheed)",artist:"Hamza Namira",genre:"Contemporary Arabic Nasheed",tempo:"Warm · 80 BPM",mood:["Welcoming","Modern","Identity"],fit:96,research:"Lee & Jeong (2023): audio that affirms audience identity generates highest engagement β=0.42. Greeting nasheed reinforces modest fashion's core value of respectful, identity-proud presentation.",instaSearch:"Hamza Namira assalamu alaykum nasheed"},
-    {id:"mf2",name:"Maryam (A Cappella Nasheed)",artist:"Various Female",genre:"Female A Cappella Nasheed",tempo:"Flowing · 70 BPM",mood:["Dignified","Feminine","Pure"],fit:93,research:"North et al. (1999): same-gender voice audio increases product identification significantly for women's fashion. A cappella retains full emotional impact without any instrumental risk.",instaSearch:"Maryam a cappella female nasheed"},
-    {id:"mf3",name:"Ya Ummi (Ode to Mothers)",artist:"Sami Yusuf",genre:"Contemporary Nasheed",tempo:"Warm · 76 BPM",mood:["Familial","Warm","Dignified"],fit:89,research:"Morin et al. (2007): music evoking positive familial associations increases brand attachment. Modest fashion's core purchasers are often mothers — this music activates the right schema.",instaSearch:"Sami Yusuf ya ummi nasheed"},
-    {id:"mf4",name:"Istanbul Morning (Acoustic Bağlama)",artist:"Various Turkish Acoustic",genre:"Turkish Folk Acoustic",tempo:"Lyrical · 72 BPM",mood:["Fresh","Cultural","Modern Muslim"],fit:87,research:"Garlin & Owen (2006): culturally familiar acoustic music increases product authenticity perception d=0.46. Turkish acoustic is strongly associated with modern Muslim identity and hijab fashion.",instaSearch:"Istanbul morning Turkish acoustic bağlama"},
-    {id:"mf5",name:"Arabic Fashion Instrumental",artist:"Various Contemporary Arabic",genre:"Arabic Contemporary Instrumental",tempo:"Stylish · 90 BPM",mood:["Stylish","Contemporary","Proud"],fit:86,research:"Knoferle et al. (2012): moderate-fast tempo with cultural instrumentation is optimal for fashion content — increases viewing time and aesthetic appreciation simultaneously.",instaSearch:"Arabic fashion instrumental contemporary"},
-    {id:"mf6",name:"Persian Garden Ney (Flowing)",artist:"Various Persian",genre:"Persian Ney Instrumental",tempo:"Elegant · 65 BPM",mood:["Elegant","Poetic","Flowing"],fit:84,research:"Bruner (1990): flowing moderate tempo matches the visual rhythm of fabric movement — particularly effective for hijab and scarf showcases where fabric motion is the primary visual.",instaSearch:"Persian ney flute garden elegant instrumental"},
-    {id:"mf7",name:"Allahu (Soft Contemporary Nasheed)",artist:"Various",genre:"Soft Devotional Nasheed",tempo:"Gentle · 68 BPM",mood:["Gentle","Authentic","Devout"],fit:90,research:"Lee & Jeong (2023): soft devotional audio generates the highest save-rate among Muslim audiences — indicating purchase consideration rather than passive viewing.",instaSearch:"Allahu soft nasheed devotional contemporary"},
-  ],
-};
-
-// ── STATE ──────────────────────────────────────────────────────────────────
-let currentCat = null;
-let currentSearch = '';
-let openTrack = null;
-
-// ── INIT ──────────────────────────────────────────────────────────────────
-function init() {
-  renderCategories();
-  document.getElementById('searchInput').addEventListener('input', e => {
-    currentSearch = e.target.value;
-    renderTracks();
-  });
-}
-
-// ── RENDER CATEGORIES ──────────────────────────────────────────────────────
-function renderCategories() {
-  const grid = document.getElementById('catGrid');
-  grid.innerHTML = '';
-  CATEGORIES.forEach(c => {
-    const el = document.createElement('div');
-    el.className = 'cat-card' + (currentCat === c.id ? ' active' : '');
-    el.style.setProperty('--cat-accent', c.accent);
-    if (currentCat === c.id) {
-      el.style.borderColor = c.accent;
-      el.style.boxShadow = `0 8px 28px ${c.accent}28`;
-    }
-    el.innerHTML = `
-      <div class="cat-icon">${c.icon}</div>
-      <div class="cat-name">${c.label}</div>
-      <div class="cat-sub">${c.sub}</div>
-      ${currentCat === c.id ? `<div class="cat-count" style="color:${c.accent}">${(MUSIC[c.id]||[]).length} tracks ↓</div>` : ''}
-    `;
-    el.addEventListener('click', () => selectCat(c.id));
-    grid.appendChild(el);
-  });
-}
-
-function selectCat(id) {
-  currentCat = id;
-  currentSearch = '';
-  openTrack = null;
-  document.getElementById('searchInput').value = '';
-  renderCategories();
-  const cat = CATEGORIES.find(c => c.id === id);
-  document.getElementById('panelIcon').textContent = cat.icon;
-  document.getElementById('panelTitle').textContent = cat.label;
-  document.getElementById('musicPanel').style.display = 'block';
-  renderTracks();
-  setTimeout(() => document.getElementById('musicPanel').scrollIntoView({behavior:'smooth',block:'start'}), 100);
-}
-
-// ── RENDER TRACKS ──────────────────────────────────────────────────────────
-function renderTracks() {
-  const cat = CATEGORIES.find(c => c.id === currentCat);
-  let tracks = (MUSIC[currentCat] || []).slice().sort((a,b) => b.fit - a.fit);
-  if (currentSearch.trim()) {
-    const q = currentSearch.toLowerCase();
-    tracks = tracks.filter(t =>
-      [t.name, t.artist, t.genre, ...t.mood].some(s => s.toLowerCase().includes(q))
-    );
-  }
-  document.getElementById('panelSub').textContent =
-    `${tracks.length} research-backed tracks · ranked by cultural fit score`;
-
-  const list = document.getElementById('trackList');
-  list.innerHTML = '';
-  if (!tracks.length) {
-    list.innerHTML = '<div class="empty">No tracks match your search.</div>';
-    return;
-  }
-  tracks.forEach(t => {
-    const open = openTrack === t.id;
-    const accent = cat.accent;
-    const circ = 2 * Math.PI * 22;
-    const fill = circ * t.fit / 100;
-
-    const el = document.createElement('div');
-    el.className = 'track' + (open ? ' open' : '');
-    if (open) {
-      el.style.borderColor = accent + '55';
-      el.style.boxShadow = `0 6px 24px ${accent}1A`;
-    }
-    el.innerHTML = `
-      <div class="track-top">
-        <div class="score-ring">
-          <svg width="52" height="52" viewBox="0 0 52 52">
-            <circle cx="26" cy="26" r="22" fill="none" stroke="var(--dark4)" stroke-width="4"/>
-            <circle cx="26" cy="26" r="22" fill="none" stroke="${accent}" stroke-width="4"
-              stroke-dasharray="${fill} ${circ - fill}" stroke-linecap="round"
-              transform="rotate(-90 26 26)"/>
-          </svg>
-          <div class="score-inner">
-            <span class="score-n" style="color:${accent}">${t.fit}</span>
-            <span class="score-label">fit</span>
-          </div>
-        </div>
-        <div class="track-info">
-          <div class="track-name">${t.name}</div>
-          <div class="track-meta">${t.artist} · ${t.genre}</div>
-        </div>
-        <div class="mood-tags">
-          ${t.mood.map(m => `<span class="mood-tag">${m}</span>`).join('')}
-        </div>
-        <div class="track-tempo">${t.tempo}</div>
-        <div class="track-arrow" style="color:${accent}">▼</div>
-      </div>
-      ${open ? `
-      <div class="track-detail">
-        <div class="detail-box">
-          <div class="detail-label">📚 Research Basis</div>
-          <div class="detail-text">${t.research}</div>
-        </div>
-        <div class="detail-box">
-          <div class="detail-label">📱 Find on Instagram Audio</div>
-          <div class="detail-text">Open Instagram → Create Reel → tap 🎵 Add Audio → search:</div>
-          <code class="insta-code" style="color:${accent}">"${t.instaSearch}"</code>
-          <button class="copy-btn" id="copy-${t.id}" onclick="doCopy('${t.instaSearch}','${t.id}',event)">Copy search term</button>
-        </div>
-      </div>
-      ` : ''}
-    `;
-    el.addEventListener('click', function(e) {
-      if (e.target.closest('.copy-btn')) return;
-      openTrack = open ? null : t.id;
-      renderTracks();
-    });
-    list.appendChild(el);
-  });
-}
-
-function doCopy(text, id, e) {
-  e.stopPropagation();
-  navigator.clipboard.writeText(text).catch(() => {});
-  const btn = document.getElementById('copy-' + id);
-  if (btn) { btn.textContent = '✓ Copied!'; btn.classList.add('done'); }
-}
-
+let currentCat=null,currentSearch='',openTrack=null;
+function init(){renderCategories();document.getElementById('searchInput').addEventListener('input',e=>{currentSearch=e.target.value;renderTracks()});}
+function renderCategories(){const g=document.getElementById('catGrid');g.innerHTML='';CATEGORIES.forEach(c=>{const el=document.createElement('div');el.className='cat-card'+(currentCat===c.id?' active':'');if(currentCat===c.id){el.style.borderColor=c.accent;el.style.boxShadow=`0 8px 28px ${c.accent}28`;}el.innerHTML=`<div class="cat-icon">${c.icon}</div><div class="cat-name">${c.label}</div><div class="cat-sub">${c.sub}</div>${currentCat===c.id?`<div class="cat-count" style="color:${c.accent}">${(MUSIC[c.id]||[]).length} tracks ↓</div>`:''}`;el.addEventListener('click',()=>selectCat(c.id));g.appendChild(el);});}
+function selectCat(id){currentCat=id;currentSearch='';openTrack=null;document.getElementById('searchInput').value='';renderCategories();const cat=CATEGORIES.find(c=>c.id===id);document.getElementById('panelIcon').textContent=cat.icon;document.getElementById('panelTitle').textContent=cat.label;document.getElementById('musicPanel').style.display='block';renderTracks();setTimeout(()=>document.getElementById('musicPanel').scrollIntoView({behavior:'smooth',block:'start'}),100);}
+function renderTracks(){const cat=CATEGORIES.find(c=>c.id===currentCat);let tracks=(MUSIC[currentCat]||[]).slice().sort((a,b)=>b.fit-a.fit);if(currentSearch.trim()){const q=currentSearch.toLowerCase();tracks=tracks.filter(t=>[t.name,t.artist,t.genre,...t.mood].some(s=>s.toLowerCase().includes(q)));}document.getElementById('panelSub').textContent=`${tracks.length} research-backed tracks · ranked by cultural fit score`;const list=document.getElementById('trackList');list.innerHTML='';if(!tracks.length){list.innerHTML='<div class="empty">No tracks match your search.</div>';return;}tracks.forEach(t=>{const open=openTrack===t.id,accent=cat.accent,r=22,circ=2*Math.PI*r,fill=circ*t.fit/100;const el=document.createElement('div');el.className='track'+(open?' open':'');if(open){el.style.borderColor=accent+'60';el.style.boxShadow=`0 8px 28px ${accent}20`;}el.innerHTML=`<div class="track-top"><div class="score-ring"><svg width="54" height="54" viewBox="0 0 54 54"><circle cx="27" cy="27" r="${r}" fill="none" stroke="var(--border2)" stroke-width="4"/><circle cx="27" cy="27" r="${r}" fill="none" stroke="${accent}" stroke-width="4" stroke-dasharray="${fill} ${circ-fill}" stroke-linecap="round" transform="rotate(-90 27 27)"/></svg><div class="score-inner"><span class="score-n" style="color:${accent}">${t.fit}</span><span class="score-lbl">fit</span></div></div><div class="track-info"><div class="track-name">${t.name}</div><div class="track-meta">${t.artist} · ${t.genre}</div></div><div class="mood-tags">${t.mood.map(m=>`<span class="mood-tag">${m}</span>`).join('')}</div><div class="track-tempo">${t.tempo}</div><div class="track-arrow" style="color:${accent}">▼</div></div>${open?`<div class="track-detail"><div class="detail-box"><div class="detail-label">📚 Research Basis</div><div class="detail-text">${t.research}</div></div><div class="detail-box"><div class="detail-label">📱 Find on Instagram Audio</div><div class="detail-text">Open Instagram → Create Reel → tap 🎵 Add Audio → search:</div><code class="insta-code" style="color:${accent}">"${t.instaSearch}"</code><button class="copy-btn" id="copy-${t.id}" onclick="doCopy('${t.instaSearch}','${t.id}',event)">Copy search term</button></div></div>`:''}`;el.addEventListener('click',e=>{if(e.target.closest('.copy-btn'))return;openTrack=open?null:t.id;renderTracks();});list.appendChild(el);});}
+function doCopy(text,id,e){e.stopPropagation();navigator.clipboard.writeText(text).catch(()=>{});const btn=document.getElementById('copy-'+id);if(btn){btn.textContent='✓ Copied!';btn.classList.add('done');}}
 init();
 </script>
 </body>
